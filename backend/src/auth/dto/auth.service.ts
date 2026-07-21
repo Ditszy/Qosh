@@ -26,4 +26,22 @@ export class AuthService {
         const { password, ...result } = user;
         return result;
     }
+
+    async validateUser(email: string, password: string) {
+        const user = await this.usersService.findByEmail(email);
+        if (!user) return null;
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return null;
+
+        return user;
+    }
+
+    async login(user: any) {
+        const payload = { sub: user.id, email: user.email, role: user.role };
+        return {
+            access_token: this.jwtService.sign(payload),
+            user: { id: user.id, email: user.email, name: user.name, role: user.role }
+        };
+    }
 }
