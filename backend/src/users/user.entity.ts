@@ -4,12 +4,12 @@ import { UserRole } from "../common/user-role.enum";
 @Entity('users')
 export class User {
     @PrimaryGeneratedColumn('uuid')
-    id!: number;
+    id!: string;
 
     @Column({ unique: true })
     email!: string;
 
-    @Column()
+    @Column({ select: false })
     password!: string;
 
     @Column()

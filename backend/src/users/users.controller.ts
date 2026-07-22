@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe } from "@nestjs/common";
+import { Controller, Get, Param, ParseIntPipe, ParseUUIDPipe } from "@nestjs/common";
 import { UsersService } from "./users.service";
 
 @Controller('users')
@@ -11,7 +11,7 @@ export class UserController {
     }
 
     @Get(':id')
-    findById(@Param('id', ParseIntPipe) id: number) {
+    findById(@Param('id', ParseUUIDPipe) id: number) {
         return this.usersService.findById(id);
     }
 }
