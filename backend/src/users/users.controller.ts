@@ -1,10 +1,11 @@
-import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../common/roles.guard";
 import { Roles } from "../common/roles.decorator";
 import { UserRole } from "../common/user-role.enum";
 import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { CreateUserDto } from "./dto/create-user.dto";
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -22,5 +23,10 @@ export class UserController {
     @Get(':id')
     findById(@Param('id') id: string) {
         return this.usersService.findById(id);
+    }
+
+    @Post('create')
+    create(@Body() createUserDto: CreateUserDto) {
+        return this.usersService.createByAdmin(createUserDto);
     }
 }
