@@ -28,7 +28,7 @@ export class UsersService {
             .getOne();
     }
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
+    async createWithHashedPassword(createUserDto: CreateUserDto): Promise<User> {
         const user = this.userRepository.create(createUserDto);
         return this.userRepository.save(user);
     }
@@ -48,6 +48,8 @@ export class UsersService {
             ...createUserDto,
             password: hashedPassword,
         });
-        return this.userRepository.save(user);
+        const savedUser = await this.userRepository.save(user);
+        const { password, ...result } = savedUser;
+        return result as User;
     }
 }
