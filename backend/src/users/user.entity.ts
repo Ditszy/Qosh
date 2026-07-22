@@ -9,11 +9,17 @@ export class User {
     @Column({ unique: true })
     email!: string;
 
+    @Column({ unique: true })
+    username!: string;
+
     @Column({ select: false })
     password!: string;
 
     @Column()
-    name!: string;
+    firstName!: string;
+
+    @Column()
+    lastName!: string;
 
     @Column({ type: 'enum', enum: UserRole, default: UserRole.PLAYER })
     role!: UserRole;

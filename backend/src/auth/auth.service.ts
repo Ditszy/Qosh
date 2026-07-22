@@ -18,6 +18,11 @@ export class AuthService {
             throw new ConflictException("Email already exists");
         }
 
+        const existingUsername = await this.usersService.findByUsername(registerDto.username);
+        if (existingUsername) {
+            throw new ConflictException("Username already exists");
+        }
+
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
         const user = await this.usersService.createWithHashedPassword({
             ...registerDto,
@@ -43,7 +48,14 @@ export class AuthService {
         const payload = { sub: user.id, email: user.email, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),
-            user: { id: user.id, email: user.email, name: user.name, role: user.role }
+            user: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+            }
         };
     }
 }

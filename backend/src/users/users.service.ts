@@ -20,6 +20,10 @@ export class UsersService {
         return this.userRepository.findOne({ where: { email } });
     }
 
+    async findByUsername(username: string): Promise<User | null> {
+        return this.userRepository.findOne({ where: { username } });
+    }
+
     async findByEmailWithPassword(email: string): Promise<User | null> {
         return this.userRepository
             .createQueryBuilder('user')
@@ -41,6 +45,11 @@ export class UsersService {
         const existing = await this.findByEmail(createUserDto.email);
         if (existing) {
             throw new ConflictException('User already exists');
+        }
+
+        const existingUsername = await this.findByUsername(createUserDto.username);
+        if (existingUsername) {
+            throw new ConflictException('Username already exists');
         }
 
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
