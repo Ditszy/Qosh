@@ -19,12 +19,20 @@ export class UsersService {
         return this.userRepository.findOne({ where: { email } });
     }
 
+    async findByEmailWithPassword(email: string): Promise<User | null> {
+        return this.userRepository
+            .createQueryBuilder('user')
+            .addSelect('user.password')
+            .where('user.email = :email', { email })
+            .getOne();
+    }
+
     async create(createUserDto: CreateUserDto): Promise<User> {
         const user = this.userRepository.create(createUserDto);
         return this.userRepository.save(user);
     }
 
-    async findById(id: number): Promise<User | null> {
+    async findById(id: string): Promise<User | null> {
         return this.userRepository.findOne({ where: { id } });
     }
 
