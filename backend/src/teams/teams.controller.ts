@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
@@ -26,5 +26,15 @@ export class TeamsController {
     @Roles(UserRole.PLAYER, UserRole.ADMIN)
     create(@Body() createTeamDto: CreateTeamDto, @Request() req: AuthenticatedRequest) {
         return this.teamsService.create(createTeamDto, req.user.id);
+    }
+
+    @Get('tournament/:tournamentId')
+    findByTournamentId(@Param('tournamentId') tournamentId: string) {
+        return this.teamsService.findByTournamentId(tournamentId);
+    }
+
+    @Get(':id')
+    findById(@Param('id') id: string) {
+        return this.teamsService.findById(id);
     }
 }

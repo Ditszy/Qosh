@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from 'typeorm';
 import { Tournament } from '../tournaments/tournament.entity';
+import { TeamMember } from './team-member.entity';
 
 @Entity('teams')
 @Unique(['tournamentId', 'name'])
@@ -16,6 +17,9 @@ export class Team {
     @ManyToOne(() => Tournament, { nullable: false })
     @JoinColumn({ name: 'tournamentId' })
     tournament!: Tournament;
+
+    @OneToMany(() => TeamMember, (member) => member.team)
+    members!: TeamMember[];
 
     @CreateDateColumn({ type: 'timestamptz' })
     createdAt!: Date;

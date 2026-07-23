@@ -80,4 +80,39 @@ export class TeamsService {
             return savedTeam;
         });
     }
+
+    async findByTournamentId(tournamentId: string): Promise<Team[]> {
+        const tournament = await this.tournamentRepository.findOne({
+            where: { id: tournamentId },
+        });
+
+        if (!tournament) {
+            throw new NotFoundException('Tournament not found');
+        }
+
+        return this.teamRepository
+            .createQueryBuilder('team')
+            .leftJoinAndSelect('team.members', 'member')
+            .leftJoinAndSelect('member.user', 'user')
+            .where('team.tournamentId = :tournamentId', { tournamentId })
+            .orderBy('team.createdAt', 'ASC')
+            .addOrderBy('member.joinedAt', 'ASC')
+            .getMany();
+    }
+
+    async findById(id: string): Promise<Team> {
+        const team = await this.teamRepository
+            .createQueryBuilder('team')
+            .leftJoinAndSelect('team.members', 'member')
+            .leftJoinAndSelect('member.user', 'user')
+            .where('team.id = :id', { id })
+            .orderBy('member.joinedAt', 'ASC')
+            .getOne();
+
+        if (!team) {
+            throw new NotFoundException('Team not found');
+        }
+
+        return team;
+    }
 }
