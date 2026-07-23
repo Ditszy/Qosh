@@ -43,8 +43,23 @@ export class TournamentsController {
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
-    update(@Param('id') id: string, @Body() updateTournamentDto: UpdateTournamentDto, @Request() req: AuthenticatedRequest,) {
+    update(
+        @Param('id') id: string,
+        @Body() updateTournamentDto: UpdateTournamentDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
         return this.tournamentsService.update(id, updateTournamentDto, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post(':id/open-signups')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+    openSignups(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.tournamentsService.openSignups(id, {
             id: req.user.id,
             role: req.user.role,
         });

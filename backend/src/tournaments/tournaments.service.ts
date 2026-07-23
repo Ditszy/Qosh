@@ -78,6 +78,20 @@ export class TournamentsService {
         return this.tournamentRepository.save(tournament);
     }
 
+    async openSignups(id: string, actor: TournamentActor): Promise<Tournament> {
+        const tournament = await this.findById(id);
+
+        this.ensureCanManageTournament(tournament, actor);
+
+        if (tournament.status !== TournamentStatus.DRAFT) {
+            throw new BadRequestException('Only draft tournaments can open signups');
+        }
+
+        tournament.status = TournamentStatus.SIGNUPS_OPEN;
+
+        return this.tournamentRepository.save(tournament);
+    }
+
     private ensureCanManageTournament(tournament: Tournament, actor: TournamentActor): void {
         if (actor.role === UserRole.ADMIN) {
             return;
