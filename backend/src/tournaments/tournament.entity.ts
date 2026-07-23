@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { User } from '../users/user.entity';
 import { TournamentStatus } from './tournament-status.enum';
 
 @Entity('tournaments')
@@ -24,9 +25,16 @@ export class Tournament {
     @Column({ type: 'enum', enum: TournamentStatus, default: TournamentStatus.DRAFT })
     status!: TournamentStatus;
 
-    @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    @Column({ type: 'uuid' })
+    organizerId!: string;
+
+    @ManyToOne(() => User, { nullable: false })
+    @JoinColumn({ name: 'organizerId' })
+    organizer!: User;
+
+    @CreateDateColumn({ type: 'timestamptz' })
     createdAt!: Date;
 
-    @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+    @UpdateDateColumn({ type: 'timestamptz' })
     updatedAt!: Date;
 }
