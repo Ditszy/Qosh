@@ -1,10 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UserRole } from '../common/user-role.enum';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
-import { Tournament } from './tournament.entity';
 import { TournamentStatus } from './tournament-status.enum';
 
 export type TournamentActor = {
@@ -12,35 +10,45 @@ export type TournamentActor = {
     role: UserRole;
 };
 
+type TournamentRecord = {
+    id: string;
+    name: string;
+    description: string | null;
+    location: string;
+    startsAt: Date;
+    maxTeams: number;
+    status: TournamentStatus;
+    organizerId: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
 @Injectable()
 export class TournamentsService {
-    constructor(
-        @InjectRepository(Tournament)
-        private readonly tournamentRepository: Repository<Tournament>,
-    ) { }
+    constructor(private readonly prisma: PrismaService) { }
 
-    async create(createTournamentDto: CreateTournamentDto, organizerId: string): Promise<Tournament> {
-        const tournament = this.tournamentRepository.create({
-            ...createTournamentDto,
-            description: createTournamentDto.description ?? null,
-            startsAt: new Date(createTournamentDto.startsAt),
-            organizerId,
-        });
-
-        return this.tournamentRepository.save(tournament);
-    }
-
-    async findAll(): Promise<Tournament[]> {
-        return this.tournamentRepository.find({
-            order: {
-                startsAt: 'ASC',
-                createdAt: 'DESC',
+    async create(createTournamentDto: CreateTournamentDto, organizerId: string): Promise<TournamentRecord> {
+        return this.prisma.tournament.create({
+            data: {
+                ...createTournamentDto,
+                description: createTournamentDto.description ?? null,
+                startsAt: new Date(createTournamentDto.startsAt),
+                organizerId,
             },
         });
     }
 
-    async findById(id: string): Promise<Tournament> {
-        const tournament = await this.tournamentRepository.findOne({ where: { id } });
+    async findAll(): Promise<TournamentRecord[]> {
+        return this.prisma.tournament.findMany({
+            orderBy: [
+                { startsAt: 'asc' },
+                { createdAt: 'desc' },
+            ],
+        });
+    }
+
+    async findById(id: string): Promise<TournamentRecord> {
+        const tournament = await this.prisma.tournament.findUnique({ where: { id } });
 
         if (!tournament) {
             throw new NotFoundException('Tournament not found');
@@ -49,36 +57,47 @@ export class TournamentsService {
         return tournament;
     }
 
-    async update(id: string, updateTournamentDto: UpdateTournamentDto, actor: TournamentActor): Promise<Tournament> {
+    async update(id: string, updateTournamentDto: UpdateTournamentDto, actor: TournamentActor): Promise<TournamentRecord> {
         const tournament = await this.findById(id);
 
         this.ensureCanManageTournament(tournament, actor);
         this.ensureTournamentCanBeEdited(tournament);
 
+        const data: {
+            name?: string;
+            description?: string | null;
+            location?: string;
+            startsAt?: Date;
+            maxTeams?: number;
+        } = {};
+
         if (updateTournamentDto.name !== undefined) {
-            tournament.name = updateTournamentDto.name;
+            data.name = updateTournamentDto.name;
         }
 
         if (updateTournamentDto.description !== undefined) {
-            tournament.description = updateTournamentDto.description;
+            data.description = updateTournamentDto.description;
         }
 
         if (updateTournamentDto.location !== undefined) {
-            tournament.location = updateTournamentDto.location;
+            data.location = updateTournamentDto.location;
         }
 
         if (updateTournamentDto.startsAt !== undefined) {
-            tournament.startsAt = new Date(updateTournamentDto.startsAt);
+            data.startsAt = new Date(updateTournamentDto.startsAt);
         }
 
         if (updateTournamentDto.maxTeams !== undefined) {
-            tournament.maxTeams = updateTournamentDto.maxTeams;
+            data.maxTeams = updateTournamentDto.maxTeams;
         }
 
-        return this.tournamentRepository.save(tournament);
+        return this.prisma.tournament.update({
+            where: { id },
+            data,
+        });
     }
 
-    async openSignups(id: string, actor: TournamentActor): Promise<Tournament> {
+    async openSignups(id: string, actor: TournamentActor): Promise<TournamentRecord> {
         const tournament = await this.findById(id);
 
         this.ensureCanManageTournament(tournament, actor);
@@ -87,12 +106,13 @@ export class TournamentsService {
             throw new BadRequestException('Only draft tournaments can open signups');
         }
 
-        tournament.status = TournamentStatus.SIGNUPS_OPEN;
-
-        return this.tournamentRepository.save(tournament);
+        return this.prisma.tournament.update({
+            where: { id },
+            data: { status: TournamentStatus.SIGNUPS_OPEN },
+        });
     }
 
-    async lockSignups(id: string, actor: TournamentActor): Promise<Tournament> {
+    async lockSignups(id: string, actor: TournamentActor): Promise<TournamentRecord> {
         const tournament = await this.findById(id);
 
         this.ensureCanManageTournament(tournament, actor);
@@ -101,12 +121,13 @@ export class TournamentsService {
             throw new BadRequestException('Only tournaments with open signups can lock signups');
         }
 
-        tournament.status = TournamentStatus.SIGNUPS_LOCKED;
-
-        return this.tournamentRepository.save(tournament);
+        return this.prisma.tournament.update({
+            where: { id },
+            data: { status: TournamentStatus.SIGNUPS_LOCKED },
+        });
     }
 
-    private ensureCanManageTournament(tournament: Tournament, actor: TournamentActor): void {
+    private ensureCanManageTournament(tournament: TournamentRecord, actor: TournamentActor): void {
         if (actor.role === UserRole.ADMIN) {
             return;
         }
@@ -116,8 +137,8 @@ export class TournamentsService {
         }
     }
 
-    private ensureTournamentCanBeEdited(tournament: Tournament): void {
-        const editableStatuses = [TournamentStatus.DRAFT, TournamentStatus.SIGNUPS_OPEN];
+    private ensureTournamentCanBeEdited(tournament: TournamentRecord): void {
+        const editableStatuses: TournamentStatus[] = [TournamentStatus.DRAFT, TournamentStatus.SIGNUPS_OPEN];
 
         if (!editableStatuses.includes(tournament.status)) {
             throw new BadRequestException('Tournament cannot be edited after signups are locked');

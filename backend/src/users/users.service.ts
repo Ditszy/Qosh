@@ -1,47 +1,75 @@
 import { ConflictException, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "./user.entity";
-import { Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from "bcryptjs";
+import { PrismaService } from "../prisma/prisma.service";
+import { UserRole } from "../common/user-role.enum";
+
+export type PublicUser = {
+    id: string;
+    email: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    role: UserRole;
+};
+
+type UserWithPassword = PublicUser & {
+    password: string;
+};
+
+export const publicUserSelect = {
+    id: true,
+    email: true,
+    username: true,
+    firstName: true,
+    lastName: true,
+    role: true,
+};
 
 @Injectable()
 export class UsersService {
-    constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>
-    ) { }
+    constructor(private readonly prisma: PrismaService) { }
 
-    async findAll(): Promise<User[]> {
-        return this.userRepository.find();
+    async findAll(): Promise<PublicUser[]> {
+        return this.prisma.user.findMany({
+            select: publicUserSelect,
+        });
     }
 
-    async findByEmail(email: string): Promise<User | null> {
-        return this.userRepository.findOne({ where: { email } });
+    async findByEmail(email: string): Promise<PublicUser | null> {
+        return this.prisma.user.findUnique({
+            where: { email },
+            select: publicUserSelect,
+        });
     }
 
-    async findByUsername(username: string): Promise<User | null> {
-        return this.userRepository.findOne({ where: { username } });
+    async findByUsername(username: string): Promise<PublicUser | null> {
+        return this.prisma.user.findUnique({
+            where: { username },
+            select: publicUserSelect,
+        });
     }
 
-    async findByEmailWithPassword(email: string): Promise<User | null> {
-        return this.userRepository
-            .createQueryBuilder('user')
-            .addSelect('user.password')
-            .where('user.email = :email', { email })
-            .getOne();
+    async findByEmailWithPassword(email: string): Promise<UserWithPassword | null> {
+        return this.prisma.user.findUnique({
+            where: { email },
+        });
     }
 
-    async createWithHashedPassword(createUserDto: CreateUserDto): Promise<User> {
-        const user = this.userRepository.create(createUserDto);
-        return this.userRepository.save(user);
+    async createWithHashedPassword(createUserDto: CreateUserDto): Promise<UserWithPassword> {
+        return this.prisma.user.create({
+            data: createUserDto,
+        });
     }
 
-    async findById(id: string): Promise<User | null> {
-        return this.userRepository.findOne({ where: { id } });
+    async findById(id: string): Promise<PublicUser | null> {
+        return this.prisma.user.findUnique({
+            where: { id },
+            select: publicUserSelect,
+        });
     }
 
-    async createByAdmin(createUserDto: CreateUserDto): Promise<User> {
+    async createByAdmin(createUserDto: CreateUserDto): Promise<PublicUser> {
         const existing = await this.findByEmail(createUserDto.email);
         if (existing) {
             throw new ConflictException('User already exists');
@@ -53,12 +81,12 @@ export class UsersService {
         }
 
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-        const user = this.userRepository.create({
-            ...createUserDto,
-            password: hashedPassword,
+        return this.prisma.user.create({
+            data: {
+                ...createUserDto,
+                password: hashedPassword,
+            },
+            select: publicUserSelect,
         });
-        const savedUser = await this.userRepository.save(user);
-        const { password, ...result } = savedUser;
-        return result as User;
     }
 }

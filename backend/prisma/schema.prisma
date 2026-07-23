@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  PLAYER
+  ORGANIZER
+  REFEREE
+  SCORER
+  ADMIN
+}
+
+enum TournamentStatus {
+  DRAFT
+  SIGNUPS_OPEN
+  SIGNUPS_LOCKED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TeamMemberRole {
+  CAPTAIN
+  MEMBER
+}
+
+enum TeamInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+model User {
+  id             String       @id @default(uuid()) @db.Uuid
+  email          String       @unique
+  username       String       @unique
+  password       String
+  firstName      String
+  lastName       String
+  role           UserRole     @default(PLAYER)
+  tournaments    Tournament[]
+  teamMembers    TeamMember[]
+  invitedToTeams TeamInvite[] @relation("InvitedUser")
+  sentInvites    TeamInvite[] @relation("Inviter")
+
+  @@map("users")
+}
+
+model Tournament {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  location    String
+  startsAt    DateTime         @db.Timestamptz
+  maxTeams    Int              @default(8)
+  status      TournamentStatus @default(DRAFT)
+  organizerId String           @db.Uuid
+  organizer   User             @relation(fields: [organizerId], references: [id])
+  teams       Team[]
+  createdAt   DateTime         @default(now()) @db.Timestamptz
+  updatedAt   DateTime         @updatedAt @db.Timestamptz
+
+  @@map("tournaments")
+}
+
+model Team {
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String
+  tournamentId String       @db.Uuid
+  tournament   Tournament   @relation(fields: [tournamentId], references: [id])
+  members      TeamMember[]
+  invites      TeamInvite[]
+  createdAt    DateTime     @default(now()) @db.Timestamptz
+  updatedAt    DateTime     @updatedAt @db.Timestamptz
+
+  @@unique([tournamentId, name])
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String         @id @default(uuid()) @db.Uuid
+  teamId   String         @db.Uuid
+  team     Team           @relation(fields: [teamId], references: [id])
+  userId   String         @db.Uuid
+  user     User           @relation(fields: [userId], references: [id])
+  role     TeamMemberRole @default(MEMBER)
+  joinedAt DateTime       @default(now()) @db.Timestamptz
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model TeamInvite {
+  id            String           @id @default(uuid()) @db.Uuid
+  teamId        String           @db.Uuid
+  team          Team             @relation(fields: [teamId], references: [id])
+  invitedUserId String           @db.Uuid
+  invitedUser   User             @relation("InvitedUser", fields: [invitedUserId], references: [id])
+  inviterId     String           @db.Uuid
+  inviter       User             @relation("Inviter", fields: [inviterId], references: [id])
+  status        TeamInviteStatus @default(PENDING)
+  createdAt     DateTime         @default(now()) @db.Timestamptz
+  respondedAt   DateTime?        @db.Timestamptz
+
+  @@index([teamId, invitedUserId], map: "IDX_team_invite_pending_user")
+  @@map("team_invites")
+}

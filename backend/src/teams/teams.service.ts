@@ -1,26 +1,36 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { TournamentStatus } from '../tournaments/tournament-status.enum';
-import { Tournament } from '../tournaments/tournament.entity';
+import { PrismaService } from '../prisma/prisma.service';
+import { PublicUser, publicUserSelect } from '../users/users.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { TeamMemberRole } from './team-member-role.enum';
-import { TeamMember } from './team-member.entity';
-import { Team } from './team.entity';
+
+type TeamRecord = {
+    id: string;
+    name: string;
+    tournamentId: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+type TeamMemberRecord = {
+    id: string;
+    teamId: string;
+    userId: string;
+    role: TeamMemberRole;
+    joinedAt: Date;
+};
+
+type TeamWithMembers = TeamRecord & {
+    members: Array<TeamMemberRecord & { user: PublicUser }>;
+};
 
 @Injectable()
 export class TeamsService {
-    constructor(
-        @InjectRepository(Team)
-        private readonly teamRepository: Repository<Team>,
-        @InjectRepository(TeamMember)
-        private readonly teamMemberRepository: Repository<TeamMember>,
-        @InjectRepository(Tournament)
-        private readonly tournamentRepository: Repository<Tournament>,
-    ) { }
+    constructor(private readonly prisma: PrismaService) { }
 
-    async create(createTeamDto: CreateTeamDto, captainId: string): Promise<Team> {
-        const tournament = await this.tournamentRepository.findOne({
+    async create(createTeamDto: CreateTeamDto, captainId: string): Promise<TeamRecord> {
+        const tournament = await this.prisma.tournament.findUnique({
             where: { id: createTeamDto.tournamentId },
         });
 
@@ -32,7 +42,7 @@ export class TeamsService {
             throw new BadRequestException('Team registration is only available while signups are open');
         }
 
-        const existingTeam = await this.teamRepository.findOne({
+        const existingTeam = await this.prisma.team.findFirst({
             where: {
                 tournamentId: createTeamDto.tournamentId,
                 name: createTeamDto.name,
@@ -43,7 +53,7 @@ export class TeamsService {
             throw new ConflictException('Team name already exists in this tournament');
         }
 
-        const registeredTeamCount = await this.teamRepository.count({
+        const registeredTeamCount = await this.prisma.team.count({
             where: { tournamentId: createTeamDto.tournamentId },
         });
 
@@ -51,38 +61,37 @@ export class TeamsService {
             throw new BadRequestException('Tournament has reached the maximum number of teams');
         }
 
-        const existingMembership = await this.teamMemberRepository
-            .createQueryBuilder('teamMember')
-            .innerJoin('teamMember.team', 'team')
-            .where('teamMember.userId = :captainId', { captainId })
-            .andWhere('team.tournamentId = :tournamentId', { tournamentId: createTeamDto.tournamentId })
-            .getOne();
+        const existingMembership = await this.prisma.teamMember.findFirst({
+            where: {
+                userId: captainId,
+                team: {
+                    tournamentId: createTeamDto.tournamentId,
+                },
+            },
+        });
 
         if (existingMembership) {
             throw new ConflictException('Player is already registered in this tournament');
         }
 
-        return this.teamRepository.manager.transaction(async (entityManager) => {
-            const team = entityManager.create(Team, {
-                name: createTeamDto.name,
-                tournamentId: createTeamDto.tournamentId,
+        return this.prisma.$transaction(async (tx) => {
+            return tx.team.create({
+                data: {
+                    name: createTeamDto.name,
+                    tournamentId: createTeamDto.tournamentId,
+                    members: {
+                        create: {
+                            userId: captainId,
+                            role: TeamMemberRole.CAPTAIN,
+                        },
+                    },
+                },
             });
-            const savedTeam = await entityManager.save(team);
-
-            const captainMembership = entityManager.create(TeamMember, {
-                teamId: savedTeam.id,
-                userId: captainId,
-                role: TeamMemberRole.CAPTAIN,
-            });
-
-            await entityManager.save(captainMembership);
-
-            return savedTeam;
         });
     }
 
-    async findByTournamentId(tournamentId: string): Promise<Team[]> {
-        const tournament = await this.tournamentRepository.findOne({
+    async findByTournamentId(tournamentId: string): Promise<TeamWithMembers[]> {
+        const tournament = await this.prisma.tournament.findUnique({
             where: { id: tournamentId },
         });
 
@@ -90,24 +99,42 @@ export class TeamsService {
             throw new NotFoundException('Tournament not found');
         }
 
-        return this.teamRepository
-            .createQueryBuilder('team')
-            .leftJoinAndSelect('team.members', 'member')
-            .leftJoinAndSelect('member.user', 'user')
-            .where('team.tournamentId = :tournamentId', { tournamentId })
-            .orderBy('team.createdAt', 'ASC')
-            .addOrderBy('member.joinedAt', 'ASC')
-            .getMany();
+        return this.prisma.team.findMany({
+            where: { tournamentId },
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: publicUserSelect,
+                        },
+                    },
+                    orderBy: {
+                        joinedAt: 'asc',
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'asc',
+            },
+        });
     }
 
-    async findById(id: string): Promise<Team> {
-        const team = await this.teamRepository
-            .createQueryBuilder('team')
-            .leftJoinAndSelect('team.members', 'member')
-            .leftJoinAndSelect('member.user', 'user')
-            .where('team.id = :id', { id })
-            .orderBy('member.joinedAt', 'ASC')
-            .getOne();
+    async findById(id: string): Promise<TeamWithMembers> {
+        const team = await this.prisma.team.findUnique({
+            where: { id },
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: publicUserSelect,
+                        },
+                    },
+                    orderBy: {
+                        joinedAt: 'asc',
+                    },
+                },
+            },
+        });
 
         if (!team) {
             throw new NotFoundException('Team not found');
