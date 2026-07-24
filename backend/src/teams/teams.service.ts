@@ -352,6 +352,39 @@ export class TeamsService {
         });
     }
 
+    async removeMember(teamId: string, memberId: string, actor: TeamActor): Promise<TeamWithMembers> {
+        const team = await this.prisma.team.findUnique({
+            where: { id: teamId },
+            include: {
+                tournament: true,
+                members: true,
+            },
+        });
+
+        if (!team) {
+            throw new NotFoundException('Team not found');
+        }
+
+        this.ensureSignupsOpen(team.tournament.status);
+        this.ensureCanManageTeam(team, actor);
+
+        const member = team.members.find((teamMember) => teamMember.id === memberId);
+
+        if (!member) {
+            throw new NotFoundException('Team member not found');
+        }
+
+        if (member.role === TeamMemberRole.CAPTAIN) {
+            throw new BadRequestException('Team captain cannot be removed');
+        }
+
+        await this.prisma.teamMember.delete({
+            where: { id: memberId },
+        });
+
+        return this.findById(teamId);
+    }
+
     private async findPendingInviteForResponse(inviteId: string, userId: string): Promise<TeamInviteRecord> {
         const invite = await this.prisma.teamInvite.findUnique({
             where: { id: inviteId },
@@ -391,7 +424,7 @@ export class TeamsService {
         });
 
         if (!captainMembership) {
-            throw new ForbiddenException('Only team captains can manage team invites');
+            throw new ForbiddenException('Only team captains can manage this team');
         }
     }
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
@@ -72,6 +72,21 @@ export class TeamsController {
     @Roles(UserRole.PLAYER, UserRole.ADMIN)
     cancelInvite(@Param('inviteId') inviteId: string, @Request() req: AuthenticatedRequest) {
         return this.teamsService.cancelInvite(inviteId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Delete(':teamId/members/:memberId')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    removeMember(
+        @Param('teamId') teamId: string,
+        @Param('memberId') memberId: string,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.teamsService.removeMember(teamId, memberId, {
             id: req.user.id,
             role: req.user.role,
         });
