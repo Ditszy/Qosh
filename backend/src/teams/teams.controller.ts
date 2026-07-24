@@ -5,6 +5,7 @@ import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { SendTeamInviteDto } from './dto/send-team-invite.dto';
 import { TeamsService } from './teams.service';
 
 type AuthenticatedRequest = {
@@ -26,6 +27,54 @@ export class TeamsController {
     @Roles(UserRole.PLAYER, UserRole.ADMIN)
     create(@Body() createTeamDto: CreateTeamDto, @Request() req: AuthenticatedRequest) {
         return this.teamsService.create(createTeamDto, req.user.id);
+    }
+
+    @Post(':teamId/invites')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    sendInvite(
+        @Param('teamId') teamId: string,
+        @Body() sendTeamInviteDto: SendTeamInviteDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.teamsService.sendInvite(teamId, sendTeamInviteDto, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('invites/:inviteId/accept')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER)
+    acceptInvite(@Param('inviteId') inviteId: string, @Request() req: AuthenticatedRequest) {
+        return this.teamsService.acceptInvite(inviteId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('invites/:inviteId/decline')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER)
+    declineInvite(@Param('inviteId') inviteId: string, @Request() req: AuthenticatedRequest) {
+        return this.teamsService.declineInvite(inviteId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('invites/:inviteId/cancel')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    cancelInvite(@Param('inviteId') inviteId: string, @Request() req: AuthenticatedRequest) {
+        return this.teamsService.cancelInvite(inviteId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
     }
 
     @Get('tournament/:tournamentId')
