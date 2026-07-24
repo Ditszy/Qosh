@@ -35,18 +35,33 @@ enum TeamInviteStatus {
   CANCELLED
 }
 
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINAL
+}
+
+enum MatchClockStatus {
+  NOT_STARTED
+  RUNNING
+  PAUSED
+  ENDED
+}
+
 model User {
-  id             String       @id @default(uuid()) @db.Uuid
-  email          String       @unique
-  username       String       @unique
-  password       String
-  firstName      String
-  lastName       String
-  role           UserRole     @default(PLAYER)
-  tournaments    Tournament[]
-  teamMembers    TeamMember[]
-  invitedToTeams TeamInvite[] @relation("InvitedUser")
-  sentInvites    TeamInvite[] @relation("Inviter")
+  id                     String       @id @default(uuid()) @db.Uuid
+  email                  String       @unique
+  username               String       @unique
+  password               String
+  firstName              String
+  lastName               String
+  role                   UserRole     @default(PLAYER)
+  tournaments            Tournament[]
+  teamMembers            TeamMember[]
+  invitedToTeams         TeamInvite[] @relation("InvitedUser")
+  sentInvites            TeamInvite[] @relation("Inviter")
+  assignedScoringMatches Match[]      @relation("AssignedScorer")
+  assignedRefereeMatches Match[]      @relation("AssignedReferee")
 
   @@map("users")
 }
@@ -62,6 +77,7 @@ model Tournament {
   organizerId String           @db.Uuid
   organizer   User             @relation(fields: [organizerId], references: [id])
   teams       Team[]
+  matches     Match[]
   createdAt   DateTime         @default(now()) @db.Timestamptz
   updatedAt   DateTime         @updatedAt @db.Timestamptz
 
@@ -75,6 +91,9 @@ model Team {
   tournament   Tournament   @relation(fields: [tournamentId], references: [id])
   members      TeamMember[]
   invites      TeamInvite[]
+  matchesAsA   Match[]      @relation("MatchTeamA")
+  matchesAsB   Match[]      @relation("MatchTeamB")
+  wonMatches   Match[]      @relation("MatchWinner")
   createdAt    DateTime     @default(now()) @db.Timestamptz
   updatedAt    DateTime     @updatedAt @db.Timestamptz
 
@@ -109,4 +128,41 @@ model TeamInvite {
 
   @@index([teamId, invitedUserId], map: "IDX_team_invite_pending_user")
   @@map("team_invites")
+}
+
+model Match {
+  id                    String           @id @default(uuid()) @db.Uuid
+  tournamentId          String           @db.Uuid
+  tournament            Tournament       @relation(fields: [tournamentId], references: [id])
+  round                 Int
+  bracketPosition       Int
+  teamAId               String?          @db.Uuid
+  teamA                 Team?            @relation("MatchTeamA", fields: [teamAId], references: [id])
+  teamBId               String?          @db.Uuid
+  teamB                 Team?            @relation("MatchTeamB", fields: [teamBId], references: [id])
+  winnerTeamId          String?          @db.Uuid
+  winnerTeam            Team?            @relation("MatchWinner", fields: [winnerTeamId], references: [id])
+  scorerId              String?          @db.Uuid
+  scorer                User?            @relation("AssignedScorer", fields: [scorerId], references: [id])
+  refereeId             String?          @db.Uuid
+  referee               User?            @relation("AssignedReferee", fields: [refereeId], references: [id])
+  scheduledAt           DateTime?        @db.Timestamptz
+  location              String?
+  status                MatchStatus      @default(SCHEDULED)
+  teamAScore            Int              @default(0)
+  teamBScore            Int              @default(0)
+  clockStatus           MatchClockStatus @default(NOT_STARTED)
+  clockDurationSeconds  Int              @default(600)
+  clockRemainingSeconds Int              @default(600)
+  clockLastStartedAt    DateTime?        @db.Timestamptz
+  createdAt             DateTime         @default(now()) @db.Timestamptz
+  updatedAt             DateTime         @updatedAt @db.Timestamptz
+
+  @@unique([tournamentId, round, bracketPosition])
+  @@index([tournamentId, status])
+  @@index([teamAId])
+  @@index([teamBId])
+  @@index([scorerId])
+  @@index([refereeId])
+  @@map("matches")
 }
