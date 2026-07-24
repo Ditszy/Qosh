@@ -1,9 +1,10 @@
-import { Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { UserRole } from '../common/user-role.enum';
+import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchesService } from './matches.service';
 
 type AuthenticatedRequest = {
@@ -35,6 +36,21 @@ export class MatchesController {
     @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
     generateBracket(@Param('tournamentId') tournamentId: string, @Request() req: AuthenticatedRequest) {
         return this.matchesService.generateBracket(tournamentId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Patch('matches/:id/schedule')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+    schedule(
+        @Param('id') id: string,
+        @Body() scheduleMatchDto: ScheduleMatchDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.matchesService.schedule(id, scheduleMatchDto, {
             id: req.user.id,
             role: req.user.role,
         });
