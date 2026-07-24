@@ -3,6 +3,7 @@ import { UserRole } from '../common/user-role.enum';
 import { PrismaService } from '../prisma/prisma.service';
 import { TournamentStatus } from '../tournaments/tournament-status.enum';
 import { PublicUser, publicUserSelect } from '../users/users.service';
+import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchClockStatus } from './match-clock-status.enum';
 import { MatchStatus } from './match-status.enum';
 
@@ -215,6 +216,62 @@ export class MatchesService {
         return match;
     }
 
+    async schedule(id: string, scheduleMatchDto: ScheduleMatchDto, actor: MatchActor): Promise<MatchWithRelations> {
+        const match = await this.prisma.match.findUnique({
+            where: { id },
+            include: {
+                tournament: true,
+            },
+        });
+
+        if (!match) {
+            throw new NotFoundException('Match not found');
+        }
+
+        this.ensureCanManageTournament(match.tournament, actor);
+
+        if (match.status === MatchStatus.FINAL) {
+            throw new BadRequestException('Final matches cannot be scheduled');
+        }
+
+        if (scheduleMatchDto.scorerId !== undefined) {
+            await this.ensureUserHasRole(scheduleMatchDto.scorerId, UserRole.SCORER, 'Scorer not found');
+        }
+
+        if (scheduleMatchDto.refereeId !== undefined) {
+            await this.ensureUserHasRole(scheduleMatchDto.refereeId, UserRole.REFEREE, 'Referee not found');
+        }
+
+        const data: {
+            scheduledAt?: Date;
+            location?: string;
+            scorerId?: string;
+            refereeId?: string;
+        } = {};
+
+        if (scheduleMatchDto.scheduledAt !== undefined) {
+            data.scheduledAt = new Date(scheduleMatchDto.scheduledAt);
+        }
+
+        if (scheduleMatchDto.location !== undefined) {
+            data.location = scheduleMatchDto.location;
+        }
+
+        if (scheduleMatchDto.scorerId !== undefined) {
+            data.scorerId = scheduleMatchDto.scorerId;
+        }
+
+        if (scheduleMatchDto.refereeId !== undefined) {
+            data.refereeId = scheduleMatchDto.refereeId;
+        }
+
+        return this.prisma.match.update({
+            where: { id },
+            data,
+            include: this.matchInclude(),
+        });
+    }
+
     private ensureCanManageTournament(
         tournament: { organizerId: string },
         actor: MatchActor,
@@ -225,6 +282,23 @@ export class MatchesService {
 
         if (tournament.organizerId !== actor.id) {
             throw new ForbiddenException('You can only manage tournaments you own');
+        }
+    }
+
+    private async ensureUserHasRole(userId: string, role: UserRole, notFoundMessage: string): Promise<void> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                role: true,
+            },
+        });
+
+        if (!user) {
+            throw new NotFoundException(notFoundMessage);
+        }
+
+        if (user.role !== role) {
+            throw new BadRequestException(`User must have ${role} role`);
         }
     }
 
