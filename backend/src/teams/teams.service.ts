@@ -56,6 +56,25 @@ type TeamInviteWithUsers = TeamInviteRecord & {
     inviter: PublicUser;
 };
 
+type TournamentSummary = {
+    id: string;
+    name: string;
+    description: string | null;
+    location: string;
+    startsAt: Date;
+    maxTeams: number;
+    status: TournamentStatus;
+    organizerId: string;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
+type TeamInviteWithTeam = TeamInviteWithUsers & {
+    team: TeamRecord & {
+        tournament: TournamentSummary;
+    };
+};
+
 @Injectable()
 export class TeamsService {
     constructor(private readonly prisma: PrismaService) { }
@@ -352,6 +371,45 @@ export class TeamsService {
         });
     }
 
+    async findMyPendingInvites(userId: string): Promise<TeamInviteWithTeam[]> {
+        return this.prisma.teamInvite.findMany({
+            where: {
+                invitedUserId: userId,
+                status: TeamInviteStatus.PENDING,
+            },
+            include: this.teamInviteWithTeamInclude(),
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+
+    async findPendingInvitesByTeam(teamId: string, actor: TeamActor): Promise<TeamInviteWithUsers[]> {
+        const team = await this.prisma.team.findUnique({
+            where: { id: teamId },
+            include: {
+                members: true,
+            },
+        });
+
+        if (!team) {
+            throw new NotFoundException('Team not found');
+        }
+
+        this.ensureCanManageTeam(team, actor);
+
+        return this.prisma.teamInvite.findMany({
+            where: {
+                teamId,
+                status: TeamInviteStatus.PENDING,
+            },
+            include: this.teamInviteInclude(),
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+
     async removeMember(teamId: string, memberId: string, actor: TeamActor): Promise<TeamWithMembers> {
         const team = await this.prisma.team.findUnique({
             where: { id: teamId },
@@ -435,6 +493,17 @@ export class TeamsService {
             },
             inviter: {
                 select: publicUserSelect,
+            },
+        };
+    }
+
+    private teamInviteWithTeamInclude() {
+        return {
+            ...this.teamInviteInclude(),
+            team: {
+                include: {
+                    tournament: true,
+                },
             },
         };
     }

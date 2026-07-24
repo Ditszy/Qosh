@@ -77,6 +77,25 @@ export class TeamsController {
         });
     }
 
+    @Get('invites/me')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER)
+    findMyPendingInvites(@Request() req: AuthenticatedRequest) {
+        return this.teamsService.findMyPendingInvites(req.user.id);
+    }
+
+    @Get(':teamId/invites')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    findPendingInvitesByTeam(@Param('teamId') teamId: string, @Request() req: AuthenticatedRequest) {
+        return this.teamsService.findPendingInvitesByTeam(teamId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
     @Delete(':teamId/members/:memberId')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
