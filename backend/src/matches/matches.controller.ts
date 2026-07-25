@@ -136,4 +136,15 @@ export class MatchesController {
             role: req.user.role,
         });
     }
+
+    @Post('matches/:id/finalize')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    finalize(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.matchesService.finalize(id, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
 }

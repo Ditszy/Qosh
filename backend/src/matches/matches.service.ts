@@ -5,6 +5,7 @@ import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchBracketService } from './match-bracket.service';
 import { MatchClockService } from './match-clock.service';
 import { MatchEventsService } from './match-events.service';
+import { MatchFinalizationService } from './match-finalization.service';
 import { MatchSchedulingService } from './match-scheduling.service';
 import { MatchesReadService } from './matches-read.service';
 import { MatchActor, MatchWithRelations } from './types/match.types';
@@ -15,6 +16,7 @@ export class MatchesService {
         private readonly matchBracketService: MatchBracketService,
         private readonly matchClockService: MatchClockService,
         private readonly matchEventsService: MatchEventsService,
+        private readonly matchFinalizationService: MatchFinalizationService,
         private readonly matchSchedulingService: MatchSchedulingService,
         private readonly matchesReadService: MatchesReadService,
     ) { }
@@ -65,5 +67,9 @@ export class MatchesService {
 
     async findEventsByMatchId(matchId: string) {
         return this.matchEventsService.findByMatchId(matchId);
+    }
+
+    async finalize(id: string, actor: MatchActor): Promise<MatchWithRelations> {
+        return this.matchFinalizationService.finalize(id, actor);
     }
 }

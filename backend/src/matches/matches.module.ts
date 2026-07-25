@@ -3,6 +3,7 @@ import { MatchAccessService } from './match-access.service';
 import { MatchBracketService } from './match-bracket.service';
 import { MatchClockService } from './match-clock.service';
 import { MatchEventsService } from './match-events.service';
+import { MatchFinalizationService } from './match-finalization.service';
 import { MatchSchedulingService } from './match-scheduling.service';
 import { MatchesController } from './matches.controller';
 import { MatchesReadService } from './matches-read.service';
@@ -15,6 +16,7 @@ import { MatchesService } from './matches.service';
         MatchBracketService,
         MatchClockService,
         MatchEventsService,
+        MatchFinalizationService,
         MatchSchedulingService,
         MatchesReadService,
         MatchesService,
