@@ -26,6 +26,10 @@ export class MatchAccessService {
         this.ensureCanOperateAssignedMatch(match, actor, 'You can only record events for matches assigned to you');
     }
 
+    ensureCanFinalizeMatch(match: { scorerId: string | null }, actor: MatchActor): void {
+        this.ensureCanOperateAssignedMatch(match, actor, 'You can only finalize matches assigned to you');
+    }
+
     private ensureCanOperateAssignedMatch(
         match: { scorerId: string | null },
         actor: MatchActor,
