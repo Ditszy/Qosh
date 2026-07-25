@@ -19,12 +19,24 @@ export class MatchAccessService {
     }
 
     ensureCanOperateMatchClock(match: { scorerId: string | null }, actor: MatchActor): void {
+        this.ensureCanOperateAssignedMatch(match, actor, 'You can only operate matches assigned to you');
+    }
+
+    ensureCanRecordMatchEvent(match: { scorerId: string | null }, actor: MatchActor): void {
+        this.ensureCanOperateAssignedMatch(match, actor, 'You can only record events for matches assigned to you');
+    }
+
+    private ensureCanOperateAssignedMatch(
+        match: { scorerId: string | null },
+        actor: MatchActor,
+        forbiddenMessage: string,
+    ): void {
         if (actor.role === UserRole.ADMIN) {
             return;
         }
 
         if (match.scorerId !== actor.id) {
-            throw new ForbiddenException('You can only operate matches assigned to you');
+            throw new ForbiddenException(forbiddenMessage);
         }
     }
 
