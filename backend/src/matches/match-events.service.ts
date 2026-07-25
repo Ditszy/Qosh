@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { publicUserSelect } from '../users/users.service';
 import { CreateMatchEventDto } from './dto/create-match-event.dto';
 import { MatchAccessService } from './match-access.service';
+import { MatchEventType } from './match-event-type.enum';
 import { MatchStatus } from './match-status.enum';
 import { MatchActor } from './types/match.types';
 
@@ -21,6 +22,8 @@ export class MatchEventsService {
                 status: true,
                 teamAId: true,
                 teamBId: true,
+                teamAScore: true,
+                teamBScore: true,
                 scorerId: true,
             },
         });
@@ -57,18 +60,31 @@ export class MatchEventsService {
             }
         }
 
-        return this.prisma.matchEvent.create({
-            data: {
-                matchId,
-                teamId: createMatchEventDto.teamId,
-                playerId: createMatchEventDto.playerId,
-                scorerId: actor.id,
-                type: createMatchEventDto.type,
-                occurredAt: createMatchEventDto.occurredAt
-                    ? new Date(createMatchEventDto.occurredAt)
-                    : new Date(),
-            },
-            include: this.matchEventInclude(),
+        const pointValue = this.getPointValue(createMatchEventDto.type);
+
+        return this.prisma.$transaction(async (tx) => {
+            const event = await tx.matchEvent.create({
+                data: {
+                    matchId,
+                    teamId: createMatchEventDto.teamId,
+                    playerId: createMatchEventDto.playerId,
+                    scorerId: actor.id,
+                    type: createMatchEventDto.type,
+                    occurredAt: createMatchEventDto.occurredAt
+                        ? new Date(createMatchEventDto.occurredAt)
+                        : new Date(),
+                },
+                include: this.matchEventInclude(),
+            });
+
+            if (pointValue > 0) {
+                await tx.match.update({
+                    where: { id: matchId },
+                    data: this.getScoreIncrementData(match, createMatchEventDto.teamId, pointValue),
+                });
+            }
+
+            return event;
         });
     }
 
@@ -104,5 +120,40 @@ export class MatchEventsService {
                 select: publicUserSelect,
             },
         };
+    }
+
+    private getPointValue(type: MatchEventType): number {
+        if (type === MatchEventType.ONE_POINT_MADE || type === MatchEventType.FREE_THROW_MADE) {
+            return 1;
+        }
+
+        if (type === MatchEventType.TWO_POINT_MADE) {
+            return 2;
+        }
+
+        return 0;
+    }
+
+    private getScoreIncrementData(
+        match: { teamAId: string | null; teamBId: string | null },
+        teamId: string,
+        pointValue: number) {
+        if (teamId === match.teamAId) {
+            return {
+                teamAScore: {
+                    increment: pointValue,
+                },
+            };
+        }
+
+        if (teamId === match.teamBId) {
+            return {
+                teamBScore: {
+                    increment: pointValue,
+                },
+            };
+        }
+
+        throw new BadRequestException('Event team must be one of the teams in the match');
     }
 }
