@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
+import { CreateMatchEventDto } from './dto/create-match-event.dto';
 import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchBracketService } from './match-bracket.service';
 import { MatchClockService } from './match-clock.service';
+import { MatchEventsService } from './match-events.service';
 import { MatchSchedulingService } from './match-scheduling.service';
 import { MatchesReadService } from './matches-read.service';
 import { MatchActor, MatchWithRelations } from './types/match.types';
@@ -12,6 +14,7 @@ export class MatchesService {
     constructor(
         private readonly matchBracketService: MatchBracketService,
         private readonly matchClockService: MatchClockService,
+        private readonly matchEventsService: MatchEventsService,
         private readonly matchSchedulingService: MatchSchedulingService,
         private readonly matchesReadService: MatchesReadService,
     ) { }
@@ -54,5 +57,13 @@ export class MatchesService {
 
     async endClock(id: string, actor: MatchActor): Promise<MatchWithRelations> {
         return this.matchClockService.endClock(id, actor);
+    }
+
+    async createEvent(matchId: string, createMatchEventDto: CreateMatchEventDto, actor: MatchActor) {
+        return this.matchEventsService.create(matchId, createMatchEventDto, actor);
+    }
+
+    async findEventsByMatchId(matchId: string) {
+        return this.matchEventsService.findByMatchId(matchId);
     }
 }

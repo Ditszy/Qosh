@@ -5,6 +5,7 @@ import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
+import { CreateMatchEventDto } from './dto/create-match-event.dto';
 import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchesService } from './matches.service';
 
@@ -29,6 +30,11 @@ export class MatchesController {
     @Get('tournaments/:tournamentId/matches')
     findByTournamentId(@Param('tournamentId') tournamentId: string) {
         return this.matchesService.findByTournamentId(tournamentId);
+    }
+
+    @Get('matches/:id/events')
+    findEventsByMatchId(@Param('id') id: string) {
+        return this.matchesService.findEventsByMatchId(id);
     }
 
     @Post('tournaments/:tournamentId/bracket/generate')
@@ -111,6 +117,21 @@ export class MatchesController {
     @Roles(UserRole.SCORER, UserRole.ADMIN)
     endClock(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
         return this.matchesService.endClock(id, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('matches/:id/events')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    createEvent(
+        @Param('id') id: string,
+        @Body() createMatchEventDto: CreateMatchEventDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.matchesService.createEvent(id, createMatchEventDto, {
             id: req.user.id,
             role: req.user.role,
         });
