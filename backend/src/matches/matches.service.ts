@@ -3,6 +3,7 @@ import { UserRole } from '../common/user-role.enum';
 import { PrismaService } from '../prisma/prisma.service';
 import { TournamentStatus } from '../tournaments/tournament-status.enum';
 import { PublicUser, publicUserSelect } from '../users/users.service';
+import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
 import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchClockStatus } from './match-clock-status.enum';
 import { MatchStatus } from './match-status.enum';
@@ -318,6 +319,79 @@ export class MatchesService {
         return this.updateMatchClock(id, {
             clockStatus: remainingSeconds === 0 ? MatchClockStatus.ENDED : MatchClockStatus.PAUSED,
             clockRemainingSeconds: remainingSeconds,
+            clockLastStartedAt: null,
+        });
+    }
+
+    async resumeClock(id: string, actor: MatchActor): Promise<MatchWithRelations> {
+        const match = await this.findClockActionMatch(id);
+        this.ensureCanOperateMatchClock(match, actor);
+        this.ensureMatchCanUseClock(match);
+
+        if (match.clockStatus !== MatchClockStatus.PAUSED) {
+            throw new BadRequestException('Only a paused match clock can be resumed');
+        }
+
+        if (match.clockRemainingSeconds <= 0) {
+            throw new BadRequestException('Match clock has no remaining time');
+        }
+
+        return this.updateMatchClock(id, {
+            status: MatchStatus.LIVE,
+            clockStatus: MatchClockStatus.RUNNING,
+            clockLastStartedAt: new Date(),
+        });
+    }
+
+    async adjustClock(
+        id: string,
+        adjustMatchClockDto: AdjustMatchClockDto,
+        actor: MatchActor,
+    ): Promise<MatchWithRelations> {
+        const match = await this.findClockActionMatch(id);
+        this.ensureCanOperateMatchClock(match, actor);
+        this.ensureMatchCanUseClock(match);
+
+        const remainingSeconds = Math.max(
+            0,
+            this.getCurrentRemainingSeconds(match) + adjustMatchClockDto.secondsDelta,
+        );
+        const data: {
+            clockStatus: MatchClockStatus;
+            clockRemainingSeconds: number;
+            clockLastStartedAt: Date | null;
+        } = {
+            clockStatus: match.clockStatus,
+            clockRemainingSeconds: remainingSeconds,
+            clockLastStartedAt: match.clockLastStartedAt,
+        };
+
+        if (remainingSeconds === 0) {
+            data.clockStatus = MatchClockStatus.ENDED;
+            data.clockLastStartedAt = null;
+        } else if (match.clockStatus === MatchClockStatus.RUNNING) {
+            data.clockStatus = MatchClockStatus.RUNNING;
+            data.clockLastStartedAt = new Date();
+        } else if (match.clockStatus === MatchClockStatus.ENDED) {
+            data.clockStatus = MatchClockStatus.PAUSED;
+            data.clockLastStartedAt = null;
+        }
+
+        return this.updateMatchClock(id, data);
+    }
+
+    async endClock(id: string, actor: MatchActor): Promise<MatchWithRelations> {
+        const match = await this.findClockActionMatch(id);
+        this.ensureCanOperateMatchClock(match, actor);
+        this.ensureMatchCanUseClock(match);
+
+        if (match.clockStatus === MatchClockStatus.ENDED) {
+            throw new BadRequestException('Match clock has already ended');
+        }
+
+        return this.updateMatchClock(id, {
+            clockStatus: MatchClockStatus.ENDED,
+            clockRemainingSeconds: 0,
             clockLastStartedAt: null,
         });
     }
