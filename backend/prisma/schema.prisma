@@ -63,6 +63,11 @@ enum MatchEventType {
   FOUL
 }
 
+enum MatchSlot {
+  TEAM_A
+  TEAM_B
+}
+
 model User {
   id                     String       @id @default(uuid()) @db.Uuid
   email                  String       @unique
@@ -173,6 +178,9 @@ model Match {
   clockDurationSeconds  Int              @default(600)
   clockRemainingSeconds Int              @default(600)
   clockLastStartedAt    DateTime?        @db.Timestamptz
+  nextRound             Int?
+  nextBracketPosition   Int?
+  nextMatchSlot         MatchSlot?
   events                MatchEvent[]
   createdAt             DateTime         @default(now()) @db.Timestamptz
   updatedAt             DateTime         @updatedAt @db.Timestamptz

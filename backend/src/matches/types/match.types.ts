@@ -1,6 +1,7 @@
 import { UserRole } from '../../common/user-role.enum';
 import { PublicUser } from '../../users/users.service';
 import { MatchClockStatus } from '../match-clock-status.enum';
+import { MatchSlot } from '../match-slot.enum';
 import { MatchStatus } from '../match-status.enum';
 
 export type MatchActor = {
@@ -48,6 +49,9 @@ export type MatchRecord = {
     clockDurationSeconds: number;
     clockRemainingSeconds: number;
     clockLastStartedAt: Date | null;
+    nextRound: number | null;
+    nextBracketPosition: number | null;
+    nextMatchSlot: MatchSlot | null;
     createdAt: Date;
     updatedAt: Date;
 };
