@@ -48,6 +48,21 @@ enum MatchClockStatus {
   ENDED
 }
 
+enum MatchEventType {
+  ONE_POINT_MADE
+  ONE_POINT_MISSED
+  TWO_POINT_MADE
+  TWO_POINT_MISSED
+  FREE_THROW_MADE
+  FREE_THROW_MISSED
+  REBOUND
+  ASSIST
+  STEAL
+  BLOCK
+  TURNOVER
+  FOUL
+}
+
 model User {
   id                     String       @id @default(uuid()) @db.Uuid
   email                  String       @unique
@@ -62,6 +77,8 @@ model User {
   sentInvites            TeamInvite[] @relation("Inviter")
   assignedScoringMatches Match[]      @relation("AssignedScorer")
   assignedRefereeMatches Match[]      @relation("AssignedReferee")
+  matchEventsAsPlayer    MatchEvent[] @relation("MatchEventPlayer")
+  matchEventsAsScorer    MatchEvent[] @relation("MatchEventScorer")
 
   @@map("users")
 }
@@ -94,6 +111,7 @@ model Team {
   matchesAsA   Match[]      @relation("MatchTeamA")
   matchesAsB   Match[]      @relation("MatchTeamB")
   wonMatches   Match[]      @relation("MatchWinner")
+  matchEvents  MatchEvent[]
   createdAt    DateTime     @default(now()) @db.Timestamptz
   updatedAt    DateTime     @updatedAt @db.Timestamptz
 
@@ -155,6 +173,7 @@ model Match {
   clockDurationSeconds  Int              @default(600)
   clockRemainingSeconds Int              @default(600)
   clockLastStartedAt    DateTime?        @db.Timestamptz
+  events                MatchEvent[]
   createdAt             DateTime         @default(now()) @db.Timestamptz
   updatedAt             DateTime         @updatedAt @db.Timestamptz
 
@@ -165,4 +184,25 @@ model Match {
   @@index([scorerId])
   @@index([refereeId])
   @@map("matches")
+}
+
+model MatchEvent {
+  id         String         @id @default(uuid()) @db.Uuid
+  matchId    String         @db.Uuid
+  match      Match          @relation(fields: [matchId], references: [id])
+  teamId     String         @db.Uuid
+  team       Team           @relation(fields: [teamId], references: [id])
+  playerId   String?        @db.Uuid
+  player     User?          @relation("MatchEventPlayer", fields: [playerId], references: [id])
+  scorerId   String         @db.Uuid
+  scorer     User           @relation("MatchEventScorer", fields: [scorerId], references: [id])
+  type       MatchEventType
+  occurredAt DateTime       @default(now()) @db.Timestamptz
+  createdAt  DateTime       @default(now()) @db.Timestamptz
+
+  @@index([matchId, occurredAt])
+  @@index([teamId])
+  @@index([playerId])
+  @@index([scorerId])
+  @@map("match_events")
 }
