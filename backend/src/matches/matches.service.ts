@@ -193,7 +193,7 @@ export class MatchesService {
         if (!tournament) {
             throw new NotFoundException('Tournament not found');
         }
-        return this.prisma.match.findMany({
+        const matches = await this.prisma.match.findMany({
             where: { tournamentId },
             include: this.matchInclude(),
             orderBy: [
@@ -201,6 +201,8 @@ export class MatchesService {
                 { bracketPosition: 'asc' },
             ],
         });
+
+        return matches.map((match) => this.withCurrentClock(match));
     }
 
     async findById(id: string): Promise<MatchWithRelations> {
@@ -213,7 +215,7 @@ export class MatchesService {
             throw new NotFoundException('Match not found');
         }
 
-        return match;
+        return this.withCurrentClock(match);
     }
 
     async schedule(id: string, scheduleMatchDto: ScheduleMatchDto, actor: MatchActor): Promise<MatchWithRelations> {
@@ -265,10 +267,58 @@ export class MatchesService {
             data.refereeId = scheduleMatchDto.refereeId;
         }
 
-        return this.prisma.match.update({
+        const updatedMatch = await this.prisma.match.update({
             where: { id },
             data,
             include: this.matchInclude(),
+        });
+
+        return this.withCurrentClock(updatedMatch);
+    }
+
+    async startClock(id: string, actor: MatchActor): Promise<MatchWithRelations> {
+        const match = await this.findClockActionMatch(id);
+        this.ensureCanOperateMatchClock(match, actor);
+        this.ensureMatchCanUseClock(match);
+
+        if (match.clockStatus === MatchClockStatus.RUNNING) {
+            throw new BadRequestException('Match clock is already running');
+        }
+
+        if (match.clockStatus === MatchClockStatus.PAUSED) {
+            throw new BadRequestException('Use resume to continue a paused match clock');
+        }
+
+        if (match.clockStatus === MatchClockStatus.ENDED) {
+            throw new BadRequestException('Ended match clocks cannot be started');
+        }
+
+        if (match.clockRemainingSeconds <= 0) {
+            throw new BadRequestException('Match clock has no remaining time');
+        }
+
+        return this.updateMatchClock(id, {
+            status: MatchStatus.LIVE,
+            clockStatus: MatchClockStatus.RUNNING,
+            clockLastStartedAt: new Date(),
+        });
+    }
+
+    async pauseClock(id: string, actor: MatchActor): Promise<MatchWithRelations> {
+        const match = await this.findClockActionMatch(id);
+        this.ensureCanOperateMatchClock(match, actor);
+        this.ensureMatchCanUseClock(match);
+
+        if (match.clockStatus !== MatchClockStatus.RUNNING) {
+            throw new BadRequestException('Only a running match clock can be paused');
+        }
+
+        const remainingSeconds = this.getCurrentRemainingSeconds(match);
+
+        return this.updateMatchClock(id, {
+            clockStatus: remainingSeconds === 0 ? MatchClockStatus.ENDED : MatchClockStatus.PAUSED,
+            clockRemainingSeconds: remainingSeconds,
+            clockLastStartedAt: null,
         });
     }
 
@@ -300,6 +350,84 @@ export class MatchesService {
         if (user.role !== role) {
             throw new BadRequestException(`User must have ${role} role`);
         }
+    }
+
+    private ensureCanOperateMatchClock(match: { scorerId: string | null }, actor: MatchActor): void {
+        if (actor.role === UserRole.ADMIN) {
+            return;
+        }
+
+        if (match.scorerId !== actor.id) {
+            throw new ForbiddenException('You can only operate matches assigned to you');
+        }
+    }
+
+    private ensureMatchCanUseClock(match: { status: MatchStatus }): void {
+        if (match.status === MatchStatus.FINAL) {
+            throw new BadRequestException('Final matches cannot use clock controls');
+        }
+    }
+
+    private async findClockActionMatch(id: string): Promise<MatchRecord> {
+        const match = await this.prisma.match.findUnique({
+            where: { id },
+        });
+
+        if (!match) {
+            throw new NotFoundException('Match not found');
+        }
+
+        return match;
+    }
+
+    private async updateMatchClock(
+        id: string,
+        data: {
+            status?: MatchStatus;
+            clockStatus?: MatchClockStatus;
+            clockRemainingSeconds?: number;
+            clockLastStartedAt?: Date | null;
+        },
+    ): Promise<MatchWithRelations> {
+        const updatedMatch = await this.prisma.match.update({
+            where: { id },
+            data,
+            include: this.matchInclude(),
+        });
+
+        return this.withCurrentClock(updatedMatch);
+    }
+
+    private withCurrentClock<T extends MatchRecord>(match: T): T {
+        if (match.clockStatus !== MatchClockStatus.RUNNING) {
+            return match;
+        }
+
+        const remainingSeconds = this.getCurrentRemainingSeconds(match);
+
+        if (remainingSeconds === 0) {
+            return {
+                ...match,
+                clockStatus: MatchClockStatus.ENDED,
+                clockRemainingSeconds: 0,
+                clockLastStartedAt: null,
+            };
+        }
+
+        return {
+            ...match,
+            clockRemainingSeconds: remainingSeconds,
+        };
+    }
+
+    private getCurrentRemainingSeconds(match: MatchRecord): number {
+        if (match.clockStatus !== MatchClockStatus.RUNNING || !match.clockLastStartedAt) {
+            return match.clockRemainingSeconds;
+        }
+
+        const elapsedSeconds = Math.floor((Date.now() - match.clockLastStartedAt.getTime()) / 1000);
+
+        return Math.max(0, match.clockRemainingSeconds - elapsedSeconds);
     }
 
     private nextPowerOfTwo(value: number): number {
