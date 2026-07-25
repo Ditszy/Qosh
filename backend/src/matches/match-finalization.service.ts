@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { MatchAccessService } from './match-access.service';
 import { MatchClockStatus } from './match-clock-status.enum';
+import { MatchLiveService } from './match-live.service';
 import { MatchSlot } from './match-slot.enum';
 import { MatchStatus } from './match-status.enum';
 import { MatchesReadService } from './matches-read.service';
@@ -12,6 +13,7 @@ export class MatchFinalizationService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly matchAccessService: MatchAccessService,
+        private readonly matchLiveService: MatchLiveService,
         private readonly matchesReadService: MatchesReadService,
     ) { }
 
@@ -94,6 +96,8 @@ export class MatchFinalizationService {
 
             return updatedMatch;
         });
+
+        this.matchLiveService.publishFinalized(finalizedMatch);
 
         return this.matchesReadService.withCurrentClock(finalizedMatch);
     }

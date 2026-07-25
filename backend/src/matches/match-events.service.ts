@@ -4,6 +4,7 @@ import { publicUserSelect } from '../users/users.service';
 import { CreateMatchEventDto } from './dto/create-match-event.dto';
 import { MatchAccessService } from './match-access.service';
 import { MatchEventType } from './match-event-type.enum';
+import { MatchLiveService } from './match-live.service';
 import { MatchStatus } from './match-status.enum';
 import { MatchActor } from './types/match.types';
 
@@ -12,6 +13,7 @@ export class MatchEventsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly matchAccessService: MatchAccessService,
+        private readonly matchLiveService: MatchLiveService,
     ) { }
 
     async create(matchId: string, createMatchEventDto: CreateMatchEventDto, actor: MatchActor) {
@@ -62,7 +64,7 @@ export class MatchEventsService {
 
         const pointValue = this.getPointValue(createMatchEventDto.type);
 
-        return this.prisma.$transaction(async (tx) => {
+        const { event, score } = await this.prisma.$transaction(async (tx) => {
             const event = await tx.matchEvent.create({
                 data: {
                     matchId,
@@ -77,15 +79,30 @@ export class MatchEventsService {
                 include: this.matchEventInclude(),
             });
 
+            let score: { id: string; teamAScore: number; teamBScore: number; updatedAt: Date } | null = null;
+
             if (pointValue > 0) {
-                await tx.match.update({
+                score = await tx.match.update({
                     where: { id: matchId },
                     data: this.getScoreIncrementData(match, createMatchEventDto.teamId, pointValue),
+                    select: {
+                        id: true,
+                        teamAScore: true,
+                        teamBScore: true,
+                        updatedAt: true,
+                    },
                 });
             }
 
-            return event;
+            return { event, score };
         });
+        this.matchLiveService.publishEventCreated(matchId, event);
+
+        if (score) {
+            this.matchLiveService.publishScoreChange(score);
+        }
+
+        return event;
     }
 
     async findByMatchId(matchId: string) {

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
 import { MatchAccessService } from './match-access.service';
 import { MatchClockStatus } from './match-clock-status.enum';
+import { MatchLiveService } from './match-live.service';
 import { MatchStatus } from './match-status.enum';
 import { MatchesReadService } from './matches-read.service';
 import {
@@ -17,6 +18,7 @@ export class MatchClockService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly matchAccessService: MatchAccessService,
+        private readonly matchLiveService: MatchLiveService,
         private readonly matchesReadService: MatchesReadService,
     ) { }
 
@@ -160,7 +162,9 @@ export class MatchClockService {
             data,
             include: this.matchesReadService.matchInclude(),
         });
+        const projectedMatch = this.matchesReadService.withCurrentClock(updatedMatch);
+        this.matchLiveService.publishClockChange(projectedMatch);
 
-        return this.matchesReadService.withCurrentClock(updatedMatch);
+        return projectedMatch;
     }
 }
