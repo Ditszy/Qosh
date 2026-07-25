@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { UserRole } from '../common/user-role.enum';
+import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
 import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchesService } from './matches.service';
 
@@ -51,6 +52,65 @@ export class MatchesController {
         @Request() req: AuthenticatedRequest,
     ) {
         return this.matchesService.schedule(id, scheduleMatchDto, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('matches/:id/clock/start')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    startClock(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.matchesService.startClock(id, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('matches/:id/clock/pause')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    pauseClock(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.matchesService.pauseClock(id, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('matches/:id/clock/resume')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    resumeClock(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.matchesService.resumeClock(id, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('matches/:id/clock/adjust')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    adjustClock(
+        @Param('id') id: string,
+        @Body() adjustMatchClockDto: AdjustMatchClockDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.matchesService.adjustClock(id, adjustMatchClockDto, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Post('matches/:id/clock/end')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    endClock(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.matchesService.endClock(id, {
             id: req.user.id,
             role: req.user.role,
         });
