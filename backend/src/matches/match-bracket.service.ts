@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { TournamentStatus } from '../tournaments/tournament-status.enum';
 import { MatchAccessService } from './match-access.service';
+import { MatchSlot } from './match-slot.enum';
 import { MatchesReadService } from './matches-read.service';
 import { MatchActor, MatchWithRelations } from './types/match.types';
 
@@ -11,6 +12,14 @@ type MatchCreateInput = {
     bracketPosition: number;
     teamAId?: string;
     teamBId?: string;
+    nextRound?: number;
+    nextBracketPosition?: number;
+    nextMatchSlot?: MatchSlot;
+};
+
+type SecondRoundSlot = {
+    teamId?: string;
+    sourceMatchPosition?: number;
 };
 
 @Injectable()
@@ -66,18 +75,28 @@ export class MatchBracketService {
         for (let position = 1; position <= firstRoundMatchCount; position += 1) {
             const firstTeamIndex = (position - 1) * 2;
 
-            matchesToCreate.push({
+            const match: MatchCreateInput = {
                 tournamentId,
                 round: 1,
                 bracketPosition: position,
                 teamAId: shuffledTeams[firstTeamIndex].id,
                 teamBId: shuffledTeams[firstTeamIndex + 1].id,
-            });
+            };
+
+            matchesToCreate.push(match);
         }
 
         if (totalRounds > 1) {
-            const secondRoundSlots: Array<{ teamId: string } | null> = [
-                ...Array.from({ length: firstRoundMatchCount }, () => null),
+            const firstRoundMatches = new Map(
+                matchesToCreate
+                    .filter((match) => match.round === 1)
+                    .map((match) => [match.bracketPosition, match]),
+            );
+            const secondRoundSlots: SecondRoundSlot[] = [
+                ...Array.from(
+                    { length: firstRoundMatchCount },
+                    (_, index) => ({ sourceMatchPosition: index + 1 }),
+                ),
                 ...shuffledTeams.slice(firstRoundTeamCount).map((team) => ({ teamId: team.id })),
             ];
             const shuffledSecondRoundSlots = this.shuffle(secondRoundSlots);
@@ -91,12 +110,36 @@ export class MatchBracketService {
                     bracketPosition: position,
                 };
 
-                if (firstSlot) {
+                if (totalRounds > 2) {
+                    Object.assign(match, this.getNextMatchData(2, position));
+                }
+
+                if (firstSlot.teamId) {
                     match.teamAId = firstSlot.teamId;
                 }
 
-                if (secondSlot) {
+                if (firstSlot.sourceMatchPosition) {
+                    const sourceMatch = firstRoundMatches.get(firstSlot.sourceMatchPosition);
+
+                    if (sourceMatch) {
+                        sourceMatch.nextRound = 2;
+                        sourceMatch.nextBracketPosition = position;
+                        sourceMatch.nextMatchSlot = MatchSlot.TEAM_A;
+                    }
+                }
+
+                if (secondSlot.teamId) {
                     match.teamBId = secondSlot.teamId;
+                }
+
+                if (secondSlot.sourceMatchPosition) {
+                    const sourceMatch = firstRoundMatches.get(secondSlot.sourceMatchPosition);
+
+                    if (sourceMatch) {
+                        sourceMatch.nextRound = 2;
+                        sourceMatch.nextBracketPosition = position;
+                        sourceMatch.nextMatchSlot = MatchSlot.TEAM_B;
+                    }
                 }
 
                 matchesToCreate.push(match);
@@ -106,11 +149,17 @@ export class MatchBracketService {
                 const matchesInRound = bracketSize / 2 ** round;
 
                 for (let position = 1; position <= matchesInRound; position += 1) {
-                    matchesToCreate.push({
+                    const match: MatchCreateInput = {
                         tournamentId,
                         round,
                         bracketPosition: position,
-                    });
+                    };
+
+                    if (round < totalRounds) {
+                        Object.assign(match, this.getNextMatchData(round, position));
+                    }
+
+                    matchesToCreate.push(match);
                 }
             }
         }
@@ -133,6 +182,14 @@ export class MatchBracketService {
 
     private nextPowerOfTwo(value: number): number {
         return 2 ** Math.ceil(Math.log2(value));
+    }
+
+    private getNextMatchData(round: number, bracketPosition: number) {
+        return {
+            nextRound: round + 1,
+            nextBracketPosition: Math.ceil(bracketPosition / 2),
+            nextMatchSlot: bracketPosition % 2 === 1 ? MatchSlot.TEAM_A : MatchSlot.TEAM_B,
+        };
     }
 
     private shuffle<T>(items: T[]): T[] {
