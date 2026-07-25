@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
@@ -35,6 +35,11 @@ export class MatchesController {
     @Get('matches/:id/events')
     findEventsByMatchId(@Param('id') id: string) {
         return this.matchesService.findEventsByMatchId(id);
+    }
+
+    @Sse('matches/:id/live')
+    watchLiveMatch(@Param('id') id: string) {
+        return this.matchesService.watchLiveMatch(id);
     }
 
     @Post('tournaments/:tournamentId/bracket/generate')
