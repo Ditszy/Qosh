@@ -3,10 +3,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { CreateMatchEventDto } from '../dto/create-match-event.dto';
 import { MatchAccessService } from './match-access.service';
-import { MatchEventType } from '../enums/match-event-type.enum';
 import { MatchLiveService } from './match-live.service';
 import { MatchStatus } from '../enums/match-status.enum';
 import { MatchActor } from '../types/match.types';
+import {
+    getMatchEventPointValue,
+    getMatchPlayerStatCreateData,
+    getMatchPlayerStatUpdateData,
+} from '../helpers/match-event-stat.helpers';
 
 @Injectable()
 export class MatchEventsService {
@@ -62,7 +66,7 @@ export class MatchEventsService {
             }
         }
 
-        const pointValue = this.getPointValue(createMatchEventDto.type);
+        const pointValue = getMatchEventPointValue(createMatchEventDto.type);
 
         const { event, score } = await this.prisma.$transaction(async (tx) => {
             const event = await tx.matchEvent.create({
@@ -91,6 +95,24 @@ export class MatchEventsService {
                         teamBScore: true,
                         updatedAt: true,
                     },
+                });
+            }
+
+            if (createMatchEventDto.playerId) {
+                await tx.matchPlayerStat.upsert({
+                    where: {
+                        matchId_playerId: {
+                            matchId,
+                            playerId: createMatchEventDto.playerId,
+                        },
+                    },
+                    create: getMatchPlayerStatCreateData(
+                        matchId,
+                        createMatchEventDto.teamId,
+                        createMatchEventDto.playerId,
+                        createMatchEventDto.type,
+                    ),
+                    update: getMatchPlayerStatUpdateData(createMatchEventDto.type),
                 });
             }
 
@@ -137,18 +159,6 @@ export class MatchEventsService {
                 select: publicUserSelect,
             },
         };
-    }
-
-    private getPointValue(type: MatchEventType): number {
-        if (type === MatchEventType.ONE_POINT_MADE || type === MatchEventType.FREE_THROW_MADE) {
-            return 1;
-        }
-
-        if (type === MatchEventType.TWO_POINT_MADE) {
-            return 2;
-        }
-
-        return 0;
     }
 
     private getScoreIncrementData(
