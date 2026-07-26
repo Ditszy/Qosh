@@ -84,6 +84,7 @@ model User {
   assignedRefereeMatches Match[]      @relation("AssignedReferee")
   matchEventsAsPlayer    MatchEvent[] @relation("MatchEventPlayer")
   matchEventsAsScorer    MatchEvent[] @relation("MatchEventScorer")
+  matchPlayerStats       MatchPlayerStat[]
 
   @@map("users")
 }
@@ -117,6 +118,7 @@ model Team {
   matchesAsB   Match[]      @relation("MatchTeamB")
   wonMatches   Match[]      @relation("MatchWinner")
   matchEvents  MatchEvent[]
+  matchPlayerStats MatchPlayerStat[]
   createdAt    DateTime     @default(now()) @db.Timestamptz
   updatedAt    DateTime     @updatedAt @db.Timestamptz
 
@@ -182,6 +184,7 @@ model Match {
   nextBracketPosition   Int?
   nextMatchSlot         MatchSlot?
   events                MatchEvent[]
+  playerStats           MatchPlayerStat[]
   createdAt             DateTime         @default(now()) @db.Timestamptz
   updatedAt             DateTime         @updatedAt @db.Timestamptz
 
@@ -213,4 +216,35 @@ model MatchEvent {
   @@index([playerId])
   @@index([scorerId])
   @@map("match_events")
+}
+
+model MatchPlayerStat {
+  id                 String   @id @default(uuid()) @db.Uuid
+  matchId            String   @db.Uuid
+  match              Match    @relation(fields: [matchId], references: [id])
+  teamId             String   @db.Uuid
+  team               Team     @relation(fields: [teamId], references: [id])
+  playerId           String   @db.Uuid
+  player             User     @relation(fields: [playerId], references: [id])
+  points             Int      @default(0)
+  onePointMade       Int      @default(0)
+  onePointAttempted  Int      @default(0)
+  twoPointMade       Int      @default(0)
+  twoPointAttempted  Int      @default(0)
+  freeThrowMade      Int      @default(0)
+  freeThrowAttempted Int      @default(0)
+  rebounds           Int      @default(0)
+  assists            Int      @default(0)
+  steals             Int      @default(0)
+  blocks             Int      @default(0)
+  turnovers          Int      @default(0)
+  fouls              Int      @default(0)
+  createdAt          DateTime @default(now()) @db.Timestamptz
+  updatedAt          DateTime @updatedAt @db.Timestamptz
+
+  @@unique([matchId, playerId])
+  @@index([matchId])
+  @@index([teamId])
+  @@index([playerId])
+  @@map("match_player_stats")
 }
