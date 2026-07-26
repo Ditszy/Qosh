@@ -1,12 +1,12 @@
 import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
 import { Observable, Subject, concat, defer, from, merge, timer } from 'rxjs';
 import { filter, map, switchMap } from 'rxjs/operators';
-import { PrismaService } from '../prisma/prisma.service';
-import { publicUserSelect } from '../users/users.service';
-import { MatchClockStatus } from './match-clock-status.enum';
-import { MatchStatus } from './match-status.enum';
+import { PrismaService } from '../../prisma/prisma.service';
+import { publicUserSelect } from '../../users/users.service';
+import { MatchClockStatus } from '../enums/match-clock-status.enum';
+import { MatchStatus } from '../enums/match-status.enum';
 import { MatchesReadService } from './matches-read.service';
-import { MatchWithRelations } from './types/match.types';
+import { MatchWithRelations } from '../types/match.types';
 
 type MatchLiveSnapshot = {
     match: MatchWithRelations;

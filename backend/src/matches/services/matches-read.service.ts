@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { publicUserSelect } from '../users/users.service';
-import { MatchClockStatus } from './match-clock-status.enum';
-import { MatchRecord, MatchWithRelations } from './types/match.types';
+import { PrismaService } from '../../prisma/prisma.service';
+import { publicUserSelect } from '../../users/users.service';
+import { MatchClockStatus } from '../enums/match-clock-status.enum';
+import { MatchRecord, MatchWithRelations } from '../types/match.types';
 
 @Injectable()
 export class MatchesReadService {

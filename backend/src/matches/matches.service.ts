@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
 import { CreateMatchEventDto } from './dto/create-match-event.dto';
 import { ScheduleMatchDto } from './dto/schedule-match.dto';
-import { MatchBracketService } from './match-bracket.service';
-import { MatchClockService } from './match-clock.service';
-import { MatchEventsService } from './match-events.service';
-import { MatchFinalizationService } from './match-finalization.service';
-import { MatchLiveService } from './match-live.service';
-import { MatchSchedulingService } from './match-scheduling.service';
-import { MatchesReadService } from './matches-read.service';
+import { MatchBracketService } from './services/match-bracket.service';
+import { MatchClockService } from './services/match-clock.service';
+import { MatchEventsService } from './services/match-events.service';
+import { MatchFinalizationService } from './services/match-finalization.service';
+import { MatchLiveService } from './services/match-live.service';
+import { MatchSchedulingService } from './services/match-scheduling.service';
+import { MatchesReadService } from './services/matches-read.service';
 import { MatchActor, MatchWithRelations } from './types/match.types';
 
 @Injectable()

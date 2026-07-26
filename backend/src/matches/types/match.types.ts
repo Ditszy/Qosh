@@ -1,8 +1,8 @@
 import { UserRole } from '../../common/user-role.enum';
 import { PublicUser } from '../../users/users.service';
-import { MatchClockStatus } from '../match-clock-status.enum';
-import { MatchSlot } from '../match-slot.enum';
-import { MatchStatus } from '../match-status.enum';
+import { MatchClockStatus } from '../enums/match-clock-status.enum';
+import { MatchSlot } from '../enums/match-slot.enum';
+import { MatchStatus } from '../enums/match-status.enum';
 
 export type MatchActor = {
     id: string;

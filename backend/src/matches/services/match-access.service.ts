@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { UserRole } from '../common/user-role.enum';
-import { MatchStatus } from './match-status.enum';
-import { MatchActor } from './types/match.types';
+import { UserRole } from '../../common/user-role.enum';
+import { MatchStatus } from '../enums/match-status.enum';
+import { MatchActor } from '../types/match.types';
 
 @Injectable()
 export class MatchAccessService {

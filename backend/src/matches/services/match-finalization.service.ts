@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { MatchAccessService } from './match-access.service';
-import { MatchClockStatus } from './match-clock-status.enum';
+import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchLiveService } from './match-live.service';
-import { MatchSlot } from './match-slot.enum';
-import { MatchStatus } from './match-status.enum';
+import { MatchSlot } from '../enums/match-slot.enum';
+import { MatchStatus } from '../enums/match-status.enum';
 import { MatchesReadService } from './matches-read.service';
-import { MatchActor, MatchWithRelations } from './types/match.types';
+import { MatchActor, MatchWithRelations } from '../types/match.types';
 
 @Injectable()
 export class MatchFinalizationService {

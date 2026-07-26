@@ -1,5 +1,5 @@
 import { IsEnum, IsISO8601, IsOptional, IsUUID } from 'class-validator';
-import { MatchEventType } from '../match-event-type.enum';
+import { MatchEventType } from '../enums/match-event-type.enum';
 
 export class CreateMatchEventDto {
     @IsEnum(MatchEventType)

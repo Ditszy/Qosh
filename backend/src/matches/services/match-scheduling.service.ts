@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserRole } from '../common/user-role.enum';
-import { PrismaService } from '../prisma/prisma.service';
-import { ScheduleMatchDto } from './dto/schedule-match.dto';
+import { UserRole } from '../../common/user-role.enum';
+import { PrismaService } from '../../prisma/prisma.service';
+import { ScheduleMatchDto } from '../dto/schedule-match.dto';
 import { MatchAccessService } from './match-access.service';
-import { MatchStatus } from './match-status.enum';
+import { MatchStatus } from '../enums/match-status.enum';
 import { MatchesReadService } from './matches-read.service';
-import { MatchActor, MatchWithRelations } from './types/match.types';
+import { MatchActor, MatchWithRelations } from '../types/match.types';
 
 @Injectable()
 export class MatchSchedulingService {

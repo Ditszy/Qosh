@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { TournamentStatus } from '../tournaments/tournament-status.enum';
+import { PrismaService } from '../../prisma/prisma.service';
+import { TournamentStatus } from '../../tournaments/tournament-status.enum';
 import { MatchAccessService } from './match-access.service';
-import { MatchSlot } from './match-slot.enum';
+import { MatchSlot } from '../enums/match-slot.enum';
 import { MatchesReadService } from './matches-read.service';
-import { MatchActor, MatchWithRelations } from './types/match.types';
+import { MatchActor, MatchWithRelations } from '../types/match.types';
 
 type MatchCreateInput = {
     tournamentId: string;

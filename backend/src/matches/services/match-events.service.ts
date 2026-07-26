@@ -1,12 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { publicUserSelect } from '../users/users.service';
-import { CreateMatchEventDto } from './dto/create-match-event.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { publicUserSelect } from '../../users/users.service';
+import { CreateMatchEventDto } from '../dto/create-match-event.dto';
 import { MatchAccessService } from './match-access.service';
-import { MatchEventType } from './match-event-type.enum';
+import { MatchEventType } from '../enums/match-event-type.enum';
 import { MatchLiveService } from './match-live.service';
-import { MatchStatus } from './match-status.enum';
-import { MatchActor } from './types/match.types';
+import { MatchStatus } from '../enums/match-status.enum';
+import { MatchActor } from '../types/match.types';
 
 @Injectable()
 export class MatchEventsService {
