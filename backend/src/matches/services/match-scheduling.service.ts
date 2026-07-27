@@ -1,5 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '../../common/user-role.enum';
+import { NotificationType } from '../../notifications/enums/notification-type.enum';
+import { NotificationsService } from '../../notifications/notifications.service';
+import { NotificationRecord } from '../../notifications/types/notification.types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ScheduleMatchDto } from '../dto/schedule-match.dto';
 import { MatchAccessService } from './match-access.service';
@@ -13,6 +16,7 @@ export class MatchSchedulingService {
         private readonly prisma: PrismaService,
         private readonly matchAccessService: MatchAccessService,
         private readonly matchesReadService: MatchesReadService,
+        private readonly notificationsService: NotificationsService,
     ) { }
 
     async schedule(id: string, scheduleMatchDto: ScheduleMatchDto, actor: MatchActor): Promise<MatchWithRelations> {
@@ -41,6 +45,9 @@ export class MatchSchedulingService {
             await this.ensureUserHasRole(scheduleMatchDto.refereeId, UserRole.REFEREE, 'Referee not found');
         }
 
+        const shouldNotifyScorer = scheduleMatchDto.scorerId !== undefined && scheduleMatchDto.scorerId !== match.scorerId;
+        const shouldNotifyReferee = scheduleMatchDto.refereeId !== undefined && scheduleMatchDto.refereeId !== match.refereeId;
+
         const data: {
             scheduledAt?: Date;
             location?: string;
@@ -64,13 +71,53 @@ export class MatchSchedulingService {
             data.refereeId = scheduleMatchDto.refereeId;
         }
 
-        const updatedMatch = await this.prisma.match.update({
-            where: { id },
-            data,
-            include: this.matchesReadService.matchInclude(),
+        const result = await this.prisma.$transaction(async (tx) => {
+            const updatedMatch = await tx.match.update({
+                where: { id },
+                data,
+                include: this.matchesReadService.matchInclude(),
+            });
+
+            const notifications: NotificationRecord[] = [];
+
+            if (shouldNotifyScorer && updatedMatch.scorerId) {
+                notifications.push(await this.notificationsService.create(
+                    {
+                        recipientId: updatedMatch.scorerId,
+                        type: NotificationType.MATCH_ASSIGNMENT,
+                        title: 'Scorer assignment received',
+                        body: `You were assigned as scorer for ${updatedMatch.tournament.name}.`,
+                        tournamentId: updatedMatch.tournamentId,
+                        matchId: updatedMatch.id,
+                    },
+                    tx,
+                    false,
+                ));
+            }
+
+            if (shouldNotifyReferee && updatedMatch.refereeId) {
+                notifications.push(await this.notificationsService.create(
+                    {
+                        recipientId: updatedMatch.refereeId,
+                        type: NotificationType.MATCH_ASSIGNMENT,
+                        title: 'Referee assignment received',
+                        body: `You were assigned as referee for ${updatedMatch.tournament.name}.`,
+                        tournamentId: updatedMatch.tournamentId,
+                        matchId: updatedMatch.id,
+                    },
+                    tx,
+                    false,
+                ));
+            }
+
+            return { updatedMatch, notifications };
         });
 
-        return this.matchesReadService.withCurrentClock(updatedMatch);
+        result.notifications.forEach((notification) => {
+            this.notificationsService.publishCreated(notification);
+        });
+
+        return this.matchesReadService.withCurrentClock(result.updatedMatch);
     }
 
     private async ensureUserHasRole(userId: string, role: UserRole, notFoundMessage: string): Promise<void> {
