@@ -7,6 +7,7 @@ import { MatchSlot } from '../enums/match-slot.enum';
 import { MatchStatus } from '../enums/match-status.enum';
 import { MatchesReadService } from './matches-read.service';
 import { MatchActor, MatchWithRelations } from '../types/match.types';
+import { TournamentStatus } from '../../tournaments/tournament-status.enum';
 
 @Injectable()
 export class MatchFinalizationService {
@@ -59,13 +60,20 @@ export class MatchFinalizationService {
                 include: this.matchesReadService.matchInclude(),
             });
 
-            if (match.nextRound && match.nextBracketPosition && match.nextMatchSlot) {
+            const nextRound = match.nextRound;
+            const nextBracketPosition = match.nextBracketPosition;
+            const nextMatchSlot = match.nextMatchSlot;
+            const hasNextBracketMatch = nextRound !== null
+                && nextBracketPosition !== null
+                && nextMatchSlot !== null;
+
+            if (hasNextBracketMatch) {
                 const nextMatch = await tx.match.findUnique({
                     where: {
                         tournamentId_round_bracketPosition: {
                             tournamentId: match.tournamentId,
-                            round: match.nextRound,
-                            bracketPosition: match.nextBracketPosition,
+                            round: nextRound,
+                            bracketPosition: nextBracketPosition,
                         },
                     },
                     select: {
@@ -79,7 +87,7 @@ export class MatchFinalizationService {
                     throw new BadRequestException('Next bracket match not found');
                 }
 
-                const nextSlotField = match.nextMatchSlot === MatchSlot.TEAM_A ? 'teamAId' : 'teamBId';
+                const nextSlotField = nextMatchSlot === MatchSlot.TEAM_A ? 'teamAId' : 'teamBId';
                 const existingTeamId = nextSlotField === 'teamAId' ? nextMatch.teamAId : nextMatch.teamBId;
 
                 if (existingTeamId && existingTeamId !== winnerTeamId) {
@@ -92,6 +100,18 @@ export class MatchFinalizationService {
                         [nextSlotField]: winnerTeamId,
                     },
                 });
+            }
+
+            if (!hasNextBracketMatch) {
+                const completedTournament = await tx.tournament.update({
+                    where: { id: match.tournamentId },
+                    data: { status: TournamentStatus.COMPLETED },
+                });
+
+                return {
+                    ...updatedMatch,
+                    tournament: completedTournament,
+                };
             }
 
             return updatedMatch;
