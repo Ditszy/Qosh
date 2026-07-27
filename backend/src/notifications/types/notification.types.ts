@@ -30,3 +30,7 @@ export type NotificationClient = {
         create(args: { data: CreateNotificationInput }): Promise<NotificationRecord>;
     };
 };
+
+export type NotificationLiveMessage = {
+    notification: NotificationRecord;
+};

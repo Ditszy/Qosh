@@ -260,7 +260,7 @@ export class TeamsService {
             throw new ConflictException('Player already has a pending invite to this team');
         }
 
-        return this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const invite = await tx.teamInvite.create({
                 data: {
                     teamId,
@@ -270,18 +270,26 @@ export class TeamsService {
                 include: this.teamInviteInclude(),
             });
 
-            await this.notificationsService.create({
-                recipientId: invite.invitedUserId,
-                type: NotificationType.TEAM_INVITE,
-                title: 'Team invite received',
-                body: `${invite.inviter.firstName} ${invite.inviter.lastName} invited you to join ${team.name} in ${team.tournament.name}.`,
-                tournamentId: team.tournamentId,
-                teamId: team.id,
-                inviteId: invite.id,
-            }, tx);
+            const notification = await this.notificationsService.create(
+                {
+                    recipientId: invite.invitedUserId,
+                    type: NotificationType.TEAM_INVITE,
+                    title: 'Team invite received',
+                    body: `${invite.inviter.firstName} ${invite.inviter.lastName} invited you to join ${team.name} in ${team.tournament.name}.`,
+                    tournamentId: team.tournamentId,
+                    teamId: team.id,
+                    inviteId: invite.id,
+                },
+                tx,
+                false,
+            );
 
-            return invite;
+            return { invite, notification };
         });
+
+        this.notificationsService.publishCreated(result.notification);
+
+        return result.invite;
     }
 
     async acceptInvite(inviteId: string, actor: TeamActor): Promise<TeamInviteWithUsers> {

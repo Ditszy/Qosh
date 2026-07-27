@@ -1,20 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
+import { Observable, Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateNotificationInput,
     NotificationClient,
+    NotificationLiveMessage,
     NotificationRecord,
 } from './types/notification.types';
 
 @Injectable()
 export class NotificationsService {
+    private readonly notificationUpdates$ = new Subject<NotificationRecord>();
+
     constructor(private readonly prisma: PrismaService) { }
 
-    create(
+    async create(
         createNotificationInput: CreateNotificationInput,
         client: NotificationClient = this.prisma,
+        publishAfterCreate = true,
     ): Promise<NotificationRecord> {
-        return client.notification.create({
+        const notification = await client.notification.create({
             data: {
                 recipientId: createNotificationInput.recipientId,
                 type: createNotificationInput.type,
@@ -26,6 +32,26 @@ export class NotificationsService {
                 inviteId: createNotificationInput.inviteId,
             },
         });
+
+        if (publishAfterCreate) {
+            this.publishCreated(notification);
+        }
+
+        return notification;
+    }
+
+    watchForUser(userId: string): Observable<MessageEvent> {
+        return this.notificationUpdates$.pipe(
+            filter((notification) => notification.recipientId === userId),
+            map((notification) => ({
+                type: 'notification.created',
+                data: this.toLiveMessage(notification),
+            })),
+        );
+    }
+
+    publishCreated(notification: NotificationRecord): void {
+        this.notificationUpdates$.next(notification);
     }
 
     findForUser(userId: string): Promise<NotificationRecord[]> {
@@ -61,5 +87,9 @@ export class NotificationsService {
                 readAt: new Date(),
             },
         });
+    }
+
+    private toLiveMessage(notification: NotificationRecord): NotificationLiveMessage {
+        return { notification };
     }
 }
