@@ -8,6 +8,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MatchesModule } from './matches/matches.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MatchesModule,
     StatisticsModule,
     NotificationsModule,
+    ReportsModule,
   ],
 })
 export class AppModule { }

@@ -93,6 +93,7 @@ model User {
   matchEventsAsScorer    MatchEvent[] @relation("MatchEventScorer")
   matchPlayerStats       MatchPlayerStat[]
   notifications          Notification[]
+  refereeReports         RefereeReport[]
 
   @@map("users")
 }
@@ -193,6 +194,7 @@ model Match {
   nextMatchSlot         MatchSlot?
   events                MatchEvent[]
   playerStats           MatchPlayerStat[]
+  refereeReport         RefereeReport?
   createdAt             DateTime         @default(now()) @db.Timestamptz
   updatedAt             DateTime         @updatedAt @db.Timestamptz
 
@@ -278,4 +280,18 @@ model Notification {
   @@index([teamId])
   @@index([inviteId])
   @@map("notifications")
+}
+
+model RefereeReport {
+  id        String   @id @default(uuid()) @db.Uuid
+  matchId   String   @unique @db.Uuid
+  match     Match    @relation(fields: [matchId], references: [id])
+  refereeId String   @db.Uuid
+  referee   User     @relation(fields: [refereeId], references: [id])
+  notes     String   @db.Text
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@index([refereeId])
+  @@map("referee_reports")
 }
