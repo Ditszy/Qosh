@@ -68,6 +68,13 @@ enum MatchSlot {
   TEAM_B
 }
 
+enum NotificationType {
+  TEAM_INVITE
+  MATCH_ASSIGNMENT
+  TOURNAMENT_STARTED
+  MATCH_SCHEDULE_CHANGED
+}
+
 model User {
   id                     String       @id @default(uuid()) @db.Uuid
   email                  String       @unique
@@ -85,6 +92,7 @@ model User {
   matchEventsAsPlayer    MatchEvent[] @relation("MatchEventPlayer")
   matchEventsAsScorer    MatchEvent[] @relation("MatchEventScorer")
   matchPlayerStats       MatchPlayerStat[]
+  notifications          Notification[]
 
   @@map("users")
 }
@@ -247,4 +255,27 @@ model MatchPlayerStat {
   @@index([teamId])
   @@index([playerId])
   @@map("match_player_stats")
+}
+
+model Notification {
+  id           String           @id @default(uuid()) @db.Uuid
+  recipientId  String           @db.Uuid
+  recipient    User             @relation(fields: [recipientId], references: [id])
+  type         NotificationType
+  title        String
+  body         String
+  tournamentId String?          @db.Uuid
+  matchId      String?          @db.Uuid
+  teamId       String?          @db.Uuid
+  inviteId     String?          @db.Uuid
+  readAt       DateTime?        @db.Timestamptz
+  createdAt    DateTime         @default(now()) @db.Timestamptz
+
+  @@index([recipientId, readAt])
+  @@index([recipientId, createdAt])
+  @@index([tournamentId])
+  @@index([matchId])
+  @@index([teamId])
+  @@index([inviteId])
+  @@map("notifications")
 }
