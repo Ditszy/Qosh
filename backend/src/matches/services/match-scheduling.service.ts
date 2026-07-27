@@ -47,6 +47,13 @@ export class MatchSchedulingService {
 
         const shouldNotifyScorer = scheduleMatchDto.scorerId !== undefined && scheduleMatchDto.scorerId !== match.scorerId;
         const shouldNotifyReferee = scheduleMatchDto.refereeId !== undefined && scheduleMatchDto.refereeId !== match.refereeId;
+        const scheduledAt = scheduleMatchDto.scheduledAt !== undefined
+            ? new Date(scheduleMatchDto.scheduledAt)
+            : undefined;
+        const scheduledAtChanged = scheduledAt !== undefined
+            && scheduledAt.getTime() !== match.scheduledAt?.getTime();
+        const locationChanged = scheduleMatchDto.location !== undefined && scheduleMatchDto.location !== match.location;
+        const shouldNotifyScheduleChange = scheduledAtChanged || locationChanged;
 
         const data: {
             scheduledAt?: Date;
@@ -55,8 +62,8 @@ export class MatchSchedulingService {
             refereeId?: string;
         } = {};
 
-        if (scheduleMatchDto.scheduledAt !== undefined) {
-            data.scheduledAt = new Date(scheduleMatchDto.scheduledAt);
+        if (scheduledAt !== undefined) {
+            data.scheduledAt = scheduledAt;
         }
 
         if (scheduleMatchDto.location !== undefined) {
@@ -108,6 +115,52 @@ export class MatchSchedulingService {
                     tx,
                     false,
                 ));
+            }
+
+            if (shouldNotifyScheduleChange) {
+                const recipientIds = new Set<string>();
+
+                if (updatedMatch.scorerId) {
+                    recipientIds.add(updatedMatch.scorerId);
+                }
+
+                if (updatedMatch.refereeId) {
+                    recipientIds.add(updatedMatch.refereeId);
+                }
+
+                const teamIds = [updatedMatch.teamAId, updatedMatch.teamBId].filter((teamId): teamId is string => {
+                    return Boolean(teamId);
+                });
+
+                const teamMembers = await tx.teamMember.findMany({
+                    where: {
+                        teamId: {
+                            in: teamIds,
+                        },
+                    },
+                    select: {
+                        userId: true,
+                    },
+                });
+
+                teamMembers.forEach((member) => {
+                    recipientIds.add(member.userId);
+                });
+
+                for (const recipientId of recipientIds) {
+                    notifications.push(await this.notificationsService.create(
+                        {
+                            recipientId,
+                            type: NotificationType.MATCH_SCHEDULE_CHANGED,
+                            title: 'Match schedule changed',
+                            body: `The schedule for ${updatedMatch.tournament.name} was updated.`,
+                            tournamentId: updatedMatch.tournamentId,
+                            matchId: updatedMatch.id,
+                        },
+                        tx,
+                        false,
+                    ));
+                }
             }
 
             return { updatedMatch, notifications };
