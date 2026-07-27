@@ -1,13 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateNotificationInput, NotificationRecord } from './types/notification.types';
+import {
+    CreateNotificationInput,
+    NotificationClient,
+    NotificationRecord,
+} from './types/notification.types';
 
 @Injectable()
 export class NotificationsService {
     constructor(private readonly prisma: PrismaService) { }
 
-    create(createNotificationInput: CreateNotificationInput): Promise<NotificationRecord> {
-        return this.prisma.notification.create({
+    create(
+        createNotificationInput: CreateNotificationInput,
+        client: NotificationClient = this.prisma,
+    ): Promise<NotificationRecord> {
+        return client.notification.create({
             data: {
                 recipientId: createNotificationInput.recipientId,
                 type: createNotificationInput.type,

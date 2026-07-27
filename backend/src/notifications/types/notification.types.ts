@@ -24,3 +24,9 @@ export type CreateNotificationInput = {
     teamId?: string | null;
     inviteId?: string | null;
 };
+
+export type NotificationClient = {
+    notification: {
+        create(args: { data: CreateNotificationInput }): Promise<NotificationRecord>;
+    };
+};

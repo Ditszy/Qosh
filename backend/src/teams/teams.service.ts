@@ -6,6 +6,8 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { UserRole } from '../common/user-role.enum';
+import { NotificationType } from '../notifications/enums/notification-type.enum';
+import { NotificationsService } from '../notifications/notifications.service';
 import { TournamentStatus } from '../tournaments/tournament-status.enum';
 import { PrismaService } from '../prisma/prisma.service';
 import { PublicUser, publicUserSelect } from '../users/users.service';
@@ -77,7 +79,10 @@ type TeamInviteWithTeam = TeamInviteWithUsers & {
 
 @Injectable()
 export class TeamsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly notificationsService: NotificationsService,
+    ) { }
 
     async create(createTeamDto: CreateTeamDto, captainId: string): Promise<TeamRecord> {
         const tournament = await this.prisma.tournament.findUnique({
@@ -255,13 +260,27 @@ export class TeamsService {
             throw new ConflictException('Player already has a pending invite to this team');
         }
 
-        return this.prisma.teamInvite.create({
-            data: {
-                teamId,
-                invitedUserId: sendTeamInviteDto.invitedUserId,
-                inviterId: actor.id,
-            },
-            include: this.teamInviteInclude(),
+        return this.prisma.$transaction(async (tx) => {
+            const invite = await tx.teamInvite.create({
+                data: {
+                    teamId,
+                    invitedUserId: sendTeamInviteDto.invitedUserId,
+                    inviterId: actor.id,
+                },
+                include: this.teamInviteInclude(),
+            });
+
+            await this.notificationsService.create({
+                recipientId: invite.invitedUserId,
+                type: NotificationType.TEAM_INVITE,
+                title: 'Team invite received',
+                body: `${invite.inviter.firstName} ${invite.inviter.lastName} invited you to join ${team.name} in ${team.tournament.name}.`,
+                tournamentId: team.tournamentId,
+                teamId: team.id,
+                inviteId: invite.id,
+            }, tx);
+
+            return invite;
         });
     }
 
