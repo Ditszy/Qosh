@@ -75,4 +75,15 @@ export class TournamentsController {
             role: req.user.role,
         });
     }
+
+    @Post(':id/start')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+    start(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.tournamentsService.start(id, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
 }

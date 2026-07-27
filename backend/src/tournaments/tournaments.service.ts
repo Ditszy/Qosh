@@ -1,5 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRole } from '../common/user-role.enum';
+import { NotificationType } from '../notifications/enums/notification-type.enum';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationRecord } from '../notifications/types/notification.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
@@ -25,7 +28,10 @@ type TournamentRecord = {
 
 @Injectable()
 export class TournamentsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly notificationsService: NotificationsService,
+    ) { }
 
     async create(createTournamentDto: CreateTournamentDto, organizerId: string): Promise<TournamentRecord> {
         return this.prisma.tournament.create({
@@ -125,6 +131,67 @@ export class TournamentsService {
             where: { id },
             data: { status: TournamentStatus.SIGNUPS_LOCKED },
         });
+    }
+
+    async start(id: string, actor: TournamentActor): Promise<TournamentRecord> {
+        const tournament = await this.findById(id);
+
+        this.ensureCanManageTournament(tournament, actor);
+
+        if (tournament.status !== TournamentStatus.SIGNUPS_LOCKED) {
+            throw new BadRequestException('Only tournaments with locked signups can start');
+        }
+
+        const matchCount = await this.prisma.match.count({
+            where: { tournamentId: id },
+        });
+
+        if (matchCount === 0) {
+            throw new BadRequestException('Tournament bracket must be generated before starting');
+        }
+
+        const result = await this.prisma.$transaction(async (tx) => {
+            const updatedTournament = await tx.tournament.update({
+                where: { id },
+                data: { status: TournamentStatus.IN_PROGRESS },
+            });
+
+            const members = await tx.teamMember.findMany({
+                where: {
+                    team: {
+                        tournamentId: id,
+                    },
+                },
+                select: {
+                    userId: true,
+                },
+            });
+
+            const recipientIds = [...new Set(members.map((member) => member.userId))];
+            const notifications: NotificationRecord[] = [];
+
+            for (const recipientId of recipientIds) {
+                notifications.push(await this.notificationsService.create(
+                    {
+                        recipientId,
+                        type: NotificationType.TOURNAMENT_STARTED,
+                        title: 'Tournament started',
+                        body: `${updatedTournament.name} has started.`,
+                        tournamentId: updatedTournament.id,
+                    },
+                    tx,
+                    false,
+                ));
+            }
+
+            return { updatedTournament, notifications };
+        });
+
+        result.notifications.forEach((notification) => {
+            this.notificationsService.publishCreated(notification);
+        });
+
+        return result.updatedTournament;
     }
 
     private ensureCanManageTournament(tournament: TournamentRecord, actor: TournamentActor): void {
