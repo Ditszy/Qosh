@@ -13,3 +13,14 @@ export type NotificationRecord = {
     readAt: Date | null;
     createdAt: Date;
 };
+
+export type CreateNotificationInput = {
+    recipientId: string;
+    type: NotificationType;
+    title: string;
+    body: string;
+    tournamentId?: string | null;
+    matchId?: string | null;
+    teamId?: string | null;
+    inviteId?: string | null;
+};

@@ -1,10 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotificationRecord } from './types/notification.types';
+import { CreateNotificationInput, NotificationRecord } from './types/notification.types';
 
 @Injectable()
 export class NotificationsService {
     constructor(private readonly prisma: PrismaService) { }
+
+    create(createNotificationInput: CreateNotificationInput): Promise<NotificationRecord> {
+        return this.prisma.notification.create({
+            data: {
+                recipientId: createNotificationInput.recipientId,
+                type: createNotificationInput.type,
+                title: createNotificationInput.title,
+                body: createNotificationInput.body,
+                tournamentId: createNotificationInput.tournamentId,
+                matchId: createNotificationInput.matchId,
+                teamId: createNotificationInput.teamId,
+                inviteId: createNotificationInput.inviteId,
+            },
+        });
+    }
 
     findForUser(userId: string): Promise<NotificationRecord[]> {
         return this.prisma.notification.findMany({
