@@ -8,6 +8,8 @@ import {
 import { UserRole } from '../common/user-role.enum';
 import { NotificationType } from '../notifications/enums/notification-type.enum';
 import { NotificationsService } from '../notifications/notifications.service';
+import { TournamentLiveEvent } from '../tournaments/types/tournament-live.types';
+import { TournamentLiveService } from '../tournaments/tournament-live.service';
 import { TournamentStatus } from '../tournaments/tournament-status.enum';
 import { PrismaService } from '../prisma/prisma.service';
 import { PublicUser, publicUserSelect } from '../users/users.service';
@@ -82,6 +84,7 @@ export class TeamsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly notificationsService: NotificationsService,
+        private readonly tournamentLiveService: TournamentLiveService,
     ) { }
 
     async create(createTeamDto: CreateTeamDto, captainId: string): Promise<TeamRecord> {
@@ -129,7 +132,7 @@ export class TeamsService {
             throw new ConflictException('Player is already registered in this tournament');
         }
 
-        return this.prisma.$transaction(async (tx) => {
+        const createdTeam = await this.prisma.$transaction(async (tx) => {
             return tx.team.create({
                 data: {
                     name: createTeamDto.name,
@@ -143,6 +146,13 @@ export class TeamsService {
                 },
             });
         });
+
+        const liveTeam = await this.findById(createdTeam.id);
+        this.tournamentLiveService.publish(createdTeam.tournamentId, TournamentLiveEvent.TEAM_CREATED, {
+            team: liveTeam,
+        });
+
+        return createdTeam;
     }
 
     async findByTournamentId(tournamentId: string): Promise<TeamWithMembers[]> {
