@@ -4,6 +4,8 @@ import { NotificationType } from '../../notifications/enums/notification-type.en
 import { NotificationsService } from '../../notifications/notifications.service';
 import { NotificationRecord } from '../../notifications/types/notification.types';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TournamentLiveService } from '../../tournaments/tournament-live.service';
+import { TournamentLiveEvent } from '../../tournaments/types/tournament-live.types';
 import { ScheduleMatchDto } from '../dto/schedule-match.dto';
 import { MatchAccessService } from './match-access.service';
 import { MatchStatus } from '../enums/match-status.enum';
@@ -17,6 +19,7 @@ export class MatchSchedulingService {
         private readonly matchAccessService: MatchAccessService,
         private readonly matchesReadService: MatchesReadService,
         private readonly notificationsService: NotificationsService,
+        private readonly tournamentLiveService: TournamentLiveService,
     ) { }
 
     async schedule(id: string, scheduleMatchDto: ScheduleMatchDto, actor: MatchActor): Promise<MatchWithRelations> {
@@ -170,7 +173,13 @@ export class MatchSchedulingService {
             this.notificationsService.publishCreated(notification);
         });
 
-        return this.matchesReadService.withCurrentClock(result.updatedMatch);
+        const scheduledMatch = this.matchesReadService.withCurrentClock(result.updatedMatch);
+
+        this.tournamentLiveService.publish(scheduledMatch.tournamentId, TournamentLiveEvent.MATCH_SCHEDULED, {
+            match: scheduledMatch,
+        });
+
+        return scheduledMatch;
     }
 
     private async ensureUserHasRole(userId: string, role: UserRole, notFoundMessage: string): Promise<void> {
