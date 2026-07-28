@@ -492,6 +492,59 @@ export class TeamsService {
         return liveTeam;
     }
 
+    async transferCaptain(teamId: string, memberId: string, actor: TeamActor): Promise<TeamWithMembers> {
+        const team = await this.prisma.team.findUnique({
+            where: { id: teamId },
+            include: {
+                tournament: true,
+                members: true,
+            },
+        });
+
+        if (!team) {
+            throw new NotFoundException('Team not found');
+        }
+
+        this.ensureSignupsOpen(team.tournament.status);
+        this.ensureCanManageTeam(team, actor);
+
+        const newCaptain = team.members.find((teamMember) => teamMember.id === memberId);
+
+        if (!newCaptain) {
+            throw new NotFoundException('Team member not found');
+        }
+
+        if (newCaptain.role === TeamMemberRole.CAPTAIN) {
+            throw new BadRequestException('Selected member is already the team captain');
+        }
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.teamMember.updateMany({
+                where: {
+                    teamId,
+                    role: TeamMemberRole.CAPTAIN,
+                },
+                data: {
+                    role: TeamMemberRole.MEMBER,
+                },
+            });
+
+            await tx.teamMember.update({
+                where: { id: memberId },
+                data: {
+                    role: TeamMemberRole.CAPTAIN,
+                },
+            });
+        });
+
+        const liveTeam = await this.findById(teamId);
+        this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
+            team: liveTeam,
+        });
+
+        return liveTeam;
+    }
+
     private async findPendingInviteForResponse(inviteId: string, userId: string): Promise<TeamInviteRecord> {
         const invite = await this.prisma.teamInvite.findUnique({
             where: { id: inviteId },

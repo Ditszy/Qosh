@@ -111,6 +111,21 @@ export class TeamsController {
         });
     }
 
+    @Post(':teamId/members/:memberId/transfer-captain')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    transferCaptain(
+        @Param('teamId') teamId: string,
+        @Param('memberId') memberId: string,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.teamsService.transferCaptain(teamId, memberId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
     @Get('tournament/:tournamentId')
     findByTournamentId(@Param('tournamentId') tournamentId: string) {
         return this.teamsService.findByTournamentId(tournamentId);
