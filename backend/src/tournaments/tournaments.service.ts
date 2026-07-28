@@ -5,6 +5,8 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationRecord } from '../notifications/types/notification.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
+import { TournamentLiveEvent } from './types/tournament-live.types';
+import { TournamentLiveService } from './tournament-live.service';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
 import { TournamentStatus } from './tournament-status.enum';
 
@@ -31,6 +33,7 @@ export class TournamentsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly notificationsService: NotificationsService,
+        private readonly tournamentLiveService: TournamentLiveService,
     ) { }
 
     async create(createTournamentDto: CreateTournamentDto, organizerId: string): Promise<TournamentRecord> {
@@ -112,10 +115,14 @@ export class TournamentsService {
             throw new BadRequestException('Only draft tournaments can open signups');
         }
 
-        return this.prisma.tournament.update({
+        const updatedTournament = await this.prisma.tournament.update({
             where: { id },
             data: { status: TournamentStatus.SIGNUPS_OPEN },
         });
+
+        this.publishStatusChanged(updatedTournament);
+
+        return updatedTournament;
     }
 
     async lockSignups(id: string, actor: TournamentActor): Promise<TournamentRecord> {
@@ -127,10 +134,14 @@ export class TournamentsService {
             throw new BadRequestException('Only tournaments with open signups can lock signups');
         }
 
-        return this.prisma.tournament.update({
+        const updatedTournament = await this.prisma.tournament.update({
             where: { id },
             data: { status: TournamentStatus.SIGNUPS_LOCKED },
         });
+
+        this.publishStatusChanged(updatedTournament);
+
+        return updatedTournament;
     }
 
     async start(id: string, actor: TournamentActor): Promise<TournamentRecord> {
@@ -191,7 +202,15 @@ export class TournamentsService {
             this.notificationsService.publishCreated(notification);
         });
 
+        this.publishStatusChanged(result.updatedTournament);
+
         return result.updatedTournament;
+    }
+
+    private publishStatusChanged(tournament: TournamentRecord): void {
+        this.tournamentLiveService.publish(tournament.id, TournamentLiveEvent.STATUS_CHANGED, {
+            tournament,
+        });
     }
 
     private ensureCanManageTournament(tournament: TournamentRecord, actor: TournamentActor): void {
