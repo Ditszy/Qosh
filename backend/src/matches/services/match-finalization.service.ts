@@ -8,6 +8,8 @@ import { MatchStatus } from '../enums/match-status.enum';
 import { MatchesReadService } from './matches-read.service';
 import { MatchActor, MatchWithRelations } from '../types/match.types';
 import { TournamentStatus } from '../../tournaments/tournament-status.enum';
+import { TournamentLiveService } from '../../tournaments/tournament-live.service';
+import { TournamentLiveEvent } from '../../tournaments/types/tournament-live.types';
 
 @Injectable()
 export class MatchFinalizationService {
@@ -16,6 +18,7 @@ export class MatchFinalizationService {
         private readonly matchAccessService: MatchAccessService,
         private readonly matchLiveService: MatchLiveService,
         private readonly matchesReadService: MatchesReadService,
+        private readonly tournamentLiveService: TournamentLiveService,
     ) { }
 
     async finalize(id: string, actor: MatchActor): Promise<MatchWithRelations> {
@@ -118,6 +121,12 @@ export class MatchFinalizationService {
         });
 
         this.matchLiveService.publishFinalized(finalizedMatch);
+
+        if (finalizedMatch.tournament.status === TournamentStatus.COMPLETED) {
+            this.tournamentLiveService.publish(finalizedMatch.tournamentId, TournamentLiveEvent.STATUS_CHANGED, {
+                tournament: finalizedMatch.tournament,
+            });
+        }
 
         return this.matchesReadService.withCurrentClock(finalizedMatch);
     }
