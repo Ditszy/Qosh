@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { TournamentsModule } from '../tournaments/tournaments.module';
 import { MatchAccessService } from './services/match-access.service';
 import { MatchBracketService } from './services/match-bracket.service';
 import { MatchClockService } from './services/match-clock.service';
@@ -12,7 +13,7 @@ import { MatchesReadService } from './services/matches-read.service';
 import { MatchesService } from './matches.service';
 
 @Module({
-    imports: [NotificationsModule],
+    imports: [NotificationsModule, TournamentsModule],
     controllers: [MatchesController],
     providers: [
         MatchAccessService,

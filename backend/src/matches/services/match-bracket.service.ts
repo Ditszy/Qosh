@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TournamentLiveEvent } from '../../tournaments/types/tournament-live.types';
+import { TournamentLiveService } from '../../tournaments/tournament-live.service';
 import { TournamentStatus } from '../../tournaments/tournament-status.enum';
 import { MatchAccessService } from './match-access.service';
 import { MatchSlot } from '../enums/match-slot.enum';
@@ -28,6 +30,7 @@ export class MatchBracketService {
         private readonly prisma: PrismaService,
         private readonly matchAccessService: MatchAccessService,
         private readonly matchesReadService: MatchesReadService,
+        private readonly tournamentLiveService: TournamentLiveService,
     ) { }
 
     async generateBracket(tournamentId: string, actor: MatchActor): Promise<MatchWithRelations[]> {
@@ -164,7 +167,7 @@ export class MatchBracketService {
             }
         }
 
-        return this.prisma.$transaction(async (tx) => {
+        const matches = await this.prisma.$transaction(async (tx) => {
             await tx.match.createMany({
                 data: matchesToCreate,
             });
@@ -178,6 +181,12 @@ export class MatchBracketService {
                 ],
             });
         });
+
+        this.tournamentLiveService.publish(tournamentId, TournamentLiveEvent.BRACKET_GENERATED, {
+            matches,
+        });
+
+        return matches;
     }
 
     private nextPowerOfTwo(value: number): number {
