@@ -305,7 +305,7 @@ export class TeamsService {
     async acceptInvite(inviteId: string, actor: TeamActor): Promise<TeamInviteWithUsers> {
         const invite = await this.findPendingInviteForResponse(inviteId, actor.id);
 
-        return this.prisma.$transaction(async (tx) => {
+        const acceptedInvite = await this.prisma.$transaction(async (tx) => {
             const freshInvite = await tx.teamInvite.findUnique({
                 where: { id: invite.id },
                 include: {
@@ -361,6 +361,13 @@ export class TeamsService {
                 include: this.teamInviteInclude(),
             });
         });
+
+        const liveTeam = await this.findById(acceptedInvite.teamId);
+        this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
+            team: liveTeam,
+        });
+
+        return acceptedInvite;
     }
 
     async declineInvite(inviteId: string, actor: TeamActor): Promise<TeamInviteWithUsers> {
@@ -477,7 +484,12 @@ export class TeamsService {
             where: { id: memberId },
         });
 
-        return this.findById(teamId);
+        const liveTeam = await this.findById(teamId);
+        this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
+            team: liveTeam,
+        });
+
+        return liveTeam;
     }
 
     private async findPendingInviteForResponse(inviteId: string, userId: string): Promise<TeamInviteRecord> {
