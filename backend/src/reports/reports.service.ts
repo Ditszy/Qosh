@@ -8,8 +8,9 @@ import {
 import { UserRole } from '../common/user-role.enum';
 import { MatchStatus } from '../matches/enums/match-status.enum';
 import { PrismaService } from '../prisma/prisma.service';
+import { publicUserSelect } from '../users/users.service';
 import { CreateRefereeReportDto } from './dto/create-referee-report.dto';
-import { RefereeReportRecord } from './types/report.types';
+import { RefereeReportRecord, RefereeReportWithRelations } from './types/report.types';
 
 type ReportActor = {
     id: string;
@@ -19,6 +20,21 @@ type ReportActor = {
 @Injectable()
 export class ReportsService {
     constructor(private readonly prisma: PrismaService) { }
+
+    async findByMatchId(matchId: string, actor: ReportActor): Promise<RefereeReportWithRelations> {
+        const report = await this.prisma.refereeReport.findUnique({
+            where: { matchId },
+            include: this.reportInclude(),
+        });
+
+        if (!report) {
+            throw new NotFoundException('Referee report not found');
+        }
+
+        this.ensureCanReadReport(report, actor);
+
+        return report;
+    }
 
     async createForMatch(
         matchId: string,
@@ -56,5 +72,44 @@ export class ReportsService {
                 notes: createRefereeReportDto.notes,
             },
         });
+    }
+
+    private ensureCanReadReport(report: RefereeReportWithRelations, actor: ReportActor): void {
+        if (actor.role === UserRole.ADMIN) {
+            return;
+        }
+
+        if (actor.role === UserRole.ORGANIZER && report.match.tournament.organizerId === actor.id) {
+            return;
+        }
+
+        if (actor.role === UserRole.REFEREE && report.refereeId === actor.id) {
+            return;
+        }
+
+        throw new ForbiddenException('You cannot read this referee report');
+    }
+
+    private reportInclude() {
+        return {
+            referee: {
+                select: publicUserSelect,
+            },
+            match: {
+                select: {
+                    id: true,
+                    tournamentId: true,
+                    round: true,
+                    bracketPosition: true,
+                    tournament: {
+                        select: {
+                            id: true,
+                            name: true,
+                            organizerId: true,
+                        },
+                    },
+                },
+            },
+        };
     }
 }
