@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
+import { TournamentLiveService } from './tournament-live.service';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
 import { TournamentsService } from './tournaments.service';
 
@@ -19,7 +20,10 @@ type AuthenticatedRequest = {
 @ApiTags('tournaments')
 @Controller('tournaments')
 export class TournamentsController {
-    constructor(private readonly tournamentsService: TournamentsService) { }
+    constructor(
+        private readonly tournamentsService: TournamentsService,
+        private readonly tournamentLiveService: TournamentLiveService,
+    ) { }
 
     @Get()
     findAll() {
@@ -29,6 +33,11 @@ export class TournamentsController {
     @Get(':id')
     findById(@Param('id') id: string) {
         return this.tournamentsService.findById(id);
+    }
+
+    @Sse(':id/live')
+    watchLiveTournament(@Param('id') id: string) {
+        return this.tournamentLiveService.watchTournament(id);
     }
 
     @Post()
