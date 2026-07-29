@@ -163,4 +163,78 @@ h1 {
   text-transform: uppercase;
 }
 
+.lead {
+  max-width: 660px;
+  margin-top: 24px;
+  color: #c8cbd2;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
 
+.hero-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 32px;
+}
+
+.match-card {
+  border: 1px solid #2b303a;
+  background: #101218;
+}
+
+.match-card-header,
+.score-row,
+.clock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px;
+  border-bottom: 1px solid #242832;
+}
+
+.match-card-header strong {
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.score-row span {
+  color: #d8dbe2;
+  font-size: 1rem;
+  font-weight: 850;
+}
+
+.score-row strong {
+  color: #ffffff;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.score-row.active {
+  background: rgba(255, 90, 31, 0.12);
+}
+
+.clock-row {
+  background: #090a0d;
+}
+
+.clock-row span {
+  color: #ffffff;
+  font-size: 2.6rem;
+  font-weight: 950;
+}
+
+.clock-row strong {
+  color: #ff5a1f;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.court-preview {
+  position: relative;
+  height: 170px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(255, 255, 255, 0.22) 50%, transparent calc(50% + 1px)),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.16) 0 2px, transparent 2px 100%),
+    #171a20;
+}
