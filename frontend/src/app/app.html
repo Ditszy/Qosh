@@ -15,6 +15,15 @@
       <a class="text-action" href="#access">Prijava</a>
       <a class="solid-action" href="#access">Registracija</a>
     </div>
+
+    <label class="role-preview">
+      Uloga
+      <select [value]="currentRole()" (change)="setRole($any($event.target).value)">
+        @for (role of roleOptions; track role.value) {
+        <option [value]="role.value">{{ role.label }}</option>
+        }
+      </select>
+    </label>
   </header>
 
   <main id="home">
