@@ -39,7 +39,7 @@ body {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
   gap: 24px;
   align-items: center;
   min-height: 72px;
@@ -307,4 +307,49 @@ h1 {
 .access-panel {
   margin-bottom: 48px;
   border: 1px solid #2b303a;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .main-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .account-actions {
+    justify-content: flex-start;
+  }
+
+  .hero,
+  .feature-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  main {
+    width: min(100% - 28px, 1180px);
+  }
+
+  h1 {
+    font-size: 3rem;
+  }
+
+  .hero-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .large {
+    width: 100%;
+  }
 }
