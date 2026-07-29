@@ -238,3 +238,73 @@ h1 {
     linear-gradient(0deg, rgba(255, 255, 255, 0.16) 0 2px, transparent 2px 100%),
     #171a20;
 }
+
+.court-preview::before,
+.court-preview::after,
+.court-preview span {
+  content: "";
+  position: absolute;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+}
+
+.court-preview::before {
+  left: 50%;
+  top: 50%;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.court-preview::after {
+  left: 50%;
+  bottom: 18px;
+  width: 170px;
+  height: 86px;
+  border-bottom: 0;
+  transform: translateX(-50%);
+}
+
+.court-preview span {
+  left: 50%;
+  bottom: 36px;
+  width: 52px;
+  height: 32px;
+  border-bottom: 0;
+  transform: translateX(-50%);
+}
+
+.feature-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid #2b303a;
+  background: #2b303a;
+  gap: 1px;
+  margin-bottom: 28px;
+}
+
+.feature-strip article,
+.access-panel {
+  background: #101218;
+  padding: 24px;
+}
+
+.feature-strip h2,
+.access-panel h2 {
+  margin-top: 12px;
+  color: #ffffff;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.feature-strip p {
+  margin-top: 12px;
+  color: #b8bdc7;
+  line-height: 1.55;
+}
+
+.access-panel {
+  margin-bottom: 48px;
+  border: 1px solid #2b303a;
+}
