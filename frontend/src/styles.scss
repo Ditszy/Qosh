@@ -49,6 +49,23 @@ body {
   backdrop-filter: blur(14px);
 }
 
+.role-preview {
+  display: grid;
+  gap: 4px;
+  color: #9ca3af;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.role-preview select {
+  min-height: 38px;
+  border: 1px solid #30343d;
+  background: #101218;
+  color: #ffffff;
+  padding: 0 10px;
+}
+
 .brand,
 .main-nav,
 .account-actions {
