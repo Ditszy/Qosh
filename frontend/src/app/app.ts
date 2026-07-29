@@ -15,6 +15,14 @@ type NavItem = {
 })
 export class App {
   protected readonly currentRole = signal<NavRole>('GUEST');
+  protected readonly roleOptions: { label: string; value: NavRole }[] = [
+    { label: 'Gost', value: 'GUEST' },
+    { label: 'Igrač', value: 'PLAYER' },
+    { label: 'Organizator', value: 'ORGANIZER' },
+    { label: 'Sudija', value: 'REFEREE' },
+    { label: 'Zapisničar', value: 'SCORER' },
+    { label: 'Admin', value: 'ADMIN' },
+  ];
 
   protected readonly navItems: NavItem[] = [
     { label: 'Početna', href: '#home', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
@@ -31,4 +39,12 @@ export class App {
   protected readonly visibleNavItems = computed(() =>
     this.navItems.filter((item) => item.roles.includes(this.currentRole())),
   );
+
+  protected setRole(role: string): void {
+    const selectedRole = this.roleOptions.find((option) => option.value === role)?.value;
+
+    if (selectedRole) {
+      this.currentRole.set(selectedRole);
+    }
+  }
 }
