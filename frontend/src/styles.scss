@@ -326,6 +326,26 @@ h1 {
   border: 1px solid #2b303a;
 }
 
+.route-placeholder {
+  margin-bottom: 48px;
+  border: 1px solid #2b303a;
+  background: #101218;
+  padding: 24px;
+}
+
+.route-placeholder h2 {
+  margin-top: 12px;
+  color: #ffffff;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.route-placeholder p:last-child {
+  margin-top: 12px;
+  color: #b8bdc7;
+}
+
 @media (max-width: 900px) {
   .topbar {
     grid-template-columns: 1fr;
