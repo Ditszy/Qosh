@@ -1,5 +1,5 @@
-import { Component, computed, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
 type NavRole = 'GUEST' | 'PLAYER' | 'ORGANIZER' | 'REFEREE' | 'SCORER' | 'ADMIN';
 
@@ -16,6 +16,9 @@ type NavItem = {
   styleUrl: './app.scss',
 })
 export class App {
+  private readonly router = inject(Router);
+
+  protected readonly isHomeRoute = signal(this.router.url === '/');
   protected readonly currentRole = signal<NavRole>('GUEST');
   protected readonly roleOptions: { label: string; value: NavRole }[] = [
     { label: 'Gost', value: 'GUEST' },
@@ -41,6 +44,14 @@ export class App {
   protected readonly visibleNavItems = computed(() =>
     this.navItems.filter((item) => item.roles.includes(this.currentRole())),
   );
+
+  constructor() {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.isHomeRoute.set(event.urlAfterRedirects.split('?')[0] === '/');
+      }
+    });
+  }
 
   protected setRole(role: string): void {
     const selectedRole = this.roleOptions.find((option) => option.value === role)?.value;

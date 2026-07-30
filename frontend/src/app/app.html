@@ -27,6 +27,7 @@
   </header>
 
   <main id="home">
+    @if (isHomeRoute()) {
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">3x3 organizacija turnira</p>
@@ -89,6 +90,7 @@
       <p class="eyebrow">Navigacija po ulogama</p>
       <h2>Gosti prvo vide javne stranice. Delovi za uloge se pojavljuju posle prijave.</h2>
     </section>
+    }
 
     <router-outlet />
   </main>
