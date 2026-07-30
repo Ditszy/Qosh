@@ -1,15 +1,17 @@
 import { Component, computed, signal } from '@angular/core';
+import { RouterLink, RouterOutlet } from '@angular/router';
 
 type NavRole = 'GUEST' | 'PLAYER' | 'ORGANIZER' | 'REFEREE' | 'SCORER' | 'ADMIN';
 
 type NavItem = {
   label: string;
-  href: string;
+  path: string;
   roles: NavRole[];
 };
 
 @Component({
   selector: 'app-root',
+  imports: [RouterLink, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -25,15 +27,15 @@ export class App {
   ];
 
   protected readonly navItems: NavItem[] = [
-    { label: 'Početna', href: '#home', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Turniri', href: '#tournaments', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Uživo', href: '#live', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Rang lista', href: '#rankings', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Moj tim', href: '#team', roles: ['PLAYER'] },
-    { label: 'Organizator', href: '#organizer', roles: ['ORGANIZER', 'ADMIN'] },
-    { label: 'Zapisničar', href: '#scorer', roles: ['SCORER', 'ADMIN'] },
-    { label: 'Izveštaji', href: '#reports', roles: ['REFEREE', 'ADMIN'] },
-    { label: 'Admin', href: '#admin', roles: ['ADMIN'] },
+    { label: 'Početna', path: '/', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
+    { label: 'Turniri', path: '/tournaments', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
+    { label: 'Uživo', path: '/live', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
+    { label: 'Rang lista', path: '/rankings', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
+    { label: 'Moj tim', path: '/my-team', roles: ['PLAYER'] },
+    { label: 'Organizator', path: '/organizer', roles: ['ORGANIZER', 'ADMIN'] },
+    { label: 'Zapisničar', path: '/scorer', roles: ['SCORER', 'ADMIN'] },
+    { label: 'Izveštaji', path: '/reports', roles: ['REFEREE', 'ADMIN'] },
+    { label: 'Admin', path: '/admin', roles: ['ADMIN'] },
   ];
 
   protected readonly visibleNavItems = computed(() =>
