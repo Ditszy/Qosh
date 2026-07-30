@@ -1,19 +1,19 @@
 <div class="app-shell">
   <header class="topbar">
-    <a class="brand" href="#home" aria-label="Qosh početna">
+    <a class="brand" routerLink="/" aria-label="Qosh početna">
       <span class="brand-mark">Q</span>
       <span>Qosh</span>
     </a>
 
     <nav class="main-nav" aria-label="Glavna navigacija">
       @for (item of visibleNavItems(); track item.label) {
-      <a [href]="item.href">{{ item.label }}</a>
+      <a [routerLink]="item.path">{{ item.label }}</a>
       }
     </nav>
 
     <div class="account-actions" aria-label="Korisničke akcije">
-      <a class="text-action" href="#access">Prijava</a>
-      <a class="solid-action" href="#access">Registracija</a>
+      <a class="text-action" routerLink="/login">Prijava</a>
+      <a class="solid-action" routerLink="/register">Registracija</a>
     </div>
 
     <label class="role-preview">
@@ -37,8 +37,8 @@
         </p>
 
         <div class="hero-actions">
-          <a class="solid-action large" href="#tournaments">Pogledaj turnire</a>
-          <a class="text-action large" href="#live">Prati uživo</a>
+          <a class="solid-action large" routerLink="/tournaments">Pogledaj turnire</a>
+          <a class="text-action large" routerLink="/live">Prati uživo</a>
         </div>
       </div>
 
@@ -89,5 +89,7 @@
       <p class="eyebrow">Navigacija po ulogama</p>
       <h2>Gosti prvo vide javne stranice. Delovi za uloge se pojavljuju posle prijave.</h2>
     </section>
+
+    <router-outlet />
   </main>
 </div>
