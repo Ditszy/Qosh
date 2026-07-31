@@ -12,18 +12,17 @@
     </nav>
 
     <div class="account-actions" aria-label="Korisničke akcije">
+      @if (currentUser(); as user) {
+      <span class="account-summary">
+        {{ accountLabel() }}
+        <strong>{{ user.role }}</strong>
+      </span>
+      <button class="text-action" type="button" (click)="logout()">Odjava</button>
+      } @else {
       <a class="text-action" routerLink="/login">Prijava</a>
       <a class="solid-action" routerLink="/register">Registracija</a>
+      }
     </div>
-
-    <label class="role-preview">
-      Uloga
-      <select [value]="currentRole()" (change)="setRole($any($event.target).value)">
-        @for (role of roleOptions; track role.value) {
-        <option [value]="role.value">{{ role.label }}</option>
-        }
-      </select>
-    </label>
   </header>
 
   <main id="home">
