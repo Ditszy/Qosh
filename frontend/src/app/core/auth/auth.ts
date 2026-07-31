@@ -1,6 +1,9 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Store } from '@ngrx/store';
 import { tap } from 'rxjs';
+
+import { AuthActions, selectAccessToken, selectAuthSession, selectCurrentUser } from './auth.state';
 
 export type UserRole = 'PLAYER' | 'ORGANIZER' | 'REFEREE' | 'SCORER' | 'ADMIN';
 
@@ -37,12 +40,16 @@ const storageKey = 'qosh.auth.session';
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly sessionSignal = signal<AuthSession | null>(this.readSession());
+  private readonly store = inject(Store);
 
-  readonly session = this.sessionSignal.asReadonly();
-  readonly currentUser = computed(() => this.session()?.user ?? null);
-  readonly accessToken = computed(() => this.session()?.access_token ?? null);
+  readonly session = this.store.selectSignal(selectAuthSession);
+  readonly currentUser = this.store.selectSignal(selectCurrentUser);
+  readonly accessToken = this.store.selectSignal(selectAccessToken);
   readonly isAuthenticated = computed(() => Boolean(this.accessToken()));
+
+  constructor() {
+    this.store.dispatch(AuthActions.hydrateSession({ session: this.readSession() }));
+  }
 
   login(credentials: LoginRequest) {
     return this.http.post<AuthSession>(`${apiBaseUrl}/auth/login`, credentials).pipe(
@@ -56,12 +63,12 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem(storageKey);
-    this.sessionSignal.set(null);
+    this.store.dispatch(AuthActions.logout());
   }
 
   private saveSession(session: AuthSession): void {
     localStorage.setItem(storageKey, JSON.stringify(session));
-    this.sessionSignal.set(session);
+    this.store.dispatch(AuthActions.loginSucceeded({ session }));
   }
 
   private readSession(): AuthSession | null {
