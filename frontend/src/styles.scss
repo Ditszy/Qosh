@@ -378,6 +378,18 @@ h1 {
   padding: 0 12px;
 }
 
+.auth-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
+}
+
+.form-message {
+  color: #ffb199;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
 @media (max-width: 900px) {
   .topbar {
     grid-template-columns: 1fr;
