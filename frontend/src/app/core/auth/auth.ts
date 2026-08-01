@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Store } from '@ngrx/store';
 import { tap } from 'rxjs';
 
+import { ApiUrlService } from '../api';
 import { AuthActions, selectAccessToken, selectAuthSession, selectCurrentUser } from './auth.state';
 
 export type UserRole = 'PLAYER' | 'ORGANIZER' | 'REFEREE' | 'SCORER' | 'ADMIN';
@@ -32,7 +33,6 @@ export type AuthSession = {
   user: AuthUser;
 };
 
-const apiBaseUrl = 'http://localhost:3000';
 const storageKey = 'qosh.auth.session';
 
 @Injectable({
@@ -40,6 +40,7 @@ const storageKey = 'qosh.auth.session';
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
+  private readonly apiUrl = inject(ApiUrlService);
   private readonly store = inject(Store);
 
   readonly session = this.store.selectSignal(selectAuthSession);
@@ -52,13 +53,13 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest) {
-    return this.http.post<AuthSession>(`${apiBaseUrl}/auth/login`, credentials).pipe(
+    return this.http.post<AuthSession>(this.apiUrl.build('/auth/login'), credentials).pipe(
       tap((session) => this.saveSession(session)),
     );
   }
 
   register(payload: RegisterRequest) {
-    return this.http.post<AuthUser>(`${apiBaseUrl}/auth/register`, payload);
+    return this.http.post<AuthUser>(this.apiUrl.build('/auth/register'), payload);
   }
 
   logout(): void {
