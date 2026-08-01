@@ -1,10 +1,22 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { provideStore } from '@ngrx/store';
+
 import { App } from './app';
+import { provideApiBaseUrl } from './core/api';
+import { authFeatureKey, authReducer } from './core/auth/auth.state';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [
+        provideHttpClient(),
+        provideApiBaseUrl(),
+        provideRouter([]),
+        provideStore({ [authFeatureKey]: authReducer }),
+      ],
     }).compileComponents();
   });
 
@@ -16,6 +28,7 @@ describe('App', () => {
 
   it('should render title', async () => {
     const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend');
