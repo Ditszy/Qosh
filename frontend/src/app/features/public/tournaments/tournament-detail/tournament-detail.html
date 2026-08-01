@@ -1,0 +1,73 @@
+<section class="tournament-page" aria-label="Detalj turnira">
+  @if (state$ | async; as state) {
+  @switch (state.status) {
+  @case ('loading') {
+  <p class="surface-message">Ucitavanje turnira...</p>
+  }
+
+  @case ('error') {
+  <div class="surface-message error">
+    <p>Turnir trenutno nije dostupan.</p>
+    <a routerLink="/tournaments">Nazad na turnire</a>
+  </div>
+  }
+
+  @case ('loaded') {
+  <header class="detail-header">
+    <div>
+      <p class="eyebrow">Detalji turnira</p>
+      <h2>{{ state.tournament.name }}</h2>
+    </div>
+    <a routerLink="/tournaments">Svi turniri</a>
+  </header>
+
+  <section class="summary-panel" aria-label="Osnovne informacije">
+    <span class="status">{{ statusLabel(state.tournament.status) }}</span>
+    @if (state.tournament.description) {
+    <p>{{ state.tournament.description }}</p>
+    }
+    <dl>
+      <div>
+        <dt>Lokacija</dt>
+        <dd>{{ state.tournament.location }}</dd>
+      </div>
+      <div>
+        <dt>Pocetak</dt>
+        <dd>{{ state.tournament.startsAt | date: 'medium' }}</dd>
+      </div>
+      <div>
+        <dt>Kapacitet</dt>
+        <dd>{{ state.tournament.maxTeams }} timova</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="match-section" aria-label="Mecevi">
+    <h3>Mecevi</h3>
+
+    @if (state.matches.length > 0) {
+    <div class="match-list">
+      @for (match of state.matches; track match.id) {
+      <article class="match-row">
+        <div class="round">R{{ match.round }} / M{{ match.bracketPosition }}</div>
+        <div class="teams">
+          <strong>{{ teamName(match.teamA) }}</strong>
+          <span>{{ match.teamAScore }} : {{ match.teamBScore }}</span>
+          <strong>{{ teamName(match.teamB) }}</strong>
+        </div>
+        <div class="meta">
+          <span>{{ match.status }}</span>
+          <span>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Termin TBD' }}</span>
+          <span>{{ match.location || state.tournament.location }}</span>
+        </div>
+      </article>
+      }
+    </div>
+    } @else {
+    <p class="surface-message">Breket jos nije generisan.</p>
+    }
+  </section>
+  }
+  }
+  }
+</section>
