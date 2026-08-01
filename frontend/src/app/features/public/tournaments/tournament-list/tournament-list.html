@@ -1,0 +1,50 @@
+<section class="tournament-page" aria-label="Turniri">
+  <header class="page-header">
+    <p class="eyebrow">Javni pregled</p>
+    <h2>Turniri</h2>
+  </header>
+
+  @if (state$ | async; as state) {
+  @switch (state.status) {
+  @case ('loading') {
+  <p class="surface-message">Ucitavanje turnira...</p>
+  }
+
+  @case ('error') {
+  <p class="surface-message error">Turniri trenutno nisu dostupni.</p>
+  }
+
+  @case ('loaded') {
+  @if (state.tournaments.length > 0) {
+  <div class="tournament-grid">
+    @for (tournament of state.tournaments; track tournament.id) {
+    <a class="tournament-card" [routerLink]="['/tournaments', tournament.id]">
+      <span class="status">{{ statusLabel(tournament.status) }}</span>
+      <h3>{{ tournament.name }}</h3>
+      @if (tournament.description) {
+      <p>{{ tournament.description }}</p>
+      }
+      <dl>
+        <div>
+          <dt>Lokacija</dt>
+          <dd>{{ tournament.location }}</dd>
+        </div>
+        <div>
+          <dt>Start</dt>
+          <dd>{{ tournament.startsAt | date: 'medium' }}</dd>
+        </div>
+        <div>
+          <dt>Kapacitet</dt>
+          <dd>{{ tournament.maxTeams }} timova</dd>
+        </div>
+      </dl>
+    </a>
+    }
+  </div>
+  } @else {
+  <p class="surface-message">Nema objavljenih turnira.</p>
+  }
+  }
+  }
+  }
+</section>
