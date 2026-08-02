@@ -3,13 +3,45 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, filter, map, of, scan, startWith, switchMap } from 'rxjs';
 
-import type { MatchLiveStreamMessage, MatchReadBundle } from '../match.models';
+import type { MatchEvent, MatchEventType, MatchLiveStreamMessage, MatchReadBundle } from '../match.models';
+import type { MatchStatistics, StatisticLine, StatisticTotals } from '../../../statistics';
 import { MatchesApiService } from '../matches-api.service';
 
 type LiveMatchState =
   | { status: 'loading' }
   | { status: 'loaded'; bundle: MatchReadBundle }
   | { status: 'error' };
+
+const statCounters: (keyof StatisticTotals)[] = [
+  'points',
+  'onePointMade',
+  'onePointAttempted',
+  'twoPointMade',
+  'twoPointAttempted',
+  'freeThrowMade',
+  'freeThrowAttempted',
+  'rebounds',
+  'assists',
+  'steals',
+  'blocks',
+  'turnovers',
+  'fouls',
+];
+
+const eventDeltas: Record<MatchEventType, Partial<StatisticTotals>> = {
+  ONE_POINT_MADE: { points: 1, onePointMade: 1, onePointAttempted: 1 },
+  ONE_POINT_MISSED: { onePointAttempted: 1 },
+  TWO_POINT_MADE: { points: 2, twoPointMade: 1, twoPointAttempted: 1 },
+  TWO_POINT_MISSED: { twoPointAttempted: 1 },
+  FREE_THROW_MADE: { points: 1, freeThrowMade: 1, freeThrowAttempted: 1 },
+  FREE_THROW_MISSED: { freeThrowAttempted: 1 },
+  REBOUND: { rebounds: 1 },
+  ASSIST: { assists: 1 },
+  STEAL: { steals: 1 },
+  BLOCK: { blocks: 1 },
+  TURNOVER: { turnovers: 1 },
+  FOUL: { fouls: 1 },
+};
 
 @Component({
   selector: 'app-live-match',
@@ -86,6 +118,7 @@ function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessag
       return {
         ...bundle,
         events: [message.data.event, ...bundle.events],
+        statistics: applyEventToStatistics(bundle.statistics, message.data.event),
       };
     case 'match.finalized':
       return {
@@ -105,4 +138,51 @@ function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessag
     default:
       return bundle;
   }
+}
+
+function applyEventToStatistics(statistics: MatchStatistics, event: MatchEvent): MatchStatistics {
+  if (!event.playerId) {
+    return statistics;
+  }
+
+  const delta = statDeltaForEvent(event.type);
+
+  return {
+    ...statistics,
+    teams: statistics.teams.map((team) => {
+      if (team.team.id !== event.teamId || !team.players.some((stat) => stat.player.id === event.playerId)) {
+        return team;
+      }
+
+      return {
+        ...team,
+        players: team.players.map((stat) => stat.player.id === event.playerId ? addDeltaToLine(stat, delta) : stat),
+        totals: addDeltaToLine(team.totals, delta),
+      };
+    }),
+  };
+}
+
+function addDeltaToLine<T extends StatisticLine>(line: T, delta: StatisticTotals): T {
+  const totals = Object.fromEntries(
+    statCounters.map((field) => [field, line[field] + delta[field]]),
+  ) as StatisticTotals;
+
+  return {
+    ...line,
+    ...totals,
+    onePointPercentage: percentage(totals.onePointMade, totals.onePointAttempted),
+    twoPointPercentage: percentage(totals.twoPointMade, totals.twoPointAttempted),
+    freeThrowPercentage: percentage(totals.freeThrowMade, totals.freeThrowAttempted),
+  };
+}
+
+function percentage(made: number, attempted: number): number | null {
+  return attempted === 0 ? null : Number(((made / attempted) * 100).toFixed(1));
+}
+
+function statDeltaForEvent(type: MatchEventType): StatisticTotals {
+  return Object.fromEntries(
+    statCounters.map((field) => [field, eventDeltas[type][field] ?? 0]),
+  ) as StatisticTotals;
 }
