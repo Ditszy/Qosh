@@ -8,15 +8,39 @@
   <p class="surface-message error">Mec trenutno nije dostupan.</p>
   }
   @case ('loaded') {
-  <header>
-    <p class="eyebrow">Live mec</p>
-    <h2>{{ teamName(state.bundle.match.teamA) }} vs {{ teamName(state.bundle.match.teamB) }}</h2>
-    <strong>{{ state.bundle.match.teamAScore }} : {{ state.bundle.match.teamBScore }}</strong>
-  </header>
-  <p class="surface-message">
-    {{ state.bundle.match.status }} / {{ state.bundle.match.clockStatus }} /
-    {{ state.bundle.events.length }} dogadjaja
-  </p>
+  <section class="match-card" aria-label="Rezultat i vreme">
+    <header class="match-card-header">
+      <span>Live mec</span>
+      <strong>{{ state.bundle.match.status }}</strong>
+    </header>
+    <div class="score-row active">
+      <span>{{ teamName(state.bundle.match.teamA) }}</span>
+      <strong>{{ state.bundle.match.teamAScore }}</strong>
+    </div>
+    <div class="clock-row">
+      <strong>{{ state.bundle.match.clockStatus }}</strong>
+      <span>{{ clockTime(state.bundle.match.clockRemainingSeconds) }}</span>
+    </div>
+    <div class="score-row">
+      <span>{{ teamName(state.bundle.match.teamB) }}</span>
+      <strong>{{ state.bundle.match.teamBScore }}</strong>
+    </div>
+  </section>
+
+  <section class="event-feed" aria-label="Tok meca">
+    <h3>Tok meca</h3>
+    @if (state.bundle.events.length > 0) {
+    @for (event of state.bundle.events.slice(0, 6); track event.id) {
+    <article>
+      <span>{{ event.occurredAt | date: 'shortTime' }}</span>
+      <strong>{{ event.type }}</strong>
+      <p>{{ event.team.name }} @if (event.player) { / {{ event.player.firstName }} {{ event.player.lastName }} }</p>
+    </article>
+    }
+    } @else {
+    <p class="surface-message">Jos nema zabelezenih dogadjaja.</p>
+    }
+  </section>
   }
   }
   }
