@@ -112,3 +112,44 @@ export type MatchStatistics = {
   teams: MatchTeamStatistics[];
 };
 
+export type PlayerRecentMatchStatistic = StatisticLine & {
+  match: StatisticsMatchSummary;
+  team: StatisticsTeamSummary;
+};
+
+export type PlayerProfile = {
+  user: PublicUser;
+  totals: PlayerStatistic;
+  previousMatches: PlayerRecentMatchStatistic[];
+};
+
+export type PlayerStatisticsFilters = {
+  tournamentId?: string;
+  teamId?: string;
+  search?: string;
+  minGamesPlayed?: number;
+  sortBy?: PlayerStatisticSort;
+  sortDirection?: SortDirection;
+};
+
+export type NormalizedPlayerStatisticsFilters = {
+  tournamentId?: string;
+  teamId?: string;
+  search?: string;
+  minGamesPlayed?: number;
+  sortBy: PlayerStatisticSort;
+  sortDirection: SortDirection;
+};
+
+export type PlayerRankingsState = {
+  filters: NormalizedPlayerStatisticsFilters;
+  rankings: PlayerStatistic[];
+  leaders: PlayerStatisticLeader[];
+  loading: boolean;
+  error: string | null;
+};
+
+export const defaultPlayerStatisticsFilters: NormalizedPlayerStatisticsFilters = {
+  sortBy: 'points',
+  sortDirection: 'desc',
+};
