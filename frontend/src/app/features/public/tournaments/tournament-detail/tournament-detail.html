@@ -59,6 +59,7 @@
           <span>{{ match.status }}</span>
           <span>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Termin TBD' }}</span>
           <span>{{ match.location || state.tournament.location }}</span>
+          <a [routerLink]="['/matches', match.id, 'live']">Otvori mec</a>
         </div>
       </article>
       }

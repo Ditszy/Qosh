@@ -1,1 +1,23 @@
-<p>live-match works!</p>
+<section class="live-match-page" aria-label="Live mec">
+  @if (state$ | async; as state) {
+  @switch (state.status) {
+  @case ('loading') {
+  <p class="surface-message">Ucitavanje meca...</p>
+  }
+  @case ('error') {
+  <p class="surface-message error">Mec trenutno nije dostupan.</p>
+  }
+  @case ('loaded') {
+  <header>
+    <p class="eyebrow">Live mec</p>
+    <h2>{{ teamName(state.bundle.match.teamA) }} vs {{ teamName(state.bundle.match.teamB) }}</h2>
+    <strong>{{ state.bundle.match.teamAScore }} : {{ state.bundle.match.teamBScore }}</strong>
+  </header>
+  <p class="surface-message">
+    {{ state.bundle.match.status }} / {{ state.bundle.match.clockStatus }} /
+    {{ state.bundle.events.length }} dogadjaja
+  </p>
+  }
+  }
+  }
+</section>
