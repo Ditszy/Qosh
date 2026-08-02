@@ -1,4 +1,4 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, filter, map, of, scan, startWith, switchMap } from 'rxjs';
@@ -13,7 +13,7 @@ type LiveMatchState =
 
 @Component({
   selector: 'app-live-match',
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, DatePipe],
   templateUrl: './live-match.html',
   styleUrl: './live-match.scss',
 })
@@ -41,6 +41,13 @@ export class LiveMatch {
 
   protected teamName(team: MatchReadBundle['match']['teamA']): string {
     return team?.name ?? 'TBD';
+  }
+
+  protected clockTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 }
 
