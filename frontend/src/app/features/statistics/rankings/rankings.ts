@@ -26,6 +26,8 @@ export class Rankings {
   private readonly filtersSubject = new BehaviorSubject<PlayerStatisticsFilters>({ sortBy: 'points' });
 
   protected currentSortBy: RankingCategorySort = 'points';
+  protected currentSearch = '';
+  protected currentMinGamesPlayed: number | undefined;
   protected readonly categories: RankingCategory[] = [
     { label: 'PTS', sortBy: 'points' },
     { label: 'REB', sortBy: 'rebounds' },
@@ -42,7 +44,20 @@ export class Rankings {
 
   protected selectCategory(category: RankingCategory): void {
     this.currentSortBy = category.sortBy;
-    this.filtersSubject.next({ sortBy: category.sortBy });
+    this.updateFilters({ sortBy: category.sortBy });
+  }
+
+  protected searchPlayers(event: Event): void {
+    const search = (event.target as HTMLInputElement).value;
+    this.currentSearch = search;
+    this.updateFilters({ search });
+  }
+
+  protected setMinimumGames(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    const minGamesPlayed = value === '' ? undefined : Number(value);
+    this.currentMinGamesPlayed = minGamesPlayed;
+    this.updateFilters({ minGamesPlayed });
   }
 
   protected metricValue(player: PlayerStatistic, sortBy: RankingCategorySort): string {
@@ -53,5 +68,12 @@ export class Rankings {
     }
 
     return sortBy.endsWith('Percentage') ? `${value}%` : String(value);
+  }
+
+  private updateFilters(filters: PlayerStatisticsFilters): void {
+    this.filtersSubject.next({
+      ...this.filtersSubject.value,
+      ...filters,
+    });
   }
 }
