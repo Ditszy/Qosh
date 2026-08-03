@@ -1,0 +1,48 @@
+.rankings-page {
+  padding: 32px 0 48px;
+}
+
+.page-header {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.rankings-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 14px;
+}
+
+.ranking-panel,
+.leader-panel {
+  border: 1px solid #2b303a;
+  background: #101218;
+  padding: 20px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.panel-header span,
+.leader-panel h3,
+dt {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
