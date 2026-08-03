@@ -46,3 +46,51 @@ dt {
   font-weight: 900;
   text-transform: uppercase;
 }
+
+.panel-header strong {
+  font-size: 1.1rem;
+}
+
+.surface-message {
+  border-top: 1px solid #242832;
+  color: #b8bdc7;
+  padding-top: 18px;
+  font-weight: 800;
+}
+
+.leader-panel {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.leader-panel h3,
+dl,
+dt,
+dd {
+  margin: 0;
+}
+
+dl {
+  display: grid;
+  gap: 12px;
+}
+
+dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid #242832;
+  padding-top: 12px;
+}
+
+dd {
+  color: #ffffff;
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .rankings-shell {
+    grid-template-columns: 1fr;
+  }
+}
