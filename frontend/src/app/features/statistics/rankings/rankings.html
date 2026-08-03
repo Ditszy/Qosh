@@ -11,6 +11,18 @@
         <strong>Top igraci</strong>
       </div>
 
+      <div class="category-selector" aria-label="Kategorija rangiranja">
+        @for (category of categories; track category.sortBy) {
+        <button
+          type="button"
+          [class.active]="category.sortBy === currentSortBy"
+          (click)="selectCategory(category)"
+        >
+          {{ category.label }}
+        </button>
+        }
+      </div>
+
       @if (state$ | async; as state) {
       @if (state.loading) {
       <p class="surface-message">Ucitavanje rang liste...</p>
@@ -26,6 +38,7 @@
             <span>{{ player.player.username }}</span>
           </div>
           <span>{{ player.gamesPlayed }} utakmica</span>
+          <span class="metric">{{ metricValue(player, currentSortBy) }}</span>
           <span>{{ player.points }} poena</span>
           <span>{{ player.pointsPerGame }} PPG</span>
           <span>{{ player.rebounds }} skokova</span>
