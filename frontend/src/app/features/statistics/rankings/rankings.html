@@ -53,7 +53,7 @@
       } @else if (state.rankings.length > 0) {
       <div class="ranking-list" aria-label="Globalna rang lista">
         @for (player of state.rankings; track player.player.id; let rank = $index) {
-        <div class="ranking-row">
+        <a class="ranking-row" [routerLink]="['/profiles', player.player.id]">
           <span class="rank">#{{ rank + 1 }}</span>
           <div class="player">
             <strong>{{ player.player.firstName }} {{ player.player.lastName }}</strong>
@@ -65,7 +65,7 @@
           <span>{{ player.pointsPerGame }} PPG</span>
           <span>{{ player.rebounds }} skokova</span>
           <span>{{ player.assists }} asist.</span>
-        </div>
+        </a>
         }
       </div>
       } @else {
@@ -84,7 +84,9 @@
           <dt>{{ category.label }}</dt>
           <dd>
             @if (leader.leader) {
-            <strong>{{ leader.leader.player.firstName }} {{ leader.leader.player.lastName }}</strong>
+            <a [routerLink]="['/profiles', leader.leader.player.id]">
+              {{ leader.leader.player.firstName }} {{ leader.leader.player.lastName }}
+            </a>
             <span>{{ metricValue(leader.leader, category.sortBy) }}</span>
             } @else {
             <strong>-</strong>

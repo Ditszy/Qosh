@@ -27,6 +27,7 @@ export const routes: Routes = [
   { path: 'matches/:id/live', component: LiveMatch },
   page('live', 'Mecevi uzivo', 'SSE tokovi'),
   { path: 'rankings', component: Rankings },
+  page('profiles/:id', 'Profil igraca', 'Statistika igraca'),
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   rolePage('my-team', 'Moj tim', 'Igrac', ['PLAYER']),

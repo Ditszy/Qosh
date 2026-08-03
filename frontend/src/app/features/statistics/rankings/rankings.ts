@@ -1,5 +1,6 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 import { PlayerRankingsService } from '../player-rankings.service';
@@ -23,7 +24,7 @@ type RankingCategory = {
 
 @Component({
   selector: 'app-rankings',
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, RouterLink],
   templateUrl: './rankings.html',
   styleUrl: './rankings.scss',
 })
