@@ -84,6 +84,40 @@ dt {
   color: #ffffff;
 }
 
+.filter-bar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(120px, 180px);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.filter-bar label {
+  display: grid;
+  gap: 6px;
+}
+
+.filter-bar span {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.filter-bar input {
+  width: 100%;
+  border: 1px solid #2b303a;
+  background: #151922;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 800;
+  padding: 10px;
+}
+
+.filter-bar input:focus {
+  border-color: #ff5a1f;
+  outline: none;
+}
+
 .ranking-list {
   display: grid;
   border-top: 1px solid #242832;
@@ -162,6 +196,10 @@ dd {
 
   .ranking-row {
     grid-template-columns: 40px 1fr;
+  }
+
+  .filter-bar {
+    grid-template-columns: 1fr;
   }
 
   .ranking-row > span:not(.rank) {

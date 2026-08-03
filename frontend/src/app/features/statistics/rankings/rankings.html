@@ -23,6 +23,28 @@
         }
       </div>
 
+      <div class="filter-bar" aria-label="Filteri rang liste">
+        <label>
+          <span>Pretraga</span>
+          <input
+            type="search"
+            [value]="currentSearch"
+            (input)="searchPlayers($event)"
+            placeholder="Ime, username, email"
+          />
+        </label>
+
+        <label>
+          <span>Min. utakmica</span>
+          <input
+            type="number"
+            min="0"
+            [value]="currentMinGamesPlayed ?? ''"
+            (input)="setMinimumGames($event)"
+          />
+        </label>
+      </div>
+
       @if (state$ | async; as state) {
       @if (state.loading) {
       <p class="surface-message">Ucitavanje rang liste...</p>
