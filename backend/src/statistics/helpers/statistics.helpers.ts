@@ -19,8 +19,11 @@ export const leaderCategories: LeaderCategory[] = [
     PlayerStatisticSort.GAMES_PLAYED,
     PlayerStatisticSort.POINTS,
     PlayerStatisticSort.ONE_POINT_MADE,
+    PlayerStatisticSort.ONE_POINT_PERCENTAGE,
     PlayerStatisticSort.TWO_POINT_MADE,
+    PlayerStatisticSort.TWO_POINT_PERCENTAGE,
     PlayerStatisticSort.FREE_THROW_MADE,
+    PlayerStatisticSort.FREE_THROW_PERCENTAGE,
     PlayerStatisticSort.REBOUNDS,
     PlayerStatisticSort.ASSISTS,
     PlayerStatisticSort.STEALS,
@@ -256,9 +259,9 @@ export function compareStatistics(
 
 export function findLeader(statistics: PlayerStatistic[], category: LeaderCategory): PlayerStatistic | null {
     return statistics
-        .filter((statistic) => statistic[category] > 0)
+        .filter((statistic) => getNumericStatValue(statistic, category) > 0)
         .sort((first, second) => {
-            const categoryDifference = second[category] - first[category];
+            const categoryDifference = getNumericStatValue(second, category) - getNumericStatValue(first, category);
 
             if (categoryDifference !== 0) {
                 return categoryDifference;
@@ -266,6 +269,10 @@ export function findLeader(statistics: PlayerStatistic[], category: LeaderCatego
 
             return first.player.username.localeCompare(second.player.username);
         })[0] ?? null;
+}
+
+function getNumericStatValue(statistic: PlayerStatistic, category: LeaderCategory): number {
+    return statistic[category] ?? 0;
 }
 
 export function sumStatisticLines(statistics: StatisticTotals[]): StatisticLine {
