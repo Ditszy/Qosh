@@ -1,4 +1,5 @@
 export { PlayerRankingsService } from './player-rankings.service';
+export { Rankings } from './rankings/rankings';
 export { StatisticsApiService } from './statistics-api.service';
 export type {
   LeaderCategory,

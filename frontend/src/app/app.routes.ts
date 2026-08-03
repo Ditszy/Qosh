@@ -6,6 +6,7 @@ import { Register } from './features/auth/register/register';
 import { LiveMatch } from './features/public/live-match/live-match/live-match';
 import { TournamentDetail } from './features/public/tournaments/tournament-detail/tournament-detail';
 import { TournamentList } from './features/public/tournaments/tournament-list/tournament-list';
+import { Rankings } from './features/statistics/rankings/rankings';
 import { PlaceholderPage } from './pages/placeholder-page';
 
 const page = (path: string, title: string, eyebrow: string): Routes[number] => ({
@@ -25,7 +26,7 @@ export const routes: Routes = [
   { path: 'tournaments/:id', component: TournamentDetail },
   { path: 'matches/:id/live', component: LiveMatch },
   page('live', 'Mecevi uzivo', 'SSE tokovi'),
-  page('rankings', 'Rang lista', 'Statistika'),
+  { path: 'rankings', component: Rankings },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
   rolePage('my-team', 'Moj tim', 'Igrac', ['PLAYER']),
