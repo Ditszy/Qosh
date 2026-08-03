@@ -11,7 +11,17 @@
         <strong>Top igraci</strong>
       </div>
 
+      @if (state$ | async; as state) {
+      @if (state.loading) {
+      <p class="surface-message">Ucitavanje rang liste...</p>
+      } @else if (state.error) {
+      <p class="surface-message error">Rang lista trenutno nije dostupna.</p>
+      } @else if (state.rankings.length > 0) {
+      <p class="surface-message">{{ state.rankings.length }} igraca spremno za prikaz.</p>
+      } @else {
       <p class="surface-message">Nema prikazanih igraca.</p>
+      }
+      }
     </article>
 
     <aside class="leader-panel" aria-label="Lideri kategorija">
