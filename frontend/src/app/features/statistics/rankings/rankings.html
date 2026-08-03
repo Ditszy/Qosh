@@ -76,20 +76,26 @@
 
     <aside class="leader-panel" aria-label="Lideri kategorija">
       <h3>Lideri</h3>
+      @if (state$ | async; as state) {
       <dl>
-        <div>
-          <dt>Poeni</dt>
-          <dd>-</dd>
+        @for (category of categories; track category.sortBy) {
+        @if (leaderFor(state.leaders, category.sortBy); as leader) {
+        <div class="leader-row">
+          <dt>{{ category.label }}</dt>
+          <dd>
+            @if (leader.leader) {
+            <strong>{{ leader.leader.player.firstName }} {{ leader.leader.player.lastName }}</strong>
+            <span>{{ metricValue(leader.leader, category.sortBy) }}</span>
+            } @else {
+            <strong>-</strong>
+            <span>Nema podataka</span>
+            }
+          </dd>
         </div>
-        <div>
-          <dt>Skokovi</dt>
-          <dd>-</dd>
-        </div>
-        <div>
-          <dt>Asistencije</dt>
-          <dd>-</dd>
-        </div>
+        }
+        }
       </dl>
+      }
     </aside>
   </div>
 </section>

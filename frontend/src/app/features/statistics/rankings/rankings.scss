@@ -189,6 +189,17 @@ dd {
   font-weight: 900;
 }
 
+.leader-row dd {
+  display: grid;
+  gap: 4px;
+  text-align: right;
+}
+
+.leader-row span {
+  color: #ff5a1f;
+  font-size: 0.78rem;
+}
+
 @media (max-width: 760px) {
   .rankings-shell {
     grid-template-columns: 1fr;

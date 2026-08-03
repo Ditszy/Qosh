@@ -3,7 +3,13 @@ import { Component, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 import { PlayerRankingsService } from '../player-rankings.service';
-import type { PlayerRankingsState, PlayerStatistic, PlayerStatisticsFilters, PlayerStatisticSort } from '../statistics.models';
+import type {
+  PlayerRankingsState,
+  PlayerStatistic,
+  PlayerStatisticLeader,
+  PlayerStatisticsFilters,
+  PlayerStatisticSort,
+} from '../statistics.models';
 
 type RankingCategorySort = Extract<
   PlayerStatisticSort,
@@ -68,6 +74,10 @@ export class Rankings {
     }
 
     return sortBy.endsWith('Percentage') ? `${value}%` : String(value);
+  }
+
+  protected leaderFor(leaders: PlayerStatisticLeader[], sortBy: RankingCategorySort): PlayerStatisticLeader | null {
+    return leaders.find((leader) => leader.category === sortBy) ?? null;
   }
 
   private updateFilters(filters: PlayerStatisticsFilters): void {
