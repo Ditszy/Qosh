@@ -1,6 +1,6 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, filter, map, of, scan, startWith, switchMap } from 'rxjs';
 
 import type { MatchEvent, MatchEventType, MatchLiveStreamMessage, MatchReadBundle } from '../match.models';
@@ -45,7 +45,7 @@ const eventDeltas: Record<MatchEventType, Partial<StatisticTotals>> = {
 
 @Component({
   selector: 'app-live-match',
-  imports: [AsyncPipe, DatePipe],
+  imports: [AsyncPipe, DatePipe, RouterLink],
   templateUrl: './live-match.html',
   styleUrl: './live-match.scss',
 })

@@ -72,7 +72,11 @@
         <tbody>
           @for (stat of team.players; track stat.player.id) {
           <tr>
-            <th>{{ stat.player.firstName }} ({{ stat.player.username }}) {{ stat.player.lastName }}</th>
+            <th>
+              <a [routerLink]="['/profiles', stat.player.id]">
+                {{ stat.player.firstName }} ({{ stat.player.username }}) {{ stat.player.lastName }}
+              </a>
+            </th>
             <td>{{ stat.points }}</td>
             <td>{{ stat.onePointMade }}</td>
             <td>{{ stat.onePointAttempted }}</td>
