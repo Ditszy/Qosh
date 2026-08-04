@@ -1,1 +1,19 @@
-<p>player-profile works!</p>
+<section class="player-profile-page" aria-label="Profil igraca">
+  @if (state$ | async; as state) {
+  @switch (state.status) {
+  @case ('loading') {
+  <p class="surface-message">Ucitavanje profila...</p>
+  }
+  @case ('error') {
+  <p class="surface-message error">Profil trenutno nije dostupan.</p>
+  }
+  @case ('loaded') {
+  <header class="page-header">
+    <p class="eyebrow">Profil igraca</p>
+    <h2>{{ state.profile.user.firstName }} {{ state.profile.user.lastName }}</h2>
+    <p>{{ state.profile.user.username }} / {{ state.profile.totals.gamesPlayed }} utakmica</p>
+  </header>
+  }
+  }
+  }
+</section>
