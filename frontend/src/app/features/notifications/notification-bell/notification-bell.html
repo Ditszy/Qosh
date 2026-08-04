@@ -1,1 +1,29 @@
-<p>notification-bell works!</p>
+@if (state$ | async; as state) {
+<details class="notification-bell">
+  <summary>
+    <span>Obavestenja</span>
+    @if (state.unreadCount > 0) {
+    <strong>{{ state.unreadCount }}</strong>
+    }
+  </summary>
+
+  <section aria-label="Lista obavestenja">
+    @if (state.loading) {
+    <p>Ucitavanje...</p>
+    } @else if (state.error) {
+    <p>Obavestenja trenutno nisu dostupna.</p>
+    } @else if (state.notifications.length > 0) {
+    @for (notification of state.notifications.slice(0, 5); track notification.id) {
+    <article [class.unread]="!notification.readAt">
+      <span>{{ notification.type }}</span>
+      <strong>{{ notification.title }}</strong>
+      <p>{{ notification.body }}</p>
+      <time>{{ notification.createdAt | date: 'short' }}</time>
+    </article>
+    }
+    } @else {
+    <p>Nema obavestenja.</p>
+    }
+  </section>
+</details>
+}
