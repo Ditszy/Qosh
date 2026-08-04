@@ -32,4 +32,8 @@ export class PlayerProfile {
       ),
     ),
   );
+
+  protected percentageValue(value: number | null): string {
+    return value === null ? '-' : `${value}%`;
+  }
 }
