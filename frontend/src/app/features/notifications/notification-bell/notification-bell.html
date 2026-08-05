@@ -7,7 +7,7 @@
     }
   </summary>
 
-  <section aria-label="Lista obavestenja">
+  <section aria-label="Lista obavestenja" aria-live="polite">
     @if (state.loading) {
     <p>Ucitavanje...</p>
     } @else if (state.error) {
@@ -18,14 +18,18 @@
       <span>{{ notification.type }}</span>
       <strong>{{ notification.title }}</strong>
       <p>{{ notification.body }}</p>
-      <time>{{ notification.createdAt | date: 'short' }}</time>
-      @if (!notification.readAt) {
-      <button type="button" (click)="markRead(notification.id)">Procitano</button>
-      }
+      <footer>
+        <time>{{ notification.createdAt | date: 'short' }}</time>
+        @if (!notification.readAt) {
+        <button type="button" (click)="markRead(notification.id)">Procitano</button>
+        } @else {
+        <span>Procitano</span>
+        }
+      </footer>
     </article>
     }
     } @else {
-    <p>Nema obavestenja.</p>
+    <p class="empty-state">Nema novih obavestenja.</p>
     }
   </section>
 </details>

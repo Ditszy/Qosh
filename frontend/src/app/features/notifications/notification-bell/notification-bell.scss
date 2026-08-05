@@ -63,6 +63,19 @@ article p {
   margin: 4px 0;
 }
 
+article footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+footer span {
+  color: #6b7280;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
 article button {
   border: 1px solid #ff5a1f;
   background: transparent;
@@ -70,6 +83,11 @@ article button {
   cursor: pointer;
   font-size: 0.72rem;
   font-weight: 900;
-  margin-top: 8px;
   padding: 6px 8px;
+}
+
+article button:hover,
+article button:focus-visible {
+  background: #ff5a1f;
+  color: #ffffff;
 }
