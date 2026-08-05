@@ -25,6 +25,7 @@ export const NotificationsActions = createActionGroup({
     'Load Mine': emptyProps(),
     'Load Mine Succeeded': props<{ notifications: NotificationItem[] }>(),
     'Load Mine Failed': props<{ error: string }>(),
+    'Watch Mine': emptyProps(),
     'Notification Received': props<{ notification: NotificationItem }>(),
     'Mark Read': props<{ notificationId: string }>(),
     'Mark Read Succeeded': props<{ notification: NotificationItem }>(),

@@ -29,5 +29,6 @@ export class NotificationBell implements OnInit {
 
   ngOnInit(): void {
     this.store.dispatch(NotificationsActions.loadMine());
+    this.store.dispatch(NotificationsActions.watchMine());
   }
 }
