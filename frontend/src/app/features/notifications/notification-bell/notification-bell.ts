@@ -31,4 +31,8 @@ export class NotificationBell implements OnInit {
     this.store.dispatch(NotificationsActions.loadMine());
     this.store.dispatch(NotificationsActions.watchMine());
   }
+
+  protected markRead(notificationId: string): void {
+    this.store.dispatch(NotificationsActions.markRead({ notificationId }));
+  }
 }

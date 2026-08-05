@@ -13,12 +13,15 @@
     } @else if (state.error) {
     <p>Obavestenja trenutno nisu dostupna.</p>
     } @else if (state.notifications.length > 0) {
-    @for (notification of state.notifications.slice(0, 5); track notification.id) {
+    @for (notification of state.notifications; track notification.id) {
     <article [class.unread]="!notification.readAt">
       <span>{{ notification.type }}</span>
       <strong>{{ notification.title }}</strong>
       <p>{{ notification.body }}</p>
       <time>{{ notification.createdAt | date: 'short' }}</time>
+      @if (!notification.readAt) {
+      <button type="button" (click)="markRead(notification.id)">Procitano</button>
+      }
     </article>
     }
     } @else {
