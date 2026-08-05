@@ -1,7 +1,15 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { combineLatest } from 'rxjs';
 
-import { NotificationStreamService } from '../notification-stream.service';
+import {
+  NotificationsActions,
+  selectLatestNotifications,
+  selectNotificationsError,
+  selectNotificationsLoading,
+  selectUnreadNotificationCount,
+} from '../notification.state';
 
 @Component({
   selector: 'app-notification-bell',
@@ -9,8 +17,17 @@ import { NotificationStreamService } from '../notification-stream.service';
   templateUrl: './notification-bell.html',
   styleUrl: './notification-bell.scss',
 })
-export class NotificationBell {
-  private readonly notificationStream = inject(NotificationStreamService);
+export class NotificationBell implements OnInit {
+  private readonly store = inject(Store);
 
-  protected readonly state$ = this.notificationStream.watchMine();
+  protected readonly state$ = combineLatest({
+    notifications: this.store.select(selectLatestNotifications),
+    unreadCount: this.store.select(selectUnreadNotificationCount),
+    loading: this.store.select(selectNotificationsLoading),
+    error: this.store.select(selectNotificationsError),
+  });
+
+  ngOnInit(): void {
+    this.store.dispatch(NotificationsActions.loadMine());
+  }
 }
