@@ -17,6 +17,7 @@
         {{ accountLabel() }}
         <strong>{{ user.role }}</strong>
       </span>
+      <app-notification-bell />
       <button class="text-action" type="button" (click)="logout()">Odjava</button>
       } @else {
       <a class="text-action" routerLink="/login">Prijava</a>

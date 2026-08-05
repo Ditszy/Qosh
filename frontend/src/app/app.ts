@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
 import { AuthService, UserRole } from './core/auth/auth';
+import { NotificationBell } from './features/notifications';
 
 type NavRole = 'GUEST' | UserRole;
 
@@ -13,7 +14,7 @@ type NavItem = {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink, RouterOutlet],
+  imports: [NotificationBell, RouterLink, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
