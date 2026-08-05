@@ -1,5 +1,6 @@
 export { NotificationBell } from './notification-bell/notification-bell';
 export { NotificationStreamService } from './notification-stream.service';
+export { loadMineNotifications } from './notification.effects';
 export {
   NotificationsActions,
   notificationsFeatureKey,
