@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, EMPTY, exhaustMap, map, of, switchMap } from 'rxjs';
+import { catchError, concatMap, EMPTY, exhaustMap, map, of, switchMap } from 'rxjs';
 
 import { NotificationsApiService } from './notifications-api.service';
 import { NotificationsActions } from './notification.state';
@@ -31,6 +31,22 @@ export const watchMineNotifications = createEffect(
             NotificationsActions.notificationReceived({ notification: message.data.notification }),
           ),
           catchError(() => EMPTY),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const markNotificationRead = createEffect(
+  (actions$ = inject(Actions), notificationsApi = inject(NotificationsApiService)) =>
+    actions$.pipe(
+      ofType(NotificationsActions.markRead),
+      concatMap(({ notificationId }) =>
+        notificationsApi.markAsRead(notificationId).pipe(
+          map((notification) => NotificationsActions.markReadSucceeded({ notification })),
+          catchError(() =>
+            of(NotificationsActions.markReadFailed({ error: 'Notification could not be marked as read.' })),
+          ),
         ),
       ),
     ),
