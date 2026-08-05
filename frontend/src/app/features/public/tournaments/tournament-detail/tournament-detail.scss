@@ -10,6 +10,12 @@
   margin-bottom: 20px;
 }
 
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .detail-header h2 {
   margin-top: 10px;
   color: #ffffff;
@@ -24,6 +30,17 @@
   font-size: 0.78rem;
   font-weight: 900;
   text-decoration: none;
+  text-transform: uppercase;
+}
+
+.detail-actions button {
+  border: 0;
+  background: #ff5a1f;
+  color: #090a0d;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 950;
+  padding: 10px 12px;
   text-transform: uppercase;
 }
 

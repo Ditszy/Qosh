@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, distinctUntilChanged, filter, forkJoin, map, Observable, of, startWith, switchMap } from 'rxjs';
 
+import { AuthService } from '../../../../core/auth/auth';
 import type { Tournament, TournamentMatch, TournamentStatus } from '../tournament.models';
 import { TournamentsApiService } from '../tournaments-api.service';
 
@@ -28,7 +29,9 @@ const statusLabels: Record<TournamentStatus, string> = {
 })
 export class TournamentDetail {
   private readonly route = inject(ActivatedRoute);
+  private readonly authService = inject(AuthService);
   private readonly tournamentsApi = inject(TournamentsApiService);
+  protected readonly currentUser = this.authService.currentUser;
 
   private readonly tournamentId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -51,6 +54,10 @@ export class TournamentDetail {
 
   protected statusLabel(status: TournamentStatus): string {
     return statusLabels[status];
+  }
+
+  protected canRegisterTeam(tournament: Tournament): boolean {
+    return tournament.status === 'SIGNUPS_OPEN' && this.currentUser()?.role === 'PLAYER';
   }
 
   protected teamName(team: TournamentMatch['teamA']): string {

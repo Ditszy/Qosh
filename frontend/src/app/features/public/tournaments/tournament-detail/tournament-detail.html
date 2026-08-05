@@ -18,7 +18,12 @@
       <p class="eyebrow">Detalji turnira</p>
       <h2>{{ state.tournament.name }}</h2>
     </div>
-    <a routerLink="/tournaments">Svi turniri</a>
+    <div class="detail-actions">
+      @if (canRegisterTeam(state.tournament)) {
+      <button type="button">Prijavi tim</button>
+      }
+      <a routerLink="/tournaments">Svi turniri</a>
+    </div>
   </header>
 
   <section class="summary-panel" aria-label="Osnovne informacije">
