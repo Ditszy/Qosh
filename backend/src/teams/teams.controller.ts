@@ -85,6 +85,14 @@ export class TeamsController {
         return this.teamsService.findMyPendingInvites(req.user.id);
     }
 
+    @Get('me')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER)
+    findMyTeams(@Request() req: AuthenticatedRequest) {
+        return this.teamsService.findMyTeams(req.user.id);
+    }
+
     @Get(':teamId/invites')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)

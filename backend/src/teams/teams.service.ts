@@ -428,6 +428,31 @@ export class TeamsService {
         });
     }
 
+    async findMyTeams(userId: string): Promise<TeamWithMembers[]> {
+        return this.prisma.team.findMany({
+            where: {
+                members: {
+                    some: { userId },
+                },
+            },
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: publicUserSelect,
+                        },
+                    },
+                    orderBy: {
+                        joinedAt: 'asc',
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+    }
+
     async findPendingInvitesByTeam(teamId: string, actor: TeamActor): Promise<TeamInviteWithUsers[]> {
         const team = await this.prisma.team.findUnique({
             where: { id: teamId },

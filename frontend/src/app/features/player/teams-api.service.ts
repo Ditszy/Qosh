@@ -42,6 +42,10 @@ export class TeamsApiService {
     return this.http.get<TeamInvite[]>(this.apiUrl.build('/teams/invites/me'));
   }
 
+  listMyTeams(): Observable<TeamDetail[]> {
+    return this.http.get<TeamDetail[]>(this.apiUrl.build('/teams/me'));
+  }
+
   acceptInvite(inviteId: string): Observable<TeamDetail> {
     return this.http.post<TeamDetail>(this.apiUrl.build(`/teams/invites/${inviteId}/accept`), {});
   }
