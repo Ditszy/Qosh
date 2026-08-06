@@ -25,6 +25,7 @@
       @for (member of team.members; track member.id) {
       <span>{{ memberLabel(member) }}</span>
       @if (canRemoveMember(team, member)) {
+      <button type="button" class="text-action" (click)="transferCaptain(team.id, member.id)">Kapiten</button>
       <button type="button" class="text-action" (click)="removeMember(team.id, member.id)">Ukloni</button>
       }
       }

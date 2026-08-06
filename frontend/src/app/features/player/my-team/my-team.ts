@@ -62,6 +62,14 @@ export class MyTeam {
     });
   }
 
+  protected transferCaptain(teamId: string, memberId: string): void {
+    this.actionError.set(null);
+    this.teamsApi.transferCaptain(teamId, memberId).subscribe({
+      next: () => this.reload$.next(),
+      error: () => this.actionError.set('Promena kapitena nije uspela.'),
+    });
+  }
+
   protected acceptInvite(inviteId: string): void {
     this.actionError.set(null);
     this.teamsApi.acceptInvite(inviteId).subscribe({

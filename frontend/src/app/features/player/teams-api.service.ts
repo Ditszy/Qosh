@@ -57,4 +57,8 @@ export class TeamsApiService {
   removeMember(teamId: string, memberId: string): Observable<TeamDetail> {
     return this.http.delete<TeamDetail>(this.apiUrl.build(`/teams/${teamId}/members/${memberId}`));
   }
+
+  transferCaptain(teamId: string, memberId: string): Observable<TeamDetail> {
+    return this.http.post<TeamDetail>(this.apiUrl.build(`/teams/${teamId}/members/${memberId}/transfer-captain`), {});
+  }
 }
