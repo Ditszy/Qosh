@@ -1,9 +1,11 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, distinctUntilChanged, filter, forkJoin, map, Observable, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
+import { TeamsApiService } from '../../../player/teams-api.service';
 import type { Tournament, TournamentMatch, TournamentStatus } from '../tournament.models';
 import { TournamentsApiService } from '../tournaments-api.service';
 
@@ -23,7 +25,7 @@ const statusLabels: Record<TournamentStatus, string> = {
 
 @Component({
   selector: 'app-tournament-detail',
-  imports: [AsyncPipe, DatePipe, RouterLink],
+  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink],
   templateUrl: './tournament-detail.html',
   styleUrl: './tournament-detail.scss',
 })
@@ -31,7 +33,11 @@ export class TournamentDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly tournamentsApi = inject(TournamentsApiService);
+  private readonly teamsApi = inject(TeamsApiService);
   protected readonly currentUser = this.authService.currentUser;
+  protected readonly signupOpen = signal(false);
+  protected readonly teamNameInput = signal('');
+  protected readonly signupFeedback = signal<string | null>(null);
 
   private readonly tournamentId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -58,6 +64,24 @@ export class TournamentDetail {
 
   protected canRegisterTeam(tournament: Tournament): boolean {
     return tournament.status === 'SIGNUPS_OPEN' && this.currentUser()?.role === 'PLAYER';
+  }
+
+  protected submitTeamSignup(tournament: Tournament): void {
+    const name = this.teamNameInput().trim();
+
+    if (!name) {
+      return;
+    }
+
+    this.signupFeedback.set(null);
+
+    this.teamsApi.createTeam({ name, tournamentId: tournament.id }).subscribe({
+      next: () => {
+        this.teamNameInput.set('');
+        this.signupFeedback.set('Tim je prijavljen.');
+      },
+      error: () => this.signupFeedback.set('Prijava tima nije uspjela.'),
+    });
   }
 
   protected teamName(team: TournamentMatch['teamA']): string {

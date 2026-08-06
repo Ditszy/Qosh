@@ -44,6 +44,22 @@
   text-transform: uppercase;
 }
 
+.signup-form {
+  margin-bottom: 20px;
+  border: 1px solid #2b303a;
+  background: #101218;
+  padding: 16px;
+}
+
+.signup-form input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #2b303a;
+  background: #090a0d;
+  color: #ffffff;
+  padding: 10px 12px;
+}
+
 .summary-panel,
 .surface-message,
 .match-row {
@@ -190,6 +206,10 @@ dd {
   dl,
   .match-row {
     grid-template-columns: 1fr;
+  }
+
+  .signup-form div {
+    display: grid;
   }
 
   .meta {
