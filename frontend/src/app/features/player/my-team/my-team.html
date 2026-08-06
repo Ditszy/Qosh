@@ -1,0 +1,32 @@
+<section class="route-placeholder" aria-label="Moj tim">
+  <p class="eyebrow">Igrac</p>
+  <h2>Moj tim</h2>
+
+  @if (state$ | async; as state) {
+  @switch (state.status) {
+  @case ('loading') {
+  <p>Ucitavanje poziva...</p>
+  }
+
+  @case ('error') {
+  <p>Trenutno nije moguce ucitati pozive.</p>
+  }
+
+  @case ('loaded') {
+  @if (state.invites.length > 0) {
+  <div class="invite-list">
+    @for (invite of state.invites; track invite.id) {
+    <article>
+      <strong>{{ teamLabel(invite) }}</strong>
+      <span>Poslao {{ invite.inviter.username }}</span>
+      <span>{{ invite.createdAt | date: 'short' }}</span>
+    </article>
+    }
+  </div>
+  } @else {
+  <p>Nemas pozive na cekanju.</p>
+  }
+  }
+  }
+  }
+</section>

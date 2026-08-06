@@ -3,6 +3,7 @@ import { roleGuard } from './core/auth/auth.guards';
 import { UserRole } from './core/auth/auth';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
+import { MyTeam } from './features/player/my-team/my-team';
 import { LiveMatch } from './features/public/live-match/live-match/live-match';
 import { TournamentDetail } from './features/public/tournaments/tournament-detail/tournament-detail';
 import { TournamentList } from './features/public/tournaments/tournament-list/tournament-list';
@@ -31,7 +32,7 @@ export const routes: Routes = [
   { path: 'profiles/:id', component: PlayerProfile },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
-  rolePage('my-team', 'Moj tim', 'Igrac', ['PLAYER']),
+  { path: 'my-team', component: MyTeam, canActivate: [roleGuard], data: { roles: ['PLAYER'] } },
   rolePage('organizer', 'Organizator', 'Kontrola turnira', ['ORGANIZER', 'ADMIN']),
   rolePage('scorer', 'Zapisnicar', 'Live scoring', ['SCORER', 'ADMIN']),
   rolePage('reports', 'Izvestaji', 'Sudija', ['REFEREE', 'ADMIN']),
