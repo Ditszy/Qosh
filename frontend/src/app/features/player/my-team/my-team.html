@@ -22,23 +22,31 @@
     @for (team of state.teams; track team.id) {
     <article>
       <strong>{{ team.name }}</strong>
+      <div class="roster-list">
       @for (member of team.members; track member.id) {
-      <span>{{ memberLabel(member) }}</span>
+      <div class="roster-row">
+        <span>{{ memberLabel(member) }}</span>
       @if (canRemoveMember(team, member)) {
+        <div class="roster-actions">
       <button type="button" class="text-action" (click)="transferCaptain(team.id, member.id)">Kapiten</button>
       <button type="button" class="text-action" (click)="removeMember(team.id, member.id)">Ukloni</button>
+        </div>
       }
+      </div>
       }
+      </div>
       @if (isCaptain(team)) {
-      <div class="account-actions">
+      <div class="invite-search">
         <input type="text" [ngModel]="inviteSearch(team.id)" (ngModelChange)="setInviteSearch(team.id, $event)" placeholder="Pretrazi igraca" />
         <button type="button" class="solid-action" (click)="sendInvite(team.id)">Pozovi</button>
       </div>
+      <div class="search-results">
       @for (player of searchResults(team.id); track player.id) {
       <button type="button" class="text-action" (click)="selectInvitePlayer(team.id, player)">
         {{ player.username }} / {{ player.firstName }} {{ player.lastName }}
       </button>
       }
+      </div>
       }
     </article>
     }
