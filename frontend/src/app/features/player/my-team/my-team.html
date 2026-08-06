@@ -12,10 +12,27 @@
   }
 
   @case ('error') {
-  <p>Trenutno nije moguce ucitati pozive.</p>
+  <p>Trenutno nije moguce ucitati timove.</p>
   }
 
   @case ('loaded') {
+  <h3>Moji timovi</h3>
+  @if (state.teams.length > 0) {
+  <div class="invite-list">
+    @for (team of state.teams; track team.id) {
+    <article>
+      <strong>{{ team.name }}</strong>
+      @for (member of team.members; track member.id) {
+      <span>{{ memberLabel(member) }}</span>
+      }
+    </article>
+    }
+  </div>
+  } @else {
+  <p>Nisi clan nijednog tima.</p>
+  }
+
+  <h3>Pozivi</h3>
   @if (state.invites.length > 0) {
   <div class="invite-list">
     @for (invite of state.invites; track invite.id) {

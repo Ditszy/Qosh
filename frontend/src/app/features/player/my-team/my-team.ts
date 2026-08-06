@@ -1,12 +1,12 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { catchError, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { catchError, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
 
-import { TeamsApiService, type TeamInvite } from '../teams-api.service';
+import { TeamsApiService, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
 
 type MyTeamState =
   | { status: 'loading' }
-  | { status: 'loaded'; invites: TeamInvite[] }
+  | { status: 'loaded'; teams: TeamDetail[]; invites: TeamInvite[] }
   | { status: 'error' };
 
 @Component({
@@ -17,14 +17,17 @@ type MyTeamState =
 })
 export class MyTeam {
   private readonly teamsApi = inject(TeamsApiService);
-  private readonly reloadInvites$ = new Subject<void>();
+  private readonly reload$ = new Subject<void>();
   protected readonly actionError = signal<string | null>(null);
 
-  protected readonly state$ = this.reloadInvites$.pipe(
+  protected readonly state$ = this.reload$.pipe(
     startWith(undefined),
     switchMap(() =>
-      this.teamsApi.listMyPendingInvites().pipe(
-        map((invites) => ({ status: 'loaded', invites }) satisfies MyTeamState),
+      forkJoin({
+        teams: this.teamsApi.listMyTeams(),
+        invites: this.teamsApi.listMyPendingInvites(),
+      }).pipe(
+        map(({ teams, invites }) => ({ status: 'loaded', teams, invites }) satisfies MyTeamState),
         startWith({ status: 'loading' } satisfies MyTeamState),
         catchError(() => of({ status: 'error' } satisfies MyTeamState)),
       ),
@@ -35,10 +38,14 @@ export class MyTeam {
     return invite.team ? `${invite.team.name} / ${invite.team.tournament.name}` : 'Poziv za tim';
   }
 
+  protected memberLabel(member: TeamMember): string {
+    return `${member.user.firstName} ${member.user.lastName} (${member.role})`;
+  }
+
   protected acceptInvite(inviteId: string): void {
     this.actionError.set(null);
     this.teamsApi.acceptInvite(inviteId).subscribe({
-      next: () => this.reloadInvites$.next(),
+      next: () => this.reload$.next(),
       error: () => this.actionError.set('Prihvatanje poziva nije uspelo.'),
     });
   }
@@ -46,7 +53,7 @@ export class MyTeam {
   protected declineInvite(inviteId: string): void {
     this.actionError.set(null);
     this.teamsApi.declineInvite(inviteId).subscribe({
-      next: () => this.reloadInvites$.next(),
+      next: () => this.reload$.next(),
       error: () => this.actionError.set('Odbijanje poziva nije uspelo.'),
     });
   }
