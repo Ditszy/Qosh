@@ -5,6 +5,7 @@ import { catchError, forkJoin, map, of, startWith, Subject, switchMap } from 'rx
 
 import { AuthService } from '../../../core/auth/auth';
 import { TeamsApiService, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
+import type { PublicUser } from '../../public/tournaments/tournament.models';
 
 type MyTeamState =
   | { status: 'loading' }
@@ -24,6 +25,8 @@ export class MyTeam {
   protected readonly currentUser = this.authService.currentUser;
   protected readonly actionError = signal<string | null>(null);
   protected readonly invitePlayerIds = signal<Record<string, string>>({});
+  protected readonly inviteSearches = signal<Record<string, string>>({});
+  protected readonly inviteSearchResults = signal<Record<string, PublicUser[]>>({});
 
   protected readonly state$ = this.reload$.pipe(
     startWith(undefined),
@@ -66,17 +69,49 @@ export class MyTeam {
     this.invitePlayerIds.update((values) => ({ ...values, [teamId]: value }));
   }
 
+  protected inviteSearch(teamId: string): string {
+    return this.inviteSearches()[teamId] ?? '';
+  }
+
+  protected searchResults(teamId: string): PublicUser[] {
+    return this.inviteSearchResults()[teamId] ?? [];
+  }
+
+  protected setInviteSearch(teamId: string, value: string): void {
+    this.inviteSearches.update((values) => ({ ...values, [teamId]: value }));
+    this.setInvitePlayerId(teamId, '');
+
+    if (value.trim().length < 2) {
+      this.inviteSearchResults.update((results) => ({ ...results, [teamId]: [] }));
+      return;
+    }
+
+    this.teamsApi.searchPlayers(value).subscribe({
+      next: (players) => this.inviteSearchResults.update((results) => ({ ...results, [teamId]: players })),
+      error: () => this.inviteSearchResults.update((results) => ({ ...results, [teamId]: [] })),
+    });
+  }
+
+  protected selectInvitePlayer(teamId: string, player: PublicUser): void {
+    this.setInvitePlayerId(teamId, player.id);
+    this.inviteSearches.update((values) => ({ ...values, [teamId]: player.username }));
+    this.inviteSearchResults.update((results) => ({ ...results, [teamId]: [] }));
+  }
+
   protected sendInvite(teamId: string): void {
     const invitedUserId = this.invitePlayerId(teamId).trim();
 
     if (!invitedUserId) {
-      this.actionError.set('Unesi ID igraca.');
+      this.actionError.set('Izaberi igraca.');
       return;
     }
 
     this.actionError.set(null);
     this.teamsApi.sendInvite(teamId, { invitedUserId }).subscribe({
-      next: () => this.setInvitePlayerId(teamId, ''),
+      next: () => {
+        this.setInvitePlayerId(teamId, '');
+        this.inviteSearches.update((values) => ({ ...values, [teamId]: '' }));
+      },
       error: () => this.actionError.set('Slanje poziva nije uspelo.'),
     });
   }
