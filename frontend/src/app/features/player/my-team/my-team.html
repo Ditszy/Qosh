@@ -1,6 +1,9 @@
 <section class="route-placeholder" aria-label="Moj tim">
   <p class="eyebrow">Igrac</p>
   <h2>Moj tim</h2>
+  @if (actionError()) {
+  <p>{{ actionError() }}</p>
+  }
 
   @if (state$ | async; as state) {
   @switch (state.status) {
@@ -20,6 +23,10 @@
       <strong>{{ teamLabel(invite) }}</strong>
       <span>Poslao {{ invite.inviter.username }}</span>
       <span>{{ invite.createdAt | date: 'short' }}</span>
+      <div class="account-actions">
+        <button type="button" class="solid-action" (click)="acceptInvite(invite.id)">Prihvati</button>
+        <button type="button" class="text-action" (click)="declineInvite(invite.id)">Odbij</button>
+      </div>
     </article>
     }
   </div>

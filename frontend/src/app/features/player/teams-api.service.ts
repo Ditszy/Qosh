@@ -41,4 +41,12 @@ export class TeamsApiService {
   listMyPendingInvites(): Observable<TeamInvite[]> {
     return this.http.get<TeamInvite[]>(this.apiUrl.build('/teams/invites/me'));
   }
+
+  acceptInvite(inviteId: string): Observable<TeamDetail> {
+    return this.http.post<TeamDetail>(this.apiUrl.build(`/teams/invites/${inviteId}/accept`), {});
+  }
+
+  declineInvite(inviteId: string): Observable<TeamInvite> {
+    return this.http.post<TeamInvite>(this.apiUrl.build(`/teams/invites/${inviteId}/decline`), {});
+  }
 }
