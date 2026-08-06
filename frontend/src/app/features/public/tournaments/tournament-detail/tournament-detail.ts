@@ -2,7 +2,7 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, distinctUntilChanged, filter, forkJoin, map, Observable, of, startWith, switchMap } from 'rxjs';
+import { catchError, distinctUntilChanged, filter, finalize, forkJoin, map, Observable, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
 import { TeamsApiService } from '../../../player/teams-api.service';
@@ -37,6 +37,7 @@ export class TournamentDetail {
   protected readonly currentUser = this.authService.currentUser;
   protected readonly signupOpen = signal(false);
   protected readonly teamNameInput = signal('');
+  protected readonly signupSubmitting = signal(false);
   protected readonly signupFeedback = signal<string | null>(null);
 
   private readonly tournamentId$ = this.route.paramMap.pipe(
@@ -66,22 +67,37 @@ export class TournamentDetail {
     return tournament.status === 'SIGNUPS_OPEN' && this.currentUser()?.role === 'PLAYER';
   }
 
+  protected openSignupForm(): void {
+    this.signupOpen.set(true);
+    this.signupFeedback.set(null);
+  }
+
   protected submitTeamSignup(tournament: Tournament): void {
     const name = this.teamNameInput().trim();
 
     if (!name) {
+      this.signupFeedback.set('Unesi naziv tima.');
       return;
     }
 
+    if (this.signupSubmitting()) {
+      return;
+    }
+
+    this.signupSubmitting.set(true);
     this.signupFeedback.set(null);
 
-    this.teamsApi.createTeam({ name, tournamentId: tournament.id }).subscribe({
-      next: () => {
-        this.teamNameInput.set('');
-        this.signupFeedback.set('Tim je prijavljen.');
-      },
-      error: () => this.signupFeedback.set('Prijava tima nije uspjela.'),
-    });
+    this.teamsApi
+      .createTeam({ name, tournamentId: tournament.id })
+      .pipe(finalize(() => this.signupSubmitting.set(false)))
+      .subscribe({
+        next: () => {
+          this.teamNameInput.set('');
+          this.signupOpen.set(false);
+          this.signupFeedback.set('Tim je prijavljen.');
+        },
+        error: () => this.signupFeedback.set('Prijava tima nije uspela.'),
+      });
   }
 
   protected teamName(team: TournamentMatch['teamA']): string {

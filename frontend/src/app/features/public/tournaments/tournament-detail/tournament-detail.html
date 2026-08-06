@@ -20,7 +20,7 @@
     </div>
     <div class="detail-actions">
       @if (canRegisterTeam(state.tournament)) {
-      <button type="button" (click)="signupOpen.set(true); signupFeedback.set(null)">Prijavi tim</button>
+      <button type="button" (click)="openSignupForm()">Prijavi tim</button>
       }
       <a routerLink="/tournaments">Svi turniri</a>
     </div>
@@ -32,7 +32,7 @@
     <div class="detail-actions">
       <input id="teamName" name="teamName" type="text" required [ngModel]="teamNameInput()"
         (ngModelChange)="teamNameInput.set($event)" />
-      <button type="submit" [disabled]="!teamNameInput().trim()">Potvrdi</button>
+      <button type="submit" [disabled]="signupSubmitting() || !teamNameInput().trim()">Potvrdi</button>
     </div>
     @if (signupFeedback()) {
     <p>{{ signupFeedback() }}</p>
