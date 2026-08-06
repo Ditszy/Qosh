@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -44,6 +44,11 @@ export class TeamsApiService {
 
   listMyTeams(): Observable<TeamDetail[]> {
     return this.http.get<TeamDetail[]>(this.apiUrl.build('/teams/me'));
+  }
+
+  searchPlayers(query: string): Observable<PublicUser[]> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<PublicUser[]>(this.apiUrl.build('/users/players/search'), { params });
   }
 
   sendInvite(teamId: string, request: SendTeamInviteRequest): Observable<TeamInvite> {

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../common/roles.guard";
@@ -18,6 +18,12 @@ export class UserController {
     @Get()
     findAll() {
         return this.usersService.findAll();
+    }
+
+    @Get('players/search')
+    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    searchPlayers(@Query('q') query = '') {
+        return this.usersService.searchPlayers(query);
     }
 
     @Get(':id')

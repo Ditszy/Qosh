@@ -50,6 +50,29 @@ export class UsersService {
         });
     }
 
+    async searchPlayers(query: string): Promise<PublicUser[]> {
+        const search = query.trim();
+
+        if (search.length < 2) {
+            return [];
+        }
+
+        return this.prisma.user.findMany({
+            where: {
+                role: UserRole.PLAYER,
+                OR: [
+                    { username: { contains: search, mode: 'insensitive' } },
+                    { firstName: { contains: search, mode: 'insensitive' } },
+                    { lastName: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } },
+                ],
+            },
+            select: publicUserSelect,
+            orderBy: { username: 'asc' },
+            take: 8,
+        });
+    }
+
     async findByEmailWithPassword(email: string): Promise<UserWithPassword | null> {
         return this.prisma.user.findUnique({
             where: { email },
