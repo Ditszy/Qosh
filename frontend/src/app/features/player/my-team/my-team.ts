@@ -2,6 +2,7 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { catchError, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
 
+import { AuthService } from '../../../core/auth/auth';
 import { TeamsApiService, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
 
 type MyTeamState =
@@ -16,8 +17,10 @@ type MyTeamState =
   styleUrl: './my-team.scss',
 })
 export class MyTeam {
+  private readonly authService = inject(AuthService);
   private readonly teamsApi = inject(TeamsApiService);
   private readonly reload$ = new Subject<void>();
+  protected readonly currentUser = this.authService.currentUser;
   protected readonly actionError = signal<string | null>(null);
 
   protected readonly state$ = this.reload$.pipe(
@@ -40,6 +43,23 @@ export class MyTeam {
 
   protected memberLabel(member: TeamMember): string {
     return `${member.user.firstName} ${member.user.lastName} (${member.role})`;
+  }
+
+  protected canRemoveMember(team: TeamDetail, member: TeamMember): boolean {
+    const currentUserId = this.currentUser()?.id;
+    const isCaptain = team.members.some((teamMember) => {
+      return teamMember.userId === currentUserId && teamMember.role === 'CAPTAIN';
+    });
+
+    return isCaptain && member.role !== 'CAPTAIN';
+  }
+
+  protected removeMember(teamId: string, memberId: string): void {
+    this.actionError.set(null);
+    this.teamsApi.removeMember(teamId, memberId).subscribe({
+      next: () => this.reload$.next(),
+      error: () => this.actionError.set('Uklanjanje igraca nije uspelo.'),
+    });
   }
 
   protected acceptInvite(inviteId: string): void {

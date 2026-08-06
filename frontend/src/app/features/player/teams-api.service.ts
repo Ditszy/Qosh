@@ -53,4 +53,8 @@ export class TeamsApiService {
   declineInvite(inviteId: string): Observable<TeamInvite> {
     return this.http.post<TeamInvite>(this.apiUrl.build(`/teams/invites/${inviteId}/decline`), {});
   }
+
+  removeMember(teamId: string, memberId: string): Observable<TeamDetail> {
+    return this.http.delete<TeamDetail>(this.apiUrl.build(`/teams/${teamId}/members/${memberId}`));
+  }
 }
