@@ -1,5 +1,6 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { catchError, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth';
@@ -12,7 +13,7 @@ type MyTeamState =
 
 @Component({
   selector: 'app-my-team',
-  imports: [AsyncPipe, DatePipe],
+  imports: [AsyncPipe, DatePipe, FormsModule],
   templateUrl: './my-team.html',
   styleUrl: './my-team.scss',
 })
@@ -22,6 +23,7 @@ export class MyTeam {
   private readonly reload$ = new Subject<void>();
   protected readonly currentUser = this.authService.currentUser;
   protected readonly actionError = signal<string | null>(null);
+  protected readonly invitePlayerIds = signal<Record<string, string>>({});
 
   protected readonly state$ = this.reload$.pipe(
     startWith(undefined),
@@ -45,13 +47,38 @@ export class MyTeam {
     return `${member.user.firstName} ${member.user.lastName} (${member.role})`;
   }
 
-  protected canRemoveMember(team: TeamDetail, member: TeamMember): boolean {
+  protected isCaptain(team: TeamDetail): boolean {
     const currentUserId = this.currentUser()?.id;
-    const isCaptain = team.members.some((teamMember) => {
+    return team.members.some((teamMember) => {
       return teamMember.userId === currentUserId && teamMember.role === 'CAPTAIN';
     });
+  }
 
-    return isCaptain && member.role !== 'CAPTAIN';
+  protected canRemoveMember(team: TeamDetail, member: TeamMember): boolean {
+    return this.isCaptain(team) && member.role !== 'CAPTAIN';
+  }
+
+  protected invitePlayerId(teamId: string): string {
+    return this.invitePlayerIds()[teamId] ?? '';
+  }
+
+  protected setInvitePlayerId(teamId: string, value: string): void {
+    this.invitePlayerIds.update((values) => ({ ...values, [teamId]: value }));
+  }
+
+  protected sendInvite(teamId: string): void {
+    const invitedUserId = this.invitePlayerId(teamId).trim();
+
+    if (!invitedUserId) {
+      this.actionError.set('Unesi ID igraca.');
+      return;
+    }
+
+    this.actionError.set(null);
+    this.teamsApi.sendInvite(teamId, { invitedUserId }).subscribe({
+      next: () => this.setInvitePlayerId(teamId, ''),
+      error: () => this.actionError.set('Slanje poziva nije uspelo.'),
+    });
   }
 
   protected removeMember(teamId: string, memberId: string): void {

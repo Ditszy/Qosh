@@ -29,6 +29,12 @@
       <button type="button" class="text-action" (click)="removeMember(team.id, member.id)">Ukloni</button>
       }
       }
+      @if (isCaptain(team)) {
+      <div class="account-actions">
+        <input type="text" [ngModel]="invitePlayerId(team.id)" (ngModelChange)="setInvitePlayerId(team.id, $event)" placeholder="ID igraca" />
+        <button type="button" class="solid-action" (click)="sendInvite(team.id)">Pozovi</button>
+      </div>
+      }
     </article>
     }
   </div>
