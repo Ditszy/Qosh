@@ -54,11 +54,17 @@
         Zaključaj prijave
       </button>
       }
+      @if (tournament.status === 'SIGNUPS_LOCKED') {
+      <button type="button" [disabled]="pendingAction() === 'bracket:' + tournament.id"
+        (click)="generateBracket(tournament.id)">
+        Generiši zreb
+      </button>
+      }
     </li>
     }
   </ul>
   } @else {
-  <p>Nemas turnire za upravljanje.</p>
+  <p>Nemaš turnire za upravljanje.</p>
   }
   }
   }

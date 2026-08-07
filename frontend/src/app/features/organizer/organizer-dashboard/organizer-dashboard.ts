@@ -71,4 +71,17 @@ export class OrganizerDashboard {
       error: () => this.errorMessage.set('Promena statusa nije uspela.'),
     });
   }
+
+  protected generateBracket(id: string): void {
+    if (this.pendingAction()) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.pendingAction.set(`bracket:${id}`);
+    this.organizerApi.generateBracket(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
+      next: () => this.reload$.next(),
+      error: () => this.errorMessage.set('Zreb nije generisan. Proveri broj timova.'),
+    });
+  }
 }
