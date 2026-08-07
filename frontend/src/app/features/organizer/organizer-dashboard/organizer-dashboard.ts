@@ -21,6 +21,7 @@ export class OrganizerDashboard {
   private readonly reload$ = new Subject<void>();
 
   protected readonly isSubmitting = signal(false);
+  protected readonly pendingAction = signal('');
   protected readonly errorMessage = signal('');
 
   protected readonly state$ = this.reload$.pipe(
@@ -55,5 +56,19 @@ export class OrganizerDashboard {
         },
         error: () => this.errorMessage.set('Turnir nije kreiran. Proveri podatke.'),
       });
+  }
+
+  protected updateSignupStatus(id: string, action: 'open' | 'lock'): void {
+    if (this.pendingAction()) {
+      return;
+    }
+
+    const request$ = action === 'open' ? this.organizerApi.openSignups(id) : this.organizerApi.lockSignups(id);
+    this.errorMessage.set('');
+    this.pendingAction.set(`${action}:${id}`);
+    request$.pipe(finalize(() => this.pendingAction.set(''))).subscribe({
+      next: () => this.reload$.next(),
+      error: () => this.errorMessage.set('Promena statusa nije uspela.'),
+    });
   }
 }

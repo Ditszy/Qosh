@@ -42,6 +42,18 @@
       <a [routerLink]="['/tournaments', tournament.id]">{{ tournament.name }}</a>
       <span>{{ tournament.status }}</span>
       <small>{{ tournament.startsAt | date: 'medium' }}</small>
+      @if (tournament.status === 'DRAFT') {
+      <button type="button" [disabled]="pendingAction() === 'open:' + tournament.id"
+        (click)="updateSignupStatus(tournament.id, 'open')">
+        Otvori prijave
+      </button>
+      }
+      @if (tournament.status === 'SIGNUPS_OPEN') {
+      <button type="button" [disabled]="pendingAction() === 'lock:' + tournament.id"
+        (click)="updateSignupStatus(tournament.id, 'lock')">
+        Zaključaj prijave
+      </button>
+      }
     </li>
     }
   </ul>
