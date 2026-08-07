@@ -1,1 +1,29 @@
-<p>organizer-dashboard works!</p>
+<section aria-label="Organizer dashboard">
+  <h2>Moji turniri</h2>
+
+  @if (state$ | async; as state) {
+  @switch (state.status) {
+  @case ('loading') {
+  <p>Ucitavanje turnira...</p>
+  }
+  @case ('error') {
+  <p>Turniri trenutno nisu dostupni.</p>
+  }
+  @case ('loaded') {
+  @if (state.tournaments.length > 0) {
+  <ul>
+    @for (tournament of state.tournaments; track tournament.id) {
+    <li>
+      <a [routerLink]="['/tournaments', tournament.id]">{{ tournament.name }}</a>
+      <span>{{ tournament.status }}</span>
+      <small>{{ tournament.startsAt | date: 'medium' }}</small>
+    </li>
+    }
+  </ul>
+  } @else {
+  <p>Nemas turnire za upravljanje.</p>
+  }
+  }
+  }
+  }
+</section>
