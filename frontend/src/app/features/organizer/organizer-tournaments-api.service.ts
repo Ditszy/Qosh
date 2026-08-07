@@ -15,6 +15,13 @@ export type OrganizerTournamentRequest = {
 
 export type UpdateOrganizerTournamentRequest = Partial<OrganizerTournamentRequest>;
 
+export type ScheduleMatchRequest = {
+  scheduledAt?: string;
+  location?: string;
+  scorerId?: string;
+  refereeId?: string;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -44,5 +51,9 @@ export class OrganizerTournamentsApiService {
 
   generateBracket(id: string): Observable<TournamentMatch[]> {
     return this.http.post<TournamentMatch[]>(this.apiUrl.build(`/tournaments/${id}/bracket/generate`), {});
+  }
+
+  scheduleMatch(id: string, payload: ScheduleMatchRequest): Observable<TournamentMatch> {
+    return this.http.patch<TournamentMatch>(this.apiUrl.build(`/matches/${id}/schedule`), payload);
   }
 }
