@@ -26,6 +26,12 @@ export class UserController {
         return this.usersService.searchPlayers(query);
     }
 
+    @Get('officials')
+    @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+    findOfficials(@Query('q') query = '', @Query('role') role?: UserRole) {
+        return this.usersService.findOfficials(query, role);
+    }
+
     @Get(':id')
     findById(@Param('id') id: string) {
         return this.usersService.findById(id);

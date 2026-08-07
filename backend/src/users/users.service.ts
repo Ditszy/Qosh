@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
@@ -33,6 +33,34 @@ export class UsersService {
     async findAll(): Promise<PublicUser[]> {
         return this.prisma.user.findMany({
             select: publicUserSelect,
+        });
+    }
+
+    async findOfficials(query: string, role?: UserRole): Promise<PublicUser[]> {
+        const allowedRoles: UserRole[] = [UserRole.SCORER, UserRole.REFEREE];
+        const search = query.trim();
+
+        if (role && !allowedRoles.includes(role)) {
+            throw new BadRequestException('Official role must be SCORER or REFEREE');
+        }
+
+        if (search.length < 2) {
+            return [];
+        }
+
+        return this.prisma.user.findMany({
+            where: {
+                role: role ?? { in: allowedRoles },
+                OR: [
+                    { username: { contains: search, mode: 'insensitive' } },
+                    { firstName: { contains: search, mode: 'insensitive' } },
+                    { lastName: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } },
+                ],
+            },
+            select: publicUserSelect,
+            orderBy: [{ role: 'asc' }, { username: 'asc' }],
+            take: 8,
         });
     }
 
