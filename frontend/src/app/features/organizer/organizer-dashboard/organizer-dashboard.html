@@ -59,6 +59,10 @@
         (click)="generateBracket(tournament.id)">
         Generiši zreb
       </button>
+      <button type="button" [disabled]="pendingAction() === 'start:' + tournament.id"
+        (click)="startTournament(tournament.id)">
+        Pokreni turnir
+      </button>
       }
     </li>
     }

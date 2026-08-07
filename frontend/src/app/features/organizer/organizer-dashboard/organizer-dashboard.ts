@@ -84,4 +84,17 @@ export class OrganizerDashboard {
       error: () => this.errorMessage.set('Zreb nije generisan. Proveri broj timova.'),
     });
   }
+
+  protected startTournament(id: string): void {
+    if (this.pendingAction()) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.pendingAction.set(`start:${id}`);
+    this.organizerApi.startTournament(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
+      next: () => this.reload$.next(),
+      error: () => this.errorMessage.set('Turnir nije pokrenut. Prvo generisi zreb.'),
+    });
+  }
 }
