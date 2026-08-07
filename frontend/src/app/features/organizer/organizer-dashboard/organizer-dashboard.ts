@@ -105,4 +105,22 @@ export class OrganizerDashboard {
       error: () => this.errorMessage.set('Turnir nije pokrenut. Prvo generisi zreb.'),
     });
   }
+
+  protected scheduleMatch(id: string, form: NgForm): void {
+    if (form.invalid || this.pendingAction()) {
+      form.control.markAllAsTouched();
+      return;
+    }
+
+    const value = form.value as { scheduledAt: string; location: string };
+    this.errorMessage.set('');
+    this.pendingAction.set(`schedule:${id}`);
+    this.organizerApi
+      .scheduleMatch(id, { scheduledAt: new Date(value.scheduledAt).toISOString(), location: value.location })
+      .pipe(finalize(() => this.pendingAction.set('')))
+      .subscribe({
+        next: () => this.reload$.next(),
+        error: () => this.errorMessage.set('Termin nije sačuvan.'),
+      });
+  }
 }

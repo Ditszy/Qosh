@@ -73,6 +73,13 @@
             {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
           </a>
           <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
+          <form #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
+            <input type="datetime-local" name="scheduledAt" ngModel required />
+            <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
+            <button type="submit" [disabled]="scheduleForm.invalid || pendingAction() === 'schedule:' + match.id">
+              Sačuvaj termin
+            </button>
+          </form>
         </li>
         }
       </ol>
