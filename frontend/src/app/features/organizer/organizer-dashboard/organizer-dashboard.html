@@ -64,6 +64,19 @@
         Pokreni turnir
       </button>
       }
+      @if (tournament.matches.length > 0) {
+      <ol>
+        @for (match of tournament.matches; track match.id) {
+        <li>
+          <a [routerLink]="['/matches', match.id, 'live']">
+            R{{ match.round }}.{{ match.bracketPosition }}
+            {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
+          </a>
+          <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
+        </li>
+        }
+      </ol>
+      }
     </li>
     }
   </ul>

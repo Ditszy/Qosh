@@ -2,7 +2,7 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, finalize, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
@@ -27,11 +27,19 @@ export class OrganizerDashboard {
   protected readonly state$ = this.reload$.pipe(
     startWith(void 0),
     switchMap(() => this.tournamentsApi.listTournaments()),
-    map((tournaments) => {
+    switchMap((tournaments) => {
       const user = this.auth.currentUser();
       const owned = user?.role === 'ADMIN' ? tournaments : tournaments.filter((item) => item.organizerId === user?.id);
 
-      return { status: 'loaded' as const, tournaments: owned };
+      if (owned.length === 0) {
+        return of({ status: 'loaded' as const, tournaments: [] });
+      }
+
+      return forkJoin(
+        owned.map((tournament) =>
+          this.tournamentsApi.listTournamentMatches(tournament.id).pipe(map((matches) => ({ ...tournament, matches }))),
+        ),
+      ).pipe(map((tournamentsWithMatches) => ({ status: 'loaded' as const, tournaments: tournamentsWithMatches })));
     }),
     startWith({ status: 'loading' as const }),
     catchError(() => of({ status: 'error' as const })),
