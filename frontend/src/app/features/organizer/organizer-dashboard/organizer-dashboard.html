@@ -1,6 +1,31 @@
 <section aria-label="Organizer dashboard">
   <h2>Moji turniri</h2>
 
+  <form #tournamentForm="ngForm" (ngSubmit)="submitTournament(tournamentForm)">
+    <label>
+      Naziv
+      <input type="text" name="name" ngModel required />
+    </label>
+    <label>
+      Lokacija
+      <input type="text" name="location" ngModel required />
+    </label>
+    <label>
+      Početak
+      <input type="datetime-local" name="startsAt" ngModel required />
+    </label>
+    <label>
+      Maksimalno timova
+      <input type="number" name="maxTeams" ngModel="8" min="2" max="32" required />
+    </label>
+    @if (errorMessage()) {
+    <p>{{ errorMessage() }}</p>
+    }
+    <button type="submit" [disabled]="tournamentForm.invalid || isSubmitting()">
+      {{ isSubmitting() ? 'Kreiranje...' : 'Kreiraj turnir' }}
+    </button>
+  </form>
+
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
