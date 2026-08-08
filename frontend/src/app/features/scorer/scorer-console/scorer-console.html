@@ -9,9 +9,15 @@
 
   @if (liveMatchLink(); as link) {
   <a [routerLink]="link">Otvori meč</a>
+  <button type="button" [disabled]="!!pendingAction()" (click)="loadMatch()">Ucitaj mec</button>
   } @else {
   <button type="button" disabled>Unesi ID meča</button>
   }
+  @if (match(); as loadedMatch) {
+  <p>{{ loadedMatch.teamA?.name ?? 'TBD' }} {{ loadedMatch.teamAScore }} - {{ loadedMatch.teamBScore }}
+    {{ loadedMatch.teamB?.name ?? 'TBD' }} | {{ loadedMatch.clockStatus }}</p>
+  }
+
   <div>
     <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()"
       (click)="controlClock('start')">Start</button>
@@ -33,15 +39,23 @@
     </label>
 
     <label>
-      ID tima
-      <input type="text" [ngModel]="eventTeamId()" (ngModelChange)="eventTeamId.set($event)" name="eventTeamId"
-        placeholder="UUID tima" />
+      Tim
+      <select [ngModel]="eventTeamId()" (ngModelChange)="eventTeamId.set($event); eventPlayerId.set('')"
+        name="eventTeamId">
+        @for (team of teamStats(); track team.team.id) {
+        <option [value]="team.team.id">{{ team.team.name }}</option>
+        }
+      </select>
     </label>
 
     <label>
-      ID igraca
-      <input type="text" [ngModel]="eventPlayerId()" (ngModelChange)="eventPlayerId.set($event)" name="eventPlayerId"
-        placeholder="Opcioni UUID igraca" />
+      Igrac
+      <select [ngModel]="eventPlayerId()" (ngModelChange)="eventPlayerId.set($event)" name="eventPlayerId">
+        <option value="">Bez igraca</option>
+        @for (stat of selectedPlayers(); track stat.player.id) {
+        <option [value]="stat.player.id">{{ stat.player.firstName }} {{ stat.player.lastName }}</option>
+        }
+      </select>
     </label>
 
     <button type="submit" [disabled]="!canRecordEvent()">Sacuvaj dogadjaj</button>
