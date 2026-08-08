@@ -61,6 +61,30 @@
     <button type="submit" [disabled]="!canRecordEvent()">Sacuvaj dogadjaj</button>
   </form>
 
+  @if (teamStats().length) {
+  <div>
+    @for (team of teamStats(); track team.team.id) {
+    <section>
+      <h3>{{ team.team.name }}</h3>
+      @for (stat of team.players; track stat.player.id) {
+      <div>
+        <strong>{{ stat.player.firstName }} {{ stat.player.lastName }}</strong>
+        <span>{{ stat.points }} PTS | {{ stat.rebounds }} REB | {{ stat.assists }} AST | {{ stat.fouls }} PF</span>
+        <div>
+          @for (action of playerEventButtons; track action.type) {
+          <button type="button" [disabled]="!!pendingAction()"
+            (click)="recordPlayerEvent(team.team.id, stat.player.id, action.type)">
+            {{ action.label }}
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </section>
+    }
+  </div>
+  }
+
   @if (pendingAction()) {
   <p>Slanje komande...</p>
   }
