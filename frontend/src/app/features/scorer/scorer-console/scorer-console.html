@@ -38,6 +38,15 @@
     <button type="button" [disabled]="!canAdjustClock()" (click)="adjustClock(1)">+ sekunde</button>
   </div>
 
+  @if (match()) {
+  <div>
+    <button type="button" [disabled]="!canFinalizeMatch()" (click)="finalizeMatch()">Finalizuj mec</button>
+    @if (!canFinalizeMatch()) {
+    <span>Meč mora biti live, sa oba tima i bez nerešenog rezultata.</span>
+    }
+  </div>
+  }
+
   <form (ngSubmit)="recordEvent()">
     <label>
       Dogadjaj

@@ -50,6 +50,17 @@ export class ScorerConsole {
   protected readonly canRecordEvent = computed(() => !!this.matchId().trim() && !!this.eventTeamId().trim() && !this.pendingAction());
   protected readonly canAdjustClock = computed(() => !!this.matchId().trim() && this.clockAdjustmentSeconds() > 0 && !this.pendingAction());
   protected readonly match = computed(() => this.matchBundle()?.match ?? null);
+  protected readonly canFinalizeMatch = computed(() => {
+    const match = this.match();
+
+    return (
+      !!match?.teamAId &&
+      !!match.teamBId &&
+      match.status === 'LIVE' &&
+      match.teamAScore !== match.teamBScore &&
+      !this.pendingAction()
+    );
+  });
   protected readonly teamStats = computed(() => this.matchBundle()?.statistics.teams ?? []);
   protected readonly selectedPlayers = computed(() => {
     return this.teamStats().find((team) => team.team.id === this.eventTeamId())?.players ?? [];
@@ -141,6 +152,31 @@ export class ScorerConsole {
           this.successMessage.set(`Sat pomeren za ${secondsDelta}s`);
         },
         error: () => this.errorMessage.set('Pomeranje sata nije uspelo. Proveri ID meca i status sata.'),
+      });
+  }
+
+  protected finalizeMatch(): void {
+    const matchId = this.matchId().trim();
+
+    if (!matchId || !this.canFinalizeMatch()) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.pendingAction.set('finalize');
+    this.scorerApi
+      .finalizeMatch(matchId)
+      .pipe(switchMap(() => this.matchesApi.getMatchReadBundle(matchId)))
+      .pipe(finalize(() => this.pendingAction.set('')))
+      .subscribe({
+        next: (bundle) => {
+          const winner = bundle.match.winnerTeam?.name ?? 'Pobednik';
+
+          this.matchBundle.set(bundle);
+          this.successMessage.set(`Mec zavrsen. ${winner} ide dalje.`);
+        },
+        error: () => this.errorMessage.set('Zatvaranje meca nije uspelo. Proveri rezultat, timove i status meca.'),
       });
   }
 
