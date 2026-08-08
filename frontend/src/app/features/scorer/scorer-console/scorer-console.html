@@ -1,0 +1,15 @@
+<section aria-label="Scorer console">
+  <h2>Zapisničar</h2>
+  <p>Otvori dodeljeni meč i prati stanje pre nego što krenu kontrole za unos dogadjaja.</p>
+
+  <label>
+    ID meča
+    <input type="text" [ngModel]="matchId()" (ngModelChange)="updateMatchId($event)" placeholder="UUID meča" />
+  </label>
+
+  @if (liveMatchLink(); as link) {
+  <a [routerLink]="link">Otvori meč</a>
+  } @else {
+  <button type="button" disabled>Unesi ID meča</button>
+  }
+</section>

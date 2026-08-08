@@ -8,6 +8,7 @@ import { MyTeam } from './features/player/my-team/my-team';
 import { LiveMatch } from './features/public/live-match/live-match/live-match';
 import { TournamentDetail } from './features/public/tournaments/tournament-detail/tournament-detail';
 import { TournamentList } from './features/public/tournaments/tournament-list/tournament-list';
+import { ScorerConsole } from './features/scorer/scorer-console/scorer-console';
 import { PlayerProfile } from './features/statistics/player-profile/player-profile';
 import { Rankings } from './features/statistics/rankings/rankings';
 import { PlaceholderPage } from './pages/placeholder-page';
@@ -35,7 +36,7 @@ export const routes: Routes = [
   { path: 'register', component: Register },
   { path: 'my-team', component: MyTeam, canActivate: [roleGuard], data: { roles: ['PLAYER'] } },
   { path: 'organizer', component: OrganizerDashboard, canActivate: [roleGuard], data: { roles: ['ORGANIZER', 'ADMIN'] } },
-  rolePage('scorer', 'Zapisnicar', 'Live scoring', ['SCORER', 'ADMIN']),
+  { path: 'scorer', component: ScorerConsole, canActivate: [roleGuard], data: { roles: ['SCORER', 'ADMIN'] } },
   rolePage('reports', 'Izvestaji', 'Sudija', ['REFEREE', 'ADMIN']),
   rolePage('admin', 'Admin', 'Korisnici', ['ADMIN']),
 ];
