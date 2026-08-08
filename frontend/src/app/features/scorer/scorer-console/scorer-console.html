@@ -12,4 +12,23 @@
   } @else {
   <button type="button" disabled>Unesi ID meča</button>
   }
+  <div>
+    <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()"
+      (click)="controlClock('start')">Start</button>
+    <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()"
+      (click)="controlClock('pause')">Pauza</button>
+    <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()"
+      (click)="controlClock('resume')">Nastavi</button>
+    <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()" (click)="controlClock('end')">Kraj</button>
+  </div>
+
+  @if (pendingAction()) {
+  <p>Slanje komande...</p>
+  }
+  @if (successMessage()) {
+  <p>{{ successMessage() }}</p>
+  }
+  @if (errorMessage()) {
+  <p>{{ errorMessage() }}</p>
+  }
 </section>
