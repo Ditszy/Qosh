@@ -43,10 +43,12 @@ export class ScorerConsole {
   protected readonly eventType = signal<MatchEventType>('ONE_POINT_MADE');
   protected readonly eventTeamId = signal('');
   protected readonly eventPlayerId = signal('');
+  protected readonly clockAdjustmentSeconds = signal(1);
   protected readonly pendingAction = signal('');
   protected readonly errorMessage = signal('');
   protected readonly successMessage = signal('');
   protected readonly canRecordEvent = computed(() => !!this.matchId().trim() && !!this.eventTeamId().trim() && !this.pendingAction());
+  protected readonly canAdjustClock = computed(() => !!this.matchId().trim() && this.clockAdjustmentSeconds() > 0 && !this.pendingAction());
   protected readonly match = computed(() => this.matchBundle()?.match ?? null);
   protected readonly teamStats = computed(() => this.matchBundle()?.statistics.teams ?? []);
   protected readonly selectedPlayers = computed(() => {
@@ -60,6 +62,12 @@ export class ScorerConsole {
 
   protected updateMatchId(value: string): void {
     this.matchId.set(value);
+  }
+
+  protected updateClockAdjustmentSeconds(value: string | number): void {
+    const seconds = Math.max(1, Math.trunc(Number(value) || 0));
+
+    this.clockAdjustmentSeconds.set(seconds);
   }
 
   protected loadMatch(): void {
@@ -110,6 +118,30 @@ export class ScorerConsole {
       next: (match) => this.successMessage.set(`Sat: ${match.clockStatus}, preostalo ${match.clockRemainingSeconds}s`),
       error: () => this.errorMessage.set('Kontrola sata nije uspela. Proveri ID meča i dodelu zapisničara.'),
     });
+  }
+
+  protected adjustClock(direction: -1 | 1): void {
+    const matchId = this.matchId().trim();
+    const secondsDelta = this.clockAdjustmentSeconds() * direction;
+
+    if (!matchId || !secondsDelta || this.pendingAction()) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.pendingAction.set('adjust');
+    this.scorerApi
+      .adjustClock(matchId, { secondsDelta })
+      .pipe(switchMap(() => this.matchesApi.getMatchReadBundle(matchId)))
+      .pipe(finalize(() => this.pendingAction.set('')))
+      .subscribe({
+        next: (bundle) => {
+          this.matchBundle.set(bundle);
+          this.successMessage.set(`Sat pomeren za ${secondsDelta}s`);
+        },
+        error: () => this.errorMessage.set('Pomeranje sata nije uspelo. Proveri ID meca i status sata.'),
+      });
   }
 
   protected recordEvent(): void {

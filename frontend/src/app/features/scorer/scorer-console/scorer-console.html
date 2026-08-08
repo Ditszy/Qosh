@@ -28,6 +28,16 @@
     <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()" (click)="controlClock('end')">Kraj</button>
   </div>
 
+  <div>
+    <label>
+      Korekcija sata
+      <input type="number" min="1" step="1" [ngModel]="clockAdjustmentSeconds()"
+        (ngModelChange)="updateClockAdjustmentSeconds($event)" />
+    </label>
+    <button type="button" [disabled]="!canAdjustClock()" (click)="adjustClock(-1)">- sekunde</button>
+    <button type="button" [disabled]="!canAdjustClock()" (click)="adjustClock(1)">+ sekunde</button>
+  </div>
+
   <form (ngSubmit)="recordEvent()">
     <label>
       Dogadjaj
