@@ -26,6 +26,20 @@
     </button>
   </form>
 
+  <div class="official-search">
+    <label>
+      Zapisničar
+      <input type="search" placeholder="Ime, username ili email" (input)="searchScorers($any($event.target).value)" />
+    </label>
+    <label>
+      Sudija
+      <input type="search" placeholder="Ime, username ili email" (input)="searchReferees($any($event.target).value)" />
+    </label>
+    @if (officialSearchError()) {
+    <p>{{ officialSearchError() }}</p>
+    }
+  </div>
+
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
@@ -76,6 +90,19 @@
           <form #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
             <input type="datetime-local" name="scheduledAt" ngModel required />
             <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
+            <select name="scorerId" [ngModel]="match.scorerId || ''">
+              <option value="">Bez zapisnicara</option>
+              @for (scorer of scorers(); track scorer.id) {
+              <option [value]="scorer.id">{{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})</option>
+              }
+            </select>
+            <select name="refereeId" [ngModel]="match.refereeId || ''">
+              <option value="">Bez sudije</option>
+              @for (referee of referees(); track referee.id) {
+              <option [value]="referee.id">{{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
+              </option>
+              }
+            </select>
             <button type="submit" [disabled]="scheduleForm.invalid || pendingAction() === 'schedule:' + match.id">
               Sačuvaj termin
             </button>

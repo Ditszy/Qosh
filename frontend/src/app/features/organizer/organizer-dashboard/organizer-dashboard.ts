@@ -6,6 +6,7 @@ import { catchError, finalize, forkJoin, map, of, startWith, Subject, switchMap 
 
 import { AuthService } from '../../../core/auth/auth';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
+import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
 import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
 
 @Component({
@@ -17,12 +18,16 @@ import { TournamentsApiService } from '../../public/tournaments/tournaments-api.
 export class OrganizerDashboard {
   private readonly auth = inject(AuthService);
   private readonly organizerApi = inject(OrganizerTournamentsApiService);
+  private readonly officialsApi = inject(OfficialsApiService);
   private readonly tournamentsApi = inject(TournamentsApiService);
   private readonly reload$ = new Subject<void>();
 
   protected readonly isSubmitting = signal(false);
   protected readonly pendingAction = signal('');
   protected readonly errorMessage = signal('');
+  protected readonly officialSearchError = signal('');
+  protected readonly scorers = signal<OfficialUser[]>([]);
+  protected readonly referees = signal<OfficialUser[]>([]);
 
   protected readonly state$ = this.reload$.pipe(
     startWith(void 0),
@@ -112,15 +117,44 @@ export class OrganizerDashboard {
       return;
     }
 
-    const value = form.value as { scheduledAt: string; location: string };
+    const value = form.value as { scheduledAt: string; location: string; scorerId?: string; refereeId?: string };
     this.errorMessage.set('');
     this.pendingAction.set(`schedule:${id}`);
     this.organizerApi
-      .scheduleMatch(id, { scheduledAt: new Date(value.scheduledAt).toISOString(), location: value.location })
+      .scheduleMatch(id, {
+        scheduledAt: new Date(value.scheduledAt).toISOString(),
+        location: value.location,
+        scorerId: value.scorerId || undefined,
+        refereeId: value.refereeId || undefined,
+      })
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
         next: () => this.reload$.next(),
         error: () => this.errorMessage.set('Termin nije sačuvan.'),
       });
+  }
+
+  protected searchScorers(query: string): void {
+    this.searchOfficials(query, 'SCORER');
+  }
+
+  protected searchReferees(query: string): void {
+    this.searchOfficials(query, 'REFEREE');
+  }
+
+  private searchOfficials(query: string, role: OfficialRole): void {
+    const search = query.trim();
+    const target = role === 'SCORER' ? this.scorers : this.referees;
+
+    if (search.length < 2) {
+      target.set([]);
+      return;
+    }
+
+    this.officialSearchError.set('');
+    this.officialsApi.searchOfficials(search, { role }).subscribe({
+      next: (officials) => target.set(officials),
+      error: () => this.officialSearchError.set('Sluzbena lica nisu ucitana.'),
+    });
   }
 }
