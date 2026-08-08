@@ -22,6 +22,31 @@
     <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()" (click)="controlClock('end')">Kraj</button>
   </div>
 
+  <form (ngSubmit)="recordEvent()">
+    <label>
+      Dogadjaj
+      <select [ngModel]="eventType()" (ngModelChange)="eventType.set($any($event))" name="eventType">
+        @for (type of eventTypes; track type) {
+        <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      ID tima
+      <input type="text" [ngModel]="eventTeamId()" (ngModelChange)="eventTeamId.set($event)" name="eventTeamId"
+        placeholder="UUID tima" />
+    </label>
+
+    <label>
+      ID igraca
+      <input type="text" [ngModel]="eventPlayerId()" (ngModelChange)="eventPlayerId.set($event)" name="eventPlayerId"
+        placeholder="Opcioni UUID igraca" />
+    </label>
+
+    <button type="submit" [disabled]="!canRecordEvent()">Sacuvaj dogadjaj</button>
+  </form>
+
   @if (pendingAction()) {
   <p>Slanje komande...</p>
   }
