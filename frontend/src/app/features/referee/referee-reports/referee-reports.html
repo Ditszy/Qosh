@@ -4,6 +4,29 @@
     <h1>Izvestaj sa meca</h1>
   </header>
 
+  @if (!hasSelectedMatch()) {
+  <section class="assigned-matches" aria-label="Dodeljeni mecevi">
+    <h2>Dodeljeni mecevi</h2>
+
+    @if (isLoadingAssignedMatches()) {
+    <p class="message">Ucitavanje dodeljenih meceva...</p>
+    } @else if (assignedMatches().length === 0) {
+    <p class="message">Trenutno nemas dodeljene meceve.</p>
+    } @else {
+    @for (match of assignedMatches(); track match.id) {
+    <article>
+      <div>
+        <p>{{ match.tournament.name }}</p>
+        <strong>{{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}</strong>
+      </div>
+      <span>{{ match.status }}</span>
+      <a [routerLink]="['/reports', match.id]">Otvori</a>
+    </article>
+    }
+    }
+  </section>
+  }
+
   <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
     @if (hasSelectedMatch()) {
     @if (selectedMatch(); as match) {

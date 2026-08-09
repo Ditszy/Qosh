@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { MatchesApiService } from '../../public/live-match/matches-api.service';
@@ -10,7 +10,7 @@ import { RefereeReportsApiService, type RefereeReportDetail } from '../referee-r
 
 @Component({
   selector: 'app-referee-reports',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './referee-reports.html',
   styleUrl: './referee-reports.scss',
 })
