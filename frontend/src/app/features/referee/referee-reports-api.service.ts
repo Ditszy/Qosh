@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../core/api';
-import type { PublicUser } from '../public/tournaments/tournament.models';
+import type { PublicUser, TournamentMatch } from '../public/tournaments/tournament.models';
 
 export type CreateRefereeReportRequest = {
   notes: string;
@@ -39,6 +39,10 @@ export type RefereeReportDetail = RefereeReport & {
 export class RefereeReportsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
+
+  listAssignedMatches(): Observable<TournamentMatch[]> {
+    return this.http.get<TournamentMatch[]>(this.apiUrl.build('/matches/referee/me'));
+  }
 
   getReport(matchId: string): Observable<RefereeReportDetail> {
     return this.http.get<RefereeReportDetail>(this.reportUrl(matchId));
