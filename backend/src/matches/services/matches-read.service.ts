@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { UserRole } from '../../common/user-role.enum';
 import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
-import { MatchRecord, MatchWithRelations } from '../types/match.types';
+import { MatchActor, MatchRecord, MatchWithRelations } from '../types/match.types';
 
 @Injectable()
 export class MatchesReadService {
@@ -40,6 +41,20 @@ export class MatchesReadService {
         }
 
         return this.withCurrentClock(match);
+    }
+
+    async findByReferee(actor: MatchActor): Promise<MatchWithRelations[]> {
+        const matches = await this.prisma.match.findMany({
+            where: actor.role === UserRole.ADMIN ? { refereeId: { not: null } } : { refereeId: actor.id },
+            include: this.matchInclude(),
+            orderBy: [
+                { scheduledAt: 'asc' },
+                { round: 'asc' },
+                { bracketPosition: 'asc' },
+            ],
+        });
+
+        return matches.map((match) => this.withCurrentClock(match));
     }
 
     withCurrentClock<T extends MatchRecord>(match: T): T {

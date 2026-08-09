@@ -35,6 +35,10 @@ export class MatchesService {
         return this.matchesReadService.findById(id);
     }
 
+    async findByReferee(actor: MatchActor): Promise<MatchWithRelations[]> {
+        return this.matchesReadService.findByReferee(actor);
+    }
+
     async schedule(id: string, scheduleMatchDto: ScheduleMatchDto, actor: MatchActor): Promise<MatchWithRelations> {
         return this.matchSchedulingService.schedule(id, scheduleMatchDto, actor);
     }
