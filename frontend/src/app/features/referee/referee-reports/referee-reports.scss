@@ -1,0 +1,55 @@
+:host { display: block; }
+
+.referee-reports {
+  display: grid;
+  gap: 1rem;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+h1, h2, p { margin: 0; }
+
+header p, small { color: #9aa4b2; }
+
+form,
+.report-preview {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid #293241;
+  border-radius: 8px;
+  background: #121822;
+  padding: 1rem;
+}
+
+label { display: grid; gap: 0.35rem; color: #d7dce5; }
+
+input,
+textarea,
+button {
+  border: 1px solid #384151;
+  border-radius: 6px;
+  background: #10151f;
+  color: #f7f8fa;
+  padding: 0.65rem 0.75rem;
+}
+
+textarea { resize: vertical; }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+button:not(:disabled):hover {
+  border-color: #ff7a1a;
+  cursor: pointer;
+}
+
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.error { color: #ff8a8a; }
+
+.success,
+.selected-match { color: #8be28b; }
