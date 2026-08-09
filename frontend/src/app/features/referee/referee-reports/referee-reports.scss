@@ -13,6 +13,7 @@ h1, h2, p { margin: 0; }
 header p, small { color: #9aa4b2; }
 
 form,
+.assigned-matches,
 .report-preview {
   display: grid;
   gap: 0.85rem;
@@ -53,6 +54,32 @@ button:not(:disabled):hover {
 }
 
 button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.assigned-matches article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  border-top: 1px solid #293241;
+  padding-top: 0.85rem;
+}
+
+.assigned-matches span {
+  color: #ffb199;
+  font-weight: 800;
+}
+
+.assigned-matches a {
+  border: 1px solid #ff5a1f;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 0.45rem 0.75rem;
+  text-decoration: none;
+}
+
+.assigned-matches a:hover {
+  background: #ff5a1f;
+}
 
 .error { color: #ff8a8a; }
 
