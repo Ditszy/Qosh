@@ -32,8 +32,7 @@ export class RefereeReports {
       return;
     }
 
-    this.errorMessage.set('');
-    this.successMessage.set('');
+    this.clearMessages();
     this.isLoading.set(true);
 
     this.api
@@ -43,5 +42,30 @@ export class RefereeReports {
         next: (report) => this.loadedReport.set(report),
         error: () => this.errorMessage.set('Izvestaj za ovaj mec nije pronadjen.'),
       });
+  }
+
+  protected submitReport(): void {
+    if (this.reportForm.invalid || this.isSubmitting()) {
+      this.reportForm.markAllAsTouched();
+      return;
+    }
+
+    const { matchId, notes } = this.reportForm.getRawValue();
+
+    this.clearMessages();
+    this.isSubmitting.set(true);
+
+    this.api
+      .createReport(matchId.trim(), { notes: notes.trim() })
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => this.successMessage.set('Izvestaj je sacuvan.'),
+        error: () => this.errorMessage.set('Izvestaj nije sacuvan. Proveri da li je mec finalan.'),
+      });
+  }
+
+  private clearMessages(): void {
+    this.errorMessage.set('');
+    this.successMessage.set('');
   }
 }
