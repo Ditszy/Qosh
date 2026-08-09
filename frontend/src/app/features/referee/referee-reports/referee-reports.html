@@ -27,8 +27,8 @@
   </section>
   }
 
+  @if (hasSelectedMatch()) {
   <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
-    @if (hasSelectedMatch()) {
     @if (selectedMatch(); as match) {
     <p class="selected-match">
       {{ match.tournament.name }} · {{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}
@@ -37,13 +37,6 @@
     <p class="message error">Izvestaj se moze sacuvati tek kada je mec finalan.</p>
     }
     }
-    } @else {
-    <label>
-      ID meca
-      <input formControlName="matchId" placeholder="Unesi ID finalnog meca" />
-    </label>
-    }
-
     <label>
       Beleške
       <textarea formControlName="notes" rows="7" placeholder="Unesi sudijski izvestaj"
@@ -51,14 +44,12 @@
     </label>
 
     <div class="actions">
-      @if (!hasSelectedMatch()) {
-      <button type="button" (click)="loadReport()" [disabled]="isLoading()">Ucitaj izvestaj</button>
-      }
       <button type="submit" [disabled]="isSubmitting() || cannotSubmitReport()">
         {{ submitButtonLabel() }}
       </button>
     </div>
   </form>
+  }
 
   @if (errorMessage()) {
   <p class="message error">{{ errorMessage() }}</p>
