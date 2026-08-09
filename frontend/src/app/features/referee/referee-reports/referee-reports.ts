@@ -27,6 +27,7 @@ export class RefereeReports implements OnInit {
   protected readonly loadedReport = signal<RefereeReportDetail | null>(null);
   protected readonly hasSelectedMatch = signal(false);
   protected readonly isLoadingAssignedMatches = signal(false);
+  protected readonly isLoadingSelectedMatch = signal(false);
   protected readonly assignedMatches = signal<TournamentMatch[]>([]);
   protected readonly selectedMatch = signal<MatchDetail | null>(null);
 
@@ -61,10 +62,15 @@ export class RefereeReports implements OnInit {
   }
 
   private loadSelectedMatch(matchId: string): void {
-    this.matchesApi.getMatch(matchId).subscribe({
-      next: (match) => this.selectedMatch.set(match),
-      error: () => this.errorMessage.set('Mec nije pronadjen.'),
-    });
+    this.isLoadingSelectedMatch.set(true);
+
+    this.matchesApi
+      .getMatch(matchId)
+      .pipe(finalize(() => this.isLoadingSelectedMatch.set(false)))
+      .subscribe({
+        next: (match) => this.selectedMatch.set(match),
+        error: () => this.errorMessage.set('Mec nije pronadjen.'),
+      });
   }
 
   protected loadReport(clearMessages = true): void {

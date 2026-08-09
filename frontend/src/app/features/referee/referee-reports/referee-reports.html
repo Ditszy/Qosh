@@ -29,6 +29,9 @@
 
   @if (hasSelectedMatch()) {
   <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
+    @if (isLoadingSelectedMatch()) {
+    <p class="message">Ucitavanje meca...</p>
+    }
     @if (selectedMatch(); as match) {
     <p class="selected-match">
       {{ match.tournament.name }} · {{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}
