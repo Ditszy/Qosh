@@ -39,6 +39,7 @@ export class RefereeReports implements OnInit {
       this.reportForm.controls.matchId.setValue(matchId);
       this.hasSelectedMatch.set(true);
       this.loadSelectedMatch(matchId);
+      this.preloadExistingReport(matchId);
     }
   }
 
@@ -65,12 +66,21 @@ export class RefereeReports implements OnInit {
       .getReport(matchId)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: (report) => {
-          this.loadedReport.set(report);
-          this.reportForm.controls.notes.setValue(report.notes);
-        },
+        next: (report) => this.applyLoadedReport(report),
         error: () => this.errorMessage.set('Izvestaj za ovaj mec nije pronadjen.'),
       });
+  }
+
+  private preloadExistingReport(matchId: string): void {
+    this.api.getReport(matchId).subscribe({
+      next: (report) => this.applyLoadedReport(report),
+      error: () => undefined,
+    });
+  }
+
+  private applyLoadedReport(report: RefereeReportDetail): void {
+    this.loadedReport.set(report);
+    this.reportForm.controls.notes.setValue(report.notes);
   }
 
   protected submitReport(): void {
