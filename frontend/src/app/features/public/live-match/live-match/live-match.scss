@@ -86,3 +86,17 @@
 .stat-table a:hover {
   color: #ff5a1f;
 }
+
+.match-card > a {
+  display: inline-grid;
+  justify-self: start;
+  border: 1px solid #ff5a1f;
+  border-radius: 6px;
+  color: #ffffff;
+  padding: 10px 14px;
+  text-decoration: none;
+}
+
+.match-card > a:hover {
+  background: #ff5a1f;
+}
