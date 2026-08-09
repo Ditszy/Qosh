@@ -25,7 +25,9 @@
 
     <div class="actions">
       <button type="button" (click)="loadReport()" [disabled]="isLoading()">Ucitaj izvestaj</button>
-      <button type="submit" [disabled]="isSubmitting()">Sacuvaj izvestaj</button>
+      <button type="submit" [disabled]="isSubmitting() || hasLoadedReport()">
+        {{ hasLoadedReport() ? 'Izvestaj je vec sacuvan' : 'Sacuvaj izvestaj' }}
+      </button>
     </div>
   </form>
 

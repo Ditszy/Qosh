@@ -74,7 +74,7 @@ export class RefereeReports implements OnInit {
   }
 
   protected submitReport(): void {
-    if (this.reportForm.invalid || this.isSubmitting()) {
+    if (this.reportForm.invalid || this.isSubmitting() || this.hasLoadedReport()) {
       this.reportForm.markAllAsTouched();
       return;
     }
@@ -99,5 +99,9 @@ export class RefereeReports implements OnInit {
   private clearMessages(): void {
     this.errorMessage.set('');
     this.successMessage.set('');
+  }
+
+  protected hasLoadedReport(): boolean {
+    return Boolean(this.loadedReport());
   }
 }
