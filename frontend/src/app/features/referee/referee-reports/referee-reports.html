@@ -18,8 +18,10 @@
       <div>
         <p>{{ match.tournament.name }}</p>
         <strong>{{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}</strong>
-        <small>{{ match.scheduledAt || 'Termin nije zakazan' }} · {{ match.location || match.tournament.location
-          }}</small>
+        <small>
+          {{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Termin nije zakazan' }}
+          - {{ match.location || match.tournament.location }}
+        </small>
       </div>
       <span>{{ match.status }}</span>
       <a [routerLink]="['/reports', match.id]">Otvori</a>
@@ -36,7 +38,7 @@
     }
     @if (selectedMatch(); as match) {
     <p class="selected-match">
-      {{ match.tournament.name }} · {{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}
+      {{ match.tournament.name }} - {{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}
     </p>
     @if (match.status !== 'FINAL') {
     <p class="message error">Izvestaj se moze sacuvati tek kada je mec finalan.</p>
@@ -67,7 +69,7 @@
   @if (loadedReport(); as report) {
   <article class="report-preview">
     <p>{{ report.match.tournament.name }}</p>
-    <h2>Runda {{ report.match.round }} · Mec {{ report.match.bracketPosition }}</h2>
+    <h2>Runda {{ report.match.round }} - Mec {{ report.match.bracketPosition }}</h2>
     <small>Sudija: {{ report.referee.firstName }} {{ report.referee.lastName }}</small>
   </article>
   }
