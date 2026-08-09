@@ -1,5 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { RefereeReportsApiService, type RefereeReportDetail } from '../referee-reports-api.service';
@@ -10,9 +11,10 @@ import { RefereeReportsApiService, type RefereeReportDetail } from '../referee-r
   templateUrl: './referee-reports.html',
   styleUrl: './referee-reports.scss',
 })
-export class RefereeReports {
+export class RefereeReports implements OnInit {
   private readonly api = inject(RefereeReportsApiService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly isLoading = signal(false);
   protected readonly isSubmitting = signal(false);
@@ -24,6 +26,14 @@ export class RefereeReports {
     matchId: ['', Validators.required],
     notes: ['', Validators.required],
   });
+
+  ngOnInit(): void {
+    const matchId = this.route.snapshot.paramMap.get('matchId');
+
+    if (matchId) {
+      this.reportForm.controls.matchId.setValue(matchId);
+    }
+  }
 
   protected loadReport(): void {
     const matchId = this.reportForm.controls.matchId.value.trim();
