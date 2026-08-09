@@ -154,4 +154,16 @@ export class RefereeReports implements OnInit {
 
     return 'Sacuvaj izvestaj';
   }
+
+  protected matchStatusLabel(match: TournamentMatch): string {
+    if (match.status === 'FINAL') {
+      return 'Spreman za izvestaj';
+    }
+
+    if (match.status === 'LIVE') {
+      return 'U toku';
+    }
+
+    return 'Zakazan';
+  }
 }

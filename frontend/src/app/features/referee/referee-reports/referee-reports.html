@@ -23,7 +23,7 @@
           - {{ match.location || match.tournament.location }}
         </small>
       </div>
-      <span>{{ match.status }}</span>
+      <span>{{ matchStatusLabel(match) }}</span>
       <a [routerLink]="['/reports', match.id]">Otvori</a>
     </article>
     }
