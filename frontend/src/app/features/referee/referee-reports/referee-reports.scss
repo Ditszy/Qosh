@@ -36,6 +36,11 @@ button {
 
 textarea { resize: vertical; }
 
+textarea[readonly] {
+  color: #c8ced8;
+  opacity: 0.75;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

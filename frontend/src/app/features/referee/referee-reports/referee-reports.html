@@ -20,7 +20,8 @@
 
     <label>
       Beleške
-      <textarea formControlName="notes" rows="7" placeholder="Unesi sudijski izvestaj"></textarea>
+      <textarea formControlName="notes" rows="7" placeholder="Unesi sudijski izvestaj"
+        [readonly]="hasLoadedReport()"></textarea>
     </label>
 
     <div class="actions">
