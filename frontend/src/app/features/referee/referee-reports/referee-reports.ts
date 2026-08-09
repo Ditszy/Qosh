@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 
 import { MatchesApiService } from '../../public/live-match/matches-api.service';
 import type { MatchDetail } from '../../public/live-match/match.models';
+import type { TournamentMatch } from '../../public/tournaments/tournament.models';
 import { RefereeReportsApiService, type RefereeReportDetail } from '../referee-reports-api.service';
 
 @Component({
@@ -25,6 +26,8 @@ export class RefereeReports implements OnInit {
   protected readonly successMessage = signal('');
   protected readonly loadedReport = signal<RefereeReportDetail | null>(null);
   protected readonly hasSelectedMatch = signal(false);
+  protected readonly isLoadingAssignedMatches = signal(false);
+  protected readonly assignedMatches = signal<TournamentMatch[]>([]);
   protected readonly selectedMatch = signal<MatchDetail | null>(null);
 
   protected readonly reportForm = this.formBuilder.nonNullable.group({
@@ -40,7 +43,21 @@ export class RefereeReports implements OnInit {
       this.hasSelectedMatch.set(true);
       this.loadSelectedMatch(matchId);
       this.preloadExistingReport(matchId);
+    } else {
+      this.loadAssignedMatches();
     }
+  }
+
+  private loadAssignedMatches(): void {
+    this.isLoadingAssignedMatches.set(true);
+
+    this.api
+      .listAssignedMatches()
+      .pipe(finalize(() => this.isLoadingAssignedMatches.set(false)))
+      .subscribe({
+        next: (matches) => this.assignedMatches.set(matches),
+        error: () => this.errorMessage.set('Dodeljeni mecevi trenutno nisu dostupni.'),
+      });
   }
 
   private loadSelectedMatch(matchId: string): void {
