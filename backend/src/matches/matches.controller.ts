@@ -32,6 +32,17 @@ export class MatchesController {
         return this.matchesService.findByTournamentId(tournamentId);
     }
 
+    @Get('matches/referee/me')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.REFEREE, UserRole.ADMIN)
+    findMyRefereeMatches(@Request() req: AuthenticatedRequest) {
+        return this.matchesService.findByReferee({
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
     @Get('matches/:id/events')
     findEventsByMatchId(@Param('id') id: string) {
         return this.matchesService.findEventsByMatchId(id);
