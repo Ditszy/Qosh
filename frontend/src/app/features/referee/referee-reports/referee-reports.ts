@@ -118,4 +118,16 @@ export class RefereeReports implements OnInit {
   protected cannotSubmitReport(): boolean {
     return this.hasLoadedReport() || (this.hasSelectedMatch() && this.selectedMatch()?.status !== 'FINAL');
   }
+
+  protected submitButtonLabel(): string {
+    if (this.hasLoadedReport()) {
+      return 'Izvestaj je vec sacuvan';
+    }
+
+    if (this.hasSelectedMatch() && this.selectedMatch()?.status !== 'FINAL') {
+      return 'Ceka se kraj meca';
+    }
+
+    return 'Sacuvaj izvestaj';
+  }
 }
