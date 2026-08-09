@@ -10,6 +10,9 @@
     <p class="selected-match">
       {{ match.tournament.name }} · {{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}
     </p>
+    @if (match.status !== 'FINAL') {
+    <p class="message error">Izvestaj se moze sacuvati tek kada je mec finalan.</p>
+    }
     }
     } @else {
     <label>
@@ -28,7 +31,7 @@
       @if (!hasSelectedMatch()) {
       <button type="button" (click)="loadReport()" [disabled]="isLoading()">Ucitaj izvestaj</button>
       }
-      <button type="submit" [disabled]="isSubmitting() || hasLoadedReport()">
+      <button type="submit" [disabled]="isSubmitting() || cannotSubmitReport()">
         {{ hasLoadedReport() ? 'Izvestaj je vec sacuvan' : 'Sacuvaj izvestaj' }}
       </button>
     </div>
