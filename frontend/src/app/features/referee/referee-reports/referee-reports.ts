@@ -63,7 +63,10 @@ export class RefereeReports implements OnInit {
       .getReport(matchId)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: (report) => this.loadedReport.set(report),
+        next: (report) => {
+          this.loadedReport.set(report);
+          this.reportForm.controls.notes.setValue(report.notes);
+        },
         error: () => this.errorMessage.set('Izvestaj za ovaj mec nije pronadjen.'),
       });
   }
