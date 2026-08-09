@@ -33,6 +33,8 @@
 
   @if (hasSelectedMatch()) {
   <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
+    <a class="back-link" routerLink="/reports">Nazad na dodeljene meceve</a>
+
     @if (isLoadingSelectedMatch()) {
     <p class="message">Ucitavanje meca...</p>
     }
