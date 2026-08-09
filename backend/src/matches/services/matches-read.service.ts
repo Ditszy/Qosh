@@ -3,7 +3,7 @@ import { UserRole } from '../../common/user-role.enum';
 import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
-import { MatchActor, MatchRecord, MatchWithRelations } from '../types/match.types';
+import { MatchActor, MatchRecord, MatchWithRelations, RefereeAssignedMatch } from '../types/match.types';
 
 @Injectable()
 export class MatchesReadService {
@@ -43,10 +43,13 @@ export class MatchesReadService {
         return this.withCurrentClock(match);
     }
 
-    async findByReferee(actor: MatchActor): Promise<MatchWithRelations[]> {
+    async findByReferee(actor: MatchActor): Promise<RefereeAssignedMatch[]> {
         const matches = await this.prisma.match.findMany({
             where: actor.role === UserRole.ADMIN ? { refereeId: { not: null } } : { refereeId: actor.id },
-            include: this.matchInclude(),
+            include: {
+                ...this.matchInclude(),
+                refereeReport: { select: { id: true } },
+            },
             orderBy: [
                 { scheduledAt: 'asc' },
                 { round: 'asc' },
@@ -54,7 +57,10 @@ export class MatchesReadService {
             ],
         });
 
-        return matches.map((match) => this.withCurrentClock(match));
+        return matches.map(({ refereeReport, ...match }) => ({
+            ...this.withCurrentClock(match),
+            hasReport: Boolean(refereeReport),
+        }));
     }
 
     withCurrentClock<T extends MatchRecord>(match: T): T {

@@ -6,8 +6,7 @@ import { finalize } from 'rxjs';
 
 import { MatchesApiService } from '../../public/live-match/matches-api.service';
 import type { MatchDetail } from '../../public/live-match/match.models';
-import type { TournamentMatch } from '../../public/tournaments/tournament.models';
-import { RefereeReportsApiService, type RefereeReportDetail } from '../referee-reports-api.service';
+import { RefereeReportsApiService, type RefereeAssignedMatch, type RefereeReportDetail } from '../referee-reports-api.service';
 
 @Component({
   selector: 'app-referee-reports',
@@ -29,7 +28,7 @@ export class RefereeReports implements OnInit {
   protected readonly hasSelectedMatch = signal(false);
   protected readonly isLoadingAssignedMatches = signal(false);
   protected readonly isLoadingSelectedMatch = signal(false);
-  protected readonly assignedMatches = signal<TournamentMatch[]>([]);
+  protected readonly assignedMatches = signal<RefereeAssignedMatch[]>([]);
   protected readonly selectedMatch = signal<MatchDetail | null>(null);
 
   protected readonly reportForm = this.formBuilder.nonNullable.group({
@@ -155,7 +154,11 @@ export class RefereeReports implements OnInit {
     return 'Sacuvaj izvestaj';
   }
 
-  protected matchStatusLabel(match: TournamentMatch): string {
+  protected matchStatusLabel(match: RefereeAssignedMatch): string {
+    if (match.hasReport) {
+      return 'Izvestaj sacuvan';
+    }
+
     if (match.status === 'FINAL') {
       return 'Spreman za izvestaj';
     }

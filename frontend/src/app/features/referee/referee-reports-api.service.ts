@@ -33,6 +33,10 @@ export type RefereeReportDetail = RefereeReport & {
   };
 };
 
+export type RefereeAssignedMatch = TournamentMatch & {
+  hasReport: boolean;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -40,8 +44,8 @@ export class RefereeReportsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
 
-  listAssignedMatches(): Observable<TournamentMatch[]> {
-    return this.http.get<TournamentMatch[]>(this.apiUrl.build('/matches/referee/me'));
+  listAssignedMatches(): Observable<RefereeAssignedMatch[]> {
+    return this.http.get<RefereeAssignedMatch[]>(this.apiUrl.build('/matches/referee/me'));
   }
 
   getReport(matchId: string): Observable<RefereeReportDetail> {
