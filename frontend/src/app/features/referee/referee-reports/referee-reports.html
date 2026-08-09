@@ -1,1 +1,40 @@
-<p>referee-reports works!</p>
+<section class="referee-reports">
+  <header>
+    <p>Sudija</p>
+    <h1>Izvestaj sa meca</h1>
+  </header>
+
+  <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
+    <label>
+      ID meca
+      <input formControlName="matchId" placeholder="Unesi ID finalnog meca" />
+    </label>
+
+    <label>
+      Beleške
+      <textarea formControlName="notes" rows="7" placeholder="Unesi sudijski izvestaj"></textarea>
+    </label>
+
+    <div class="actions">
+      <button type="button" (click)="loadReport()" [disabled]="isLoading()">Ucitaj izvestaj</button>
+      <button type="submit" [disabled]="isSubmitting()">Sacuvaj izvestaj</button>
+    </div>
+  </form>
+
+  @if (errorMessage()) {
+  <p class="message error">{{ errorMessage() }}</p>
+  }
+
+  @if (successMessage()) {
+  <p class="message success">{{ successMessage() }}</p>
+  }
+
+  @if (loadedReport(); as report) {
+  <article class="report-preview">
+    <p>{{ report.match.tournament.name }}</p>
+    <h2>Runda {{ report.match.round }} · Mec {{ report.match.bracketPosition }}</h2>
+    <p>{{ report.notes }}</p>
+    <small>Sudija: {{ report.referee.firstName }} {{ report.referee.lastName }}</small>
+  </article>
+  }
+</section>
