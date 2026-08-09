@@ -6,7 +6,11 @@
 
   <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
     @if (hasSelectedMatch()) {
-    <p class="selected-match">Mec je izabran iz rute.</p>
+    @if (selectedMatch(); as match) {
+    <p class="selected-match">
+      {{ match.tournament.name }} · {{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}
+    </p>
+    }
     } @else {
     <label>
       ID meca

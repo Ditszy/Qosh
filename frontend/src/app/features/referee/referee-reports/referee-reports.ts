@@ -3,6 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { MatchesApiService } from '../../public/live-match/matches-api.service';
+import type { MatchDetail } from '../../public/live-match/match.models';
 import { RefereeReportsApiService, type RefereeReportDetail } from '../referee-reports-api.service';
 
 @Component({
@@ -14,6 +16,7 @@ import { RefereeReportsApiService, type RefereeReportDetail } from '../referee-r
 export class RefereeReports implements OnInit {
   private readonly api = inject(RefereeReportsApiService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly matchesApi = inject(MatchesApiService);
   private readonly route = inject(ActivatedRoute);
 
   protected readonly isLoading = signal(false);
@@ -22,6 +25,7 @@ export class RefereeReports implements OnInit {
   protected readonly successMessage = signal('');
   protected readonly loadedReport = signal<RefereeReportDetail | null>(null);
   protected readonly hasSelectedMatch = signal(false);
+  protected readonly selectedMatch = signal<MatchDetail | null>(null);
 
   protected readonly reportForm = this.formBuilder.nonNullable.group({
     matchId: ['', Validators.required],
@@ -34,7 +38,15 @@ export class RefereeReports implements OnInit {
     if (matchId) {
       this.reportForm.controls.matchId.setValue(matchId);
       this.hasSelectedMatch.set(true);
+      this.loadSelectedMatch(matchId);
     }
+  }
+
+  private loadSelectedMatch(matchId: string): void {
+    this.matchesApi.getMatch(matchId).subscribe({
+      next: (match) => this.selectedMatch.set(match),
+      error: () => this.errorMessage.set('Mec nije pronadjen.'),
+    });
   }
 
   protected loadReport(): void {
