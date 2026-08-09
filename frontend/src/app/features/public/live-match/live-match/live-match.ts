@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, filter, map, of, scan, startWith, switchMap } from 'rxjs';
 
+import { AuthService } from '../../../../core/auth/auth';
 import type { MatchEvent, MatchEventType, MatchLiveStreamMessage, MatchReadBundle } from '../match.models';
 import type { MatchStatistics, StatisticLine, StatisticTotals } from '../../../statistics';
 import { MatchesApiService } from '../matches-api.service';
@@ -50,6 +51,7 @@ const eventDeltas: Record<MatchEventType, Partial<StatisticTotals>> = {
   styleUrl: './live-match.scss',
 })
 export class LiveMatch {
+  private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly matchesApi = inject(MatchesApiService);
 
@@ -80,6 +82,12 @@ export class LiveMatch {
     const remainingSeconds = seconds % 60;
 
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  protected canOpenReport(match: MatchReadBundle['match']): boolean {
+    const role = this.authService.currentUser()?.role;
+
+    return match.status === 'FINAL' && (role === 'REFEREE' || role === 'ADMIN');
   }
 }
 

@@ -25,6 +25,9 @@
       <span>{{ teamName(state.bundle.match.teamB) }}</span>
       <strong>{{ state.bundle.match.teamBScore }}</strong>
     </div>
+    @if (canOpenReport(state.bundle.match)) {
+    <a [routerLink]="['/reports', state.bundle.match.id]">Otvori sudijski izvestaj</a>
+    }
   </section>
 
   <section class="event-feed" aria-label="Tok meca">
