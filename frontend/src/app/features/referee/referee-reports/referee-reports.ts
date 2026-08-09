@@ -49,14 +49,16 @@ export class RefereeReports implements OnInit {
     });
   }
 
-  protected loadReport(): void {
+  protected loadReport(clearMessages = true): void {
     const matchId = this.reportForm.controls.matchId.value.trim();
 
     if (!matchId || this.isLoading()) {
       return;
     }
 
-    this.clearMessages();
+    if (clearMessages) {
+      this.clearMessages();
+    }
     this.isLoading.set(true);
 
     this.api
@@ -86,7 +88,10 @@ export class RefereeReports implements OnInit {
       .createReport(matchId.trim(), { notes: notes.trim() })
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
-        next: () => this.successMessage.set('Izvestaj je sacuvan.'),
+        next: () => {
+          this.successMessage.set('Izvestaj je sacuvan.');
+          this.loadReport(false);
+        },
         error: () => this.errorMessage.set('Izvestaj nije sacuvan. Proveri da li je mec finalan.'),
       });
   }
