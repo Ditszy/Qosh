@@ -3,6 +3,7 @@ import { UserRole } from '../../common/user-role.enum';
 import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
+import { MatchStatus } from '../enums/match-status.enum';
 import { MatchActor, MatchRecord, MatchWithRelations, RefereeAssignedMatch } from '../types/match.types';
 
 @Injectable()
@@ -60,7 +61,23 @@ export class MatchesReadService {
         return matches.map(({ refereeReport, ...match }) => ({
             ...this.withCurrentClock(match),
             hasReport: Boolean(refereeReport),
-        }));
+        })).sort((a, b) => this.refereeMatchPriority(a) - this.refereeMatchPriority(b));
+    }
+
+    private refereeMatchPriority(match: RefereeAssignedMatch): number {
+        if (match.status === MatchStatus.FINAL && !match.hasReport) {
+            return 0;
+        }
+
+        if (match.status === MatchStatus.LIVE) {
+            return 1;
+        }
+
+        if (match.status === MatchStatus.SCHEDULED) {
+            return 2;
+        }
+
+        return 3;
     }
 
     withCurrentClock<T extends MatchRecord>(match: T): T {
