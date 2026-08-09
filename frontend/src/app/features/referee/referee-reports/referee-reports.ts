@@ -21,6 +21,7 @@ export class RefereeReports implements OnInit {
   protected readonly errorMessage = signal('');
   protected readonly successMessage = signal('');
   protected readonly loadedReport = signal<RefereeReportDetail | null>(null);
+  protected readonly hasSelectedMatch = signal(false);
 
   protected readonly reportForm = this.formBuilder.nonNullable.group({
     matchId: ['', Validators.required],
@@ -32,6 +33,7 @@ export class RefereeReports implements OnInit {
 
     if (matchId) {
       this.reportForm.controls.matchId.setValue(matchId);
+      this.hasSelectedMatch.set(true);
     }
   }
 

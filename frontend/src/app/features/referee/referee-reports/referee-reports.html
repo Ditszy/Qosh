@@ -5,10 +5,14 @@
   </header>
 
   <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
+    @if (hasSelectedMatch()) {
+    <p class="selected-match">Mec je izabran iz rute.</p>
+    } @else {
     <label>
       ID meca
       <input formControlName="matchId" placeholder="Unesi ID finalnog meca" />
     </label>
+    }
 
     <label>
       Beleške
