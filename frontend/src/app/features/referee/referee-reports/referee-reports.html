@@ -18,6 +18,8 @@
       <div>
         <p>{{ match.tournament.name }}</p>
         <strong>{{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}</strong>
+        <small>{{ match.scheduledAt || 'Termin nije zakazan' }} · {{ match.location || match.tournament.location
+          }}</small>
       </div>
       <span>{{ match.status }}</span>
       <a [routerLink]="['/reports', match.id]">Otvori</a>
@@ -66,7 +68,6 @@
   <article class="report-preview">
     <p>{{ report.match.tournament.name }}</p>
     <h2>Runda {{ report.match.round }} · Mec {{ report.match.bracketPosition }}</h2>
-    <p>{{ report.notes }}</p>
     <small>Sudija: {{ report.referee.firstName }} {{ report.referee.lastName }}</small>
   </article>
   }
