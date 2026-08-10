@@ -42,6 +42,9 @@
     </label>
 
     <button type="submit" [disabled]="createUserForm.invalid">Kreiraj korisnika</button>
+    @if (createUserMessage) {
+      <p>{{ createUserMessage }}</p>
+    }
   </form>
 
   @if (usersState$ | async; as state) {
