@@ -5,13 +5,19 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, distinctUntilChanged, filter, finalize, forkJoin, map, Observable, of, scan, startWith, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
-import { TeamsApiService, type TeamDetail } from '../../../player/teams-api.service';
-import type { Tournament, TournamentLiveMessage, TournamentMatch, TournamentStatus } from '../tournament.models';
+import { TeamsApiService } from '../../../player/teams-api.service';
+import type {
+  Tournament,
+  TournamentLiveMessage,
+  TournamentMatch,
+  TournamentStatus,
+  TournamentTeamDetail,
+} from '../tournament.models';
 import { TournamentsApiService } from '../tournaments-api.service';
 
 type TournamentDetailState =
   | { status: 'loading' }
-  | { status: 'loaded'; tournament: Tournament; teams: TeamDetail[]; matches: TournamentMatch[] }
+  | { status: 'loaded'; tournament: Tournament; teams: TournamentTeamDetail[]; matches: TournamentMatch[] }
   | { status: 'error' };
 
 type TournamentDetailLoadedState = Extract<TournamentDetailState, { status: 'loaded' }>;
@@ -41,7 +47,7 @@ export class TournamentDetail {
   protected readonly teamNameInput = signal('');
   protected readonly signupSubmitting = signal(false);
   protected readonly signupFeedback = signal<string | null>(null);
-  protected readonly selectedTeam = signal<TeamDetail | null>(null);
+  protected readonly selectedTeam = signal<TournamentTeamDetail | null>(null);
 
   private readonly tournamentId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -116,7 +122,7 @@ export class TournamentDetail {
     return team?.name ?? 'TBD';
   }
 
-  protected openTeam(team: TeamDetail): void {
+  protected openTeam(team: TournamentTeamDetail): void {
     this.selectedTeam.set(team);
   }
 
@@ -140,7 +146,27 @@ export class TournamentDetail {
       return { ...state, matches: this.replaceMatch(state.matches, message.data.match) };
     }
 
+    if (message.type === 'tournament.team.created' || message.type === 'tournament.roster.updated') {
+      return { ...state, teams: this.replaceTeam(state.teams, message.data.team) };
+    }
+
     return state;
+  }
+
+  private replaceTeam(
+    teams: TournamentTeamDetail[],
+    updatedTeam: TournamentTeamDetail,
+  ): TournamentTeamDetail[] {
+    if (this.selectedTeam()?.id === updatedTeam.id) {
+      this.selectedTeam.set(updatedTeam);
+    }
+
+    const hasTeam = teams.some((team) => team.id === updatedTeam.id);
+    const nextTeams = hasTeam
+      ? teams.map((team) => (team.id === updatedTeam.id ? updatedTeam : team))
+      : [...teams, updatedTeam];
+
+    return nextTeams.sort((first, second) => first.name.localeCompare(second.name));
   }
 
   private replaceMatch(matches: TournamentMatch[], updatedMatch: TournamentMatch): TournamentMatch[] {
