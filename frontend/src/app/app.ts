@@ -1,8 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { startWith } from 'rxjs';
 
 import { AuthService, UserRole } from './core/auth/auth';
 import { NotificationBell } from './features/notifications';
+import { PlayerProfileSearchService, PublicUser } from './features/statistics';
 
 type NavRole = 'GUEST' | UserRole;
 
@@ -20,9 +23,14 @@ type NavItem = {
 })
 export class App {
   private readonly authService = inject(AuthService);
+  private readonly playerProfileSearch = inject(PlayerProfileSearchService);
   private readonly router = inject(Router);
 
   protected readonly isHomeRoute = signal(this.router.url === '/');
+  protected readonly playerSearchControl = new FormControl('', { nonNullable: true });
+  protected readonly playerSearchState$ = this.playerProfileSearch.watch(
+    this.playerSearchControl.valueChanges.pipe(startWith(this.playerSearchControl.value)),
+  );
   protected readonly currentUser = this.authService.currentUser;
   protected readonly currentRole = computed<NavRole>(() => this.currentUser()?.role ?? 'GUEST');
   protected readonly accountLabel = computed(() => {
@@ -58,5 +66,10 @@ export class App {
   protected logout(): void {
     this.authService.logout();
     void this.router.navigateByUrl('/');
+  }
+
+  protected openPlayerProfile(player: PublicUser): void {
+    this.playerSearchControl.setValue('');
+    void this.router.navigateByUrl(`/profiles/${player.id}`);
   }
 }
