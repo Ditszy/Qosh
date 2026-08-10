@@ -1,0 +1,59 @@
+.admin-users {
+  display: grid;
+  gap: 1.5rem;
+}
+h1, h2, p {
+  margin: 0;
+}
+header p, form p, li span {
+  color: #a7adba;
+}
+form, li {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(18, 21, 28, 0.9);
+}
+form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+form h2, form button, form p {
+  grid-column: 1 / -1;
+}
+label {
+  display: grid;
+  gap: 0.35rem;
+  color: #d7dbe4;
+}
+input, select {
+  min-height: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: #0b0d12;
+  color: #f5f6f8;
+  padding: 0 0.75rem;
+}
+button {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 6px;
+  background: #ff6b1a;
+  color: #101010;
+  font-weight: 700;
+}
+button:disabled { cursor: not-allowed; opacity: 0.45; }
+ul {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+}
