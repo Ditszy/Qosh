@@ -152,6 +152,13 @@ export type PlayerRankingsState = {
   error: string | null;
 };
 
+export type PlayerProfileSearchState = {
+  query: string;
+  results: PublicUser[];
+  loading: boolean;
+  error: string | null;
+};
+
 export const defaultPlayerStatisticsFilters: NormalizedPlayerStatisticsFilters = {
   sortBy: 'points',
   sortDirection: 'desc',
