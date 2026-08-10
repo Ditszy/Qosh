@@ -67,20 +67,10 @@
     @if (state.teams.length > 0) {
     <div class="team-list">
       @for (team of state.teams; track team.id) {
-      <article class="team-card">
+      <button class="team-card" type="button" (click)="openTeam(team)">
         <strong>{{ team.name }}</strong>
         <span>{{ team.members.length }} / 4 igraca</span>
-        <ul>
-          @for (member of team.members; track member.id) {
-          <li>
-            {{ member.user.firstName }} {{ member.user.lastName }}
-            @if (member.role === 'CAPTAIN') {
-            <span>Kapiten</span>
-            }
-          </li>
-          }
-        </ul>
-      </article>
+      </button>
       }
     </div>
     } @else {
@@ -114,6 +104,26 @@
     <p class="surface-message">Breket jos nije generisan.</p>
     }
   </section>
+
+  @if (selectedTeam(); as team) {
+  <div class="team-modal-backdrop" role="presentation" (click)="closeTeam()"></div>
+  <section class="team-modal" role="dialog" aria-modal="true" aria-label="Sastav tima">
+    <header>
+      <h3>{{ team.name }}</h3>
+      <button type="button" (click)="closeTeam()">Zatvori</button>
+    </header>
+    <ul>
+      @for (member of team.members; track member.id) {
+      <li>
+        <span>{{ member.user.firstName }} {{ member.user.lastName }}</span>
+        @if (member.role === 'CAPTAIN') {
+        <strong>Kapiten</strong>
+        }
+      </li>
+      }
+    </ul>
+  </section>
+  }
   }
   }
   }

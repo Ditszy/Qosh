@@ -41,6 +41,7 @@ export class TournamentDetail {
   protected readonly teamNameInput = signal('');
   protected readonly signupSubmitting = signal(false);
   protected readonly signupFeedback = signal<string | null>(null);
+  protected readonly selectedTeam = signal<TeamDetail | null>(null);
 
   private readonly tournamentId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -113,6 +114,14 @@ export class TournamentDetail {
 
   protected teamName(team: TournamentMatch['teamA']): string {
     return team?.name ?? 'TBD';
+  }
+
+  protected openTeam(team: TeamDetail): void {
+    this.selectedTeam.set(team);
+  }
+
+  protected closeTeam(): void {
+    this.selectedTeam.set(null);
   }
 
   private applyLiveMessage(

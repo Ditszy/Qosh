@@ -160,7 +160,9 @@ dd {
 .team-card {
   border: 1px solid #2b303a;
   background: #101218;
+  cursor: pointer;
   padding: 16px;
+  text-align: left;
 }
 
 .team-card strong,
@@ -168,17 +170,60 @@ dd {
   color: #ffffff;
 }
 
-.team-card ul {
+.team-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.66);
+}
+
+.team-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 31;
+  display: grid;
+  gap: 16px;
+  width: min(420px, calc(100vw - 32px));
+  border: 1px solid #2b303a;
+  background: #101218;
+  padding: 20px;
+  transform: translate(-50%, -50%);
+}
+
+.team-modal header,
+.team-modal li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.team-modal h3 {
+  margin: 0;
+  color: #ffffff;
+}
+
+.team-modal button {
+  border: 0;
+  background: #ff5a1f;
+  color: #090a0d;
+  cursor: pointer;
+  font-weight: 900;
+  padding: 8px 10px;
+  text-transform: uppercase;
+}
+
+.team-modal ul {
   display: grid;
   gap: 8px;
-  margin: 12px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
   color: #b8bdc7;
 }
 
-.team-card li span {
-  margin-left: 8px;
+.team-modal strong {
   color: #ff5a1f;
   font-size: 0.72rem;
   font-weight: 900;
