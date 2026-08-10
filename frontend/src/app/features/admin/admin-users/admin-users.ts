@@ -5,6 +5,14 @@ import { BehaviorSubject, catchError, finalize, map, of, switchMap } from 'rxjs'
 
 import { AdminCreateUserRole, AdminUsersApiService } from '../admin-users-api.service';
 
+const roleLabels: Record<AdminCreateUserRole | 'PLAYER' | 'ADMIN', string> = {
+  PLAYER: 'Igraci',
+  ORGANIZER: 'Organizatori',
+  REFEREE: 'Sudije',
+  SCORER: 'Zapisnicari',
+  ADMIN: 'Administratori',
+};
+
 @Component({
   selector: 'app-admin-users',
   imports: [AsyncPipe, ReactiveFormsModule],
@@ -17,6 +25,7 @@ export class AdminUsers {
   private readonly refreshStats$ = new BehaviorSubject<void>(undefined);
 
   readonly roleOptions: AdminCreateUserRole[] = ['ORGANIZER', 'REFEREE', 'SCORER'];
+  readonly roleLabels = roleLabels;
   readonly createUserForm = this.formBuilder.nonNullable.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
