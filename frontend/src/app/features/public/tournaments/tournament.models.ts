@@ -38,6 +38,19 @@ export type TeamSummary = {
   updatedAt: string;
 };
 
+export type TournamentTeamMember = {
+  id: string;
+  teamId: string;
+  userId: string;
+  role: 'CAPTAIN' | 'MEMBER';
+  joinedAt: string;
+  user: PublicUser;
+};
+
+export type TournamentTeamDetail = TeamSummary & {
+  members: TournamentTeamMember[];
+};
+
 export type TournamentMatch = {
   id: string;
   tournamentId: string;
@@ -69,3 +82,10 @@ export type TournamentMatch = {
   scorer: PublicUser | null;
   referee: PublicUser | null;
 };
+
+export type TournamentLiveMessage =
+  | { type: 'tournament.team.created'; data: { team: TournamentTeamDetail } }
+  | { type: 'tournament.roster.updated'; data: { team: TournamentTeamDetail } }
+  | { type: 'tournament.status.changed'; data: { tournament: Tournament } }
+  | { type: 'tournament.bracket.generated'; data: { matches: TournamentMatch[] } }
+  | { type: 'tournament.match.scheduled'; data: { match: TournamentMatch } };

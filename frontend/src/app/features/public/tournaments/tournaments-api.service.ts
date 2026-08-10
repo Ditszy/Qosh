@@ -3,7 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../../core/api';
-import type { Tournament, TournamentMatch } from './tournament.models';
+import { LiveStreamService } from '../../../core/live/live-stream.service';
+import type { Tournament, TournamentLiveMessage, TournamentMatch } from './tournament.models';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +12,7 @@ import type { Tournament, TournamentMatch } from './tournament.models';
 export class TournamentsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
+  private readonly liveStream = inject(LiveStreamService);
 
   listTournaments(): Observable<Tournament[]> {
     return this.http.get<Tournament[]>(this.apiUrl.build('/tournaments'));
@@ -22,5 +24,11 @@ export class TournamentsApiService {
 
   listTournamentMatches(tournamentId: string): Observable<TournamentMatch[]> {
     return this.http.get<TournamentMatch[]>(this.apiUrl.build(`/tournaments/${tournamentId}/matches`));
+  }
+
+  watchTournamentLive(tournamentId: string): Observable<TournamentLiveMessage> {
+    return this.liveStream.connect<TournamentLiveMessage['data']>(
+      `/tournaments/${tournamentId}/live`,
+    ) as Observable<TournamentLiveMessage>;
   }
 }
