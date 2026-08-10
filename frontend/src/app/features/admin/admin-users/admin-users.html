@@ -41,7 +41,9 @@
       </select>
     </label>
 
-    <button type="submit" [disabled]="createUserForm.invalid">Kreiraj korisnika</button>
+    <button type="submit" [disabled]="createUserForm.invalid || isCreatingUser">
+      {{ isCreatingUser ? 'Kreiranje...' : 'Kreiraj korisnika' }}
+    </button>
     @if (createUserMessage) {
       <p>{{ createUserMessage }}</p>
     }

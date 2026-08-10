@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BehaviorSubject, catchError, map, of, switchMap } from 'rxjs';
+import { BehaviorSubject, catchError, finalize, map, of, switchMap } from 'rxjs';
 
 import { AdminCreateUserRole, AdminUsersApiService } from '../admin-users-api.service';
 
@@ -26,6 +26,7 @@ export class AdminUsers {
     role: ['SCORER' as AdminCreateUserRole, Validators.required],
   });
   createUserMessage = '';
+  isCreatingUser = false;
 
   readonly usersState$ = this.refreshUsers$.pipe(
     switchMap(() =>
@@ -43,7 +44,12 @@ export class AdminUsers {
     }
 
     this.createUserMessage = '';
-    this.adminUsersApi.createUser(this.createUserForm.getRawValue()).subscribe({
+    this.isCreatingUser = true;
+    this.adminUsersApi.createUser(this.createUserForm.getRawValue()).pipe(
+      finalize(() => {
+        this.isCreatingUser = false;
+      }),
+    ).subscribe({
       next: () => {
         this.createUserMessage = 'Korisnik je kreiran.';
         this.createUserForm.reset({ role: 'SCORER' });
