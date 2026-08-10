@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { publicUserSelect } from '../users/users.service';
+import { UserRole } from '../common/user-role.enum';
 import { FindPlayerStatisticsDto } from './dto/find-player-statistics.dto';
 import {
     addPersistedStatLine,
@@ -37,6 +38,28 @@ import {
 @Injectable()
 export class StatisticsService {
     constructor(private readonly prisma: PrismaService) { }
+
+    async searchPlayerProfiles(query: string) {
+        const search = query.trim();
+
+        if (search.length < 2) {
+            return [];
+        }
+
+        return this.prisma.user.findMany({
+            where: {
+                role: UserRole.PLAYER,
+                OR: [
+                    { username: { contains: search, mode: 'insensitive' } },
+                    { firstName: { contains: search, mode: 'insensitive' } },
+                    { lastName: { contains: search, mode: 'insensitive' } },
+                ],
+            },
+            select: publicUserSelect,
+            orderBy: { username: 'asc' },
+            take: 8,
+        });
+    }
 
     async findPlayerStatistics(filters: FindPlayerStatisticsDto): Promise<PlayerStatistic[]> {
         await this.ensureTournamentExists(filters.tournamentId);

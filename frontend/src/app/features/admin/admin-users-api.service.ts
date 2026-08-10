@@ -5,8 +5,6 @@ import { Observable } from 'rxjs';
 import { ApiUrlService } from '../../core/api';
 import type { AuthUser, UserRole } from '../../core/auth/auth';
 
-export type AdminManagedUser = AuthUser;
-
 export type AdminCreateUserRole = Extract<UserRole, 'ORGANIZER' | 'REFEREE' | 'SCORER'>;
 
 export type AdminCreateUserRequest = {
@@ -34,15 +32,11 @@ export class AdminUsersApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
 
-  listUsers(): Observable<AdminManagedUser[]> {
-    return this.http.get<AdminManagedUser[]>(this.apiUrl.build('/users'));
-  }
-
   getUserStats(): Observable<AdminUserStats> {
     return this.http.get<AdminUserStats>(this.apiUrl.build('/users/stats'));
   }
 
-  createUser(payload: AdminCreateUserRequest): Observable<AdminManagedUser> {
-    return this.http.post<AdminManagedUser>(this.apiUrl.build('/users/create'), payload);
+  createUser(payload: AdminCreateUserRequest): Observable<AuthUser> {
+    return this.http.post<AuthUser>(this.apiUrl.build('/users/create'), payload);
   }
 }
