@@ -24,6 +24,24 @@
   text-transform: uppercase;
 }
 
+.live-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.live-sync::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+}
+
 .detail-header a,
 .surface-message a {
   color: #ff5a1f;
