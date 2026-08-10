@@ -1,6 +1,6 @@
 import { AsyncPipe } from '@angular/common';
-import { Component } from '@angular/core';
-import { inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { catchError, map, of } from 'rxjs';
 
 import { AdminUsersApiService } from '../admin-users-api.service';
 
@@ -13,5 +13,8 @@ import { AdminUsersApiService } from '../admin-users-api.service';
 export class AdminUsers {
   private readonly adminUsersApi = inject(AdminUsersApiService);
 
-  readonly users$ = this.adminUsersApi.listUsers();
+  readonly usersState$ = this.adminUsersApi.listUsers().pipe(
+    map((users) => ({ users, error: null })),
+    catchError(() => of({ users: [], error: 'Nije moguce ucitati korisnike.' })),
+  );
 }
