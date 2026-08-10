@@ -1,1 +1,21 @@
-<p>admin-users works!</p>
+<section class="admin-users">
+  <header>
+    <p>Admin</p>
+    <h1>Korisnici</h1>
+  </header>
+
+  @if (users$ | async; as users) {
+    <p>{{ users.length }} korisnika u sistemu</p>
+
+    <ul>
+      @for (user of users; track user.id) {
+        <li>
+          <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+          <span>{{ user.email }} · {{ user.role }}</span>
+        </li>
+      }
+    </ul>
+  } @else {
+    <p>Ucitavanje korisnika...</p>
+  }
+</section>
