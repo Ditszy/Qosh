@@ -6,13 +6,15 @@ import { catchError, distinctUntilChanged, filter, finalize, forkJoin, map, Obse
 
 import { AuthService } from '../../../../core/auth/auth';
 import { TeamsApiService } from '../../../player/teams-api.service';
-import type { Tournament, TournamentMatch, TournamentStatus } from '../tournament.models';
+import type { Tournament, TournamentLiveMessage, TournamentMatch, TournamentStatus } from '../tournament.models';
 import { TournamentsApiService } from '../tournaments-api.service';
 
 type TournamentDetailState =
   | { status: 'loading' }
   | { status: 'loaded'; tournament: Tournament; matches: TournamentMatch[] }
   | { status: 'error' };
+
+type TournamentStatusChangedMessage = Extract<TournamentLiveMessage, { type: 'tournament.status.changed' }>;
 
 const statusLabels: Record<TournamentStatus, string> = {
   DRAFT: 'U pripremi',
@@ -52,7 +54,16 @@ export class TournamentDetail {
         tournament: this.tournamentsApi.getTournament(id),
         matches: this.tournamentsApi.listTournamentMatches(id),
       }).pipe(
-        map(({ tournament, matches }) => ({ status: 'loaded', tournament, matches }) satisfies TournamentDetailState),
+        switchMap(({ tournament, matches }) => {
+          const loadedState = { status: 'loaded', tournament, matches } satisfies TournamentDetailState;
+
+          return this.tournamentsApi.watchTournamentLive(id).pipe(
+            filter((message): message is TournamentStatusChangedMessage => message.type === 'tournament.status.changed'),
+            map((message) => ({ ...loadedState, tournament: message.data.tournament }) satisfies TournamentDetailState),
+            startWith(loadedState),
+            catchError(() => of(loadedState)),
+          );
+        }),
         startWith({ status: 'loading' } satisfies TournamentDetailState),
         catchError(() => of({ status: 'error' } satisfies TournamentDetailState)),
       ),
