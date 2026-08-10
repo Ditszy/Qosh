@@ -1,7 +1,11 @@
-<section aria-label="Organizer dashboard">
-  <h2>Moji turniri</h2>
+<section class="organizer-dashboard" aria-label="Organizer dashboard">
+  <header class="page-header">
+    <span>Organizer</span>
+    <h1>Moji turniri</h1>
+  </header>
 
-  <form #tournamentForm="ngForm" (ngSubmit)="submitTournament(tournamentForm)">
+  <form class="create-form" #tournamentForm="ngForm" (ngSubmit)="submitTournament(tournamentForm)">
+    <h2>Novi turnir</h2>
     <label>
       Naziv
       <input type="text" name="name" ngModel required />
@@ -19,7 +23,7 @@
       <input type="number" name="maxTeams" ngModel="8" min="2" max="32" required />
     </label>
     @if (errorMessage()) {
-    <p>{{ errorMessage() }}</p>
+    <p class="error-message">{{ errorMessage() }}</p>
     }
     <button type="submit" [disabled]="tournamentForm.invalid || isSubmitting()">
       {{ isSubmitting() ? 'Kreiranje...' : 'Kreiraj turnir' }}
@@ -27,8 +31,9 @@
   </form>
 
   <div class="official-search">
+    <h2>Sluzbena lica</h2>
     <label>
-      Zapisničar
+      Zapisnicar
       <input type="search" placeholder="Ime, username ili email" (input)="searchScorers($any($event.target).value)" />
     </label>
     <label>
@@ -36,62 +41,72 @@
       <input type="search" placeholder="Ime, username ili email" (input)="searchReferees($any($event.target).value)" />
     </label>
     @if (officialSearchError()) {
-    <p>{{ officialSearchError() }}</p>
+    <p class="error-message">{{ officialSearchError() }}</p>
     }
   </div>
 
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p>Ucitavanje turnira...</p>
+  <p class="surface-message">Ucitavanje turnira...</p>
   }
   @case ('error') {
-  <p>Turniri trenutno nisu dostupni.</p>
+  <p class="surface-message error-message">Turniri trenutno nisu dostupni.</p>
   }
   @case ('loaded') {
   @if (state.tournaments.length > 0) {
-  <ul>
+  <ul class="tournament-list">
     @for (tournament of state.tournaments; track tournament.id) {
-    <li>
-      <a [routerLink]="['/tournaments', tournament.id]">{{ tournament.name }}</a>
-      <span>{{ tournament.status }}</span>
-      <small>{{ tournament.startsAt | date: 'medium' }}</small>
-      @if (tournament.status === 'DRAFT') {
-      <button type="button" [disabled]="pendingAction() === 'open:' + tournament.id"
-        (click)="updateSignupStatus(tournament.id, 'open')">
-        Otvori prijave
-      </button>
-      }
-      @if (tournament.status === 'SIGNUPS_OPEN') {
-      <button type="button" [disabled]="pendingAction() === 'lock:' + tournament.id"
-        (click)="updateSignupStatus(tournament.id, 'lock')">
-        Zaključaj prijave
-      </button>
-      }
-      @if (tournament.status === 'SIGNUPS_LOCKED') {
-      <button type="button" [disabled]="pendingAction() === 'bracket:' + tournament.id"
-        (click)="generateBracket(tournament.id)">
-        Generiši zreb
-      </button>
-      <button type="button" [disabled]="pendingAction() === 'start:' + tournament.id"
-        (click)="startTournament(tournament.id)">
-        Pokreni turnir
-      </button>
-      }
+    <li class="tournament-card">
+      <div class="tournament-heading">
+        <div>
+          <a [routerLink]="['/tournaments', tournament.id]">{{ tournament.name }}</a>
+          <small>{{ tournament.location }} - {{ tournament.startsAt | date: 'medium' }}</small>
+        </div>
+        <span>{{ tournament.status }}</span>
+      </div>
+
+      <div class="tournament-actions">
+        @if (tournament.status === 'DRAFT') {
+        <button type="button" [disabled]="pendingAction() === 'open:' + tournament.id"
+          (click)="updateSignupStatus(tournament.id, 'open')">
+          Otvori prijave
+        </button>
+        }
+        @if (tournament.status === 'SIGNUPS_OPEN') {
+        <button type="button" [disabled]="pendingAction() === 'lock:' + tournament.id"
+          (click)="updateSignupStatus(tournament.id, 'lock')">
+          Zaključaj prijave
+        </button>
+        }
+        @if (tournament.status === 'SIGNUPS_LOCKED') {
+        <button type="button" [disabled]="pendingAction() === 'bracket:' + tournament.id"
+          (click)="generateBracket(tournament.id)">
+          Generiši zreb
+        </button>
+        <button type="button" [disabled]="pendingAction() === 'start:' + tournament.id"
+          (click)="startTournament(tournament.id)">
+          Pokreni turnir
+        </button>
+        }
+      </div>
+
       @if (tournament.matches.length > 0) {
-      <ol>
+      <ol class="match-list">
         @for (match of tournament.matches; track match.id) {
-        <li>
-          <a [routerLink]="['/matches', match.id, 'live']">
-            R{{ match.round }}.{{ match.bracketPosition }}
-            {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
-          </a>
-          <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
-          <form #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
+        <li class="match-row">
+          <div class="match-summary">
+            <a [routerLink]="['/matches', match.id, 'live']">
+              R{{ match.round }}.{{ match.bracketPosition }}
+              {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
+            </a>
+            <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
+          </div>
+          <form class="schedule-form" #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
             <input type="datetime-local" name="scheduledAt" ngModel required />
             <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
             <select name="scorerId" [ngModel]="match.scorerId || ''">
-              <option value="">Bez zapisnicara</option>
+              <option value="">Bez zapisničara</option>
               @for (scorer of scorers(); track scorer.id) {
               <option [value]="scorer.id">{{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})</option>
               }
@@ -115,7 +130,7 @@
     }
   </ul>
   } @else {
-  <p>Nemaš turnire za upravljanje.</p>
+  <p class="surface-message">Nemas turnire za upravljanje.</p>
   }
   }
   }
