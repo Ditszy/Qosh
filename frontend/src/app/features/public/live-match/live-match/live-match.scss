@@ -60,21 +60,38 @@
   text-transform: uppercase;
 }
 
-.stat-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(3, 54px);
-  gap: 10px;
-  padding: 8px 0;
+.stat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
 }
 
-.stat-row.header {
+.stat-table th,
+.stat-table td {
+  border-bottom: 1px solid #242832;
+  padding: 10px 8px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.stat-table th:first-child {
+  min-width: 180px;
+  text-align: left;
+}
+
+.stat-table thead th,
+.stat-table tbody tr:last-child {
   color: #9ca3af;
-  font-size: 0.72rem;
   font-weight: 950;
   text-transform: uppercase;
 }
 
-.stat-row strong {
+.stat-table tbody tr:last-child {
+  background: #090a0d;
+}
+
+.stat-table td,
+.stat-table tbody th {
   color: #ffffff;
 }
 
