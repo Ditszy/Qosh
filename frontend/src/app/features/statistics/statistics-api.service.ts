@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { ApiUrlService } from '../../core/api';
 import type {
   MatchStatistics,
+  PublicUser,
   PlayerProfile,
   PlayerStatistic,
   PlayerStatisticLeader,
@@ -57,6 +58,12 @@ export class StatisticsApiService {
 
   getPlayerProfile(userId: string): Observable<PlayerProfile> {
     return this.http.get<PlayerProfile>(this.apiUrl.build(`/profiles/${userId}`));
+  }
+
+  searchPlayerProfiles(query: string): Observable<PublicUser[]> {
+    return this.http.get<PublicUser[]>(this.apiUrl.build('/profiles/search'), {
+      params: new HttpParams().set('q', query),
+    });
   }
 
   private toParams(filters: PlayerStatisticsFilters): HttpParams {
