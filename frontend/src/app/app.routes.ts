@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from './core/auth/auth.guards';
-import { UserRole } from './core/auth/auth';
+import { AdminUsers } from './features/admin/admin-users/admin-users';
 import { Login } from './features/auth/login/login';
 import { Register } from './features/auth/register/register';
 import { OrganizerDashboard } from './features/organizer/organizer-dashboard/organizer-dashboard';
@@ -20,12 +20,6 @@ const page = (path: string, title: string, eyebrow: string): Routes[number] => (
   data: { title, eyebrow },
 });
 
-const rolePage = (path: string, title: string, eyebrow: string, roles: UserRole[]): Routes[number] => ({
-  ...page(path, title, eyebrow),
-  canActivate: [roleGuard],
-  data: { title, eyebrow, roles },
-});
-
 export const routes: Routes = [
   { path: 'tournaments', component: TournamentList },
   { path: 'tournaments/:id', component: TournamentDetail },
@@ -40,5 +34,5 @@ export const routes: Routes = [
   { path: 'scorer', component: ScorerConsole, canActivate: [roleGuard], data: { roles: ['SCORER', 'ADMIN'] } },
   { path: 'reports/:matchId', component: RefereeReports, canActivate: [roleGuard], data: { roles: ['REFEREE', 'ADMIN'] } },
   { path: 'reports', component: RefereeReports, canActivate: [roleGuard], data: { roles: ['REFEREE', 'ADMIN'] } },
-  rolePage('admin', 'Admin', 'Korisnici', ['ADMIN']),
+  { path: 'admin', component: AdminUsers, canActivate: [roleGuard], data: { roles: ['ADMIN'] } },
 ];
