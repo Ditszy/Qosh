@@ -1,5 +1,6 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { startWith } from 'rxjs';
 
@@ -17,7 +18,7 @@ type NavItem = {
 
 @Component({
   selector: 'app-root',
-  imports: [NotificationBell, RouterLink, RouterOutlet],
+  imports: [AsyncPipe, NotificationBell, ReactiveFormsModule, RouterLink, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

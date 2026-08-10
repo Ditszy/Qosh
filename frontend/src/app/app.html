@@ -11,6 +11,29 @@
       }
     </nav>
 
+    <div class="player-search">
+      <input type="search" placeholder="Pretrazi igrace" [formControl]="playerSearchControl" />
+
+      @if (playerSearchState$ | async; as state) {
+      @if (state.loading || state.error || state.results.length) {
+      <div class="player-search-results">
+        @if (state.loading) {
+        <span>Pretraga...</span>
+        } @else if (state.error) {
+        <span>{{ state.error }}</span>
+        } @else {
+        @for (player of state.results; track player.id) {
+        <button type="button" (click)="openPlayerProfile(player)">
+          <strong>{{ player.username }}</strong>
+          <span>{{ player.firstName }} {{ player.lastName }}</span>
+        </button>
+        }
+        }
+      </div>
+      }
+      }
+    </div>
+
     <div class="account-actions" aria-label="Korisničke akcije">
       @if (currentUser(); as user) {
       <span class="account-summary">

@@ -39,7 +39,7 @@ body {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(180px, 260px) auto;
   gap: 24px;
   align-items: center;
   min-height: 72px;
@@ -51,10 +51,22 @@ body {
 
 .brand,
 .main-nav,
+.player-search,
 .account-actions {
   display: flex;
   align-items: center;
 }
+
+.player-search { position: relative; }
+
+.player-search input { width: 100%; min-height: 38px; border: 1px solid #30343d; background: #090a0d; color: #ffffff; padding: 0 12px; }
+
+.player-search-results { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; display: grid; width: min(320px, 80vw); border: 1px solid #30343d; background: #11141a; }
+
+.player-search-results button,
+.player-search-results span { padding: 10px 12px; color: #ffffff; }
+
+.player-search-results button { display: grid; border: 0; background: transparent; text-align: left; cursor: pointer; }
 
 .brand {
   gap: 10px;
