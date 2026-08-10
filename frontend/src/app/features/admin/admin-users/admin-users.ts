@@ -14,7 +14,7 @@ import { AdminCreateUserRole, AdminUsersApiService } from '../admin-users-api.se
 export class AdminUsers {
   private readonly adminUsersApi = inject(AdminUsersApiService);
   private readonly formBuilder = inject(FormBuilder);
-  private readonly refreshUsers$ = new BehaviorSubject<void>(undefined);
+  private readonly refreshStats$ = new BehaviorSubject<void>(undefined);
 
   readonly roleOptions: AdminCreateUserRole[] = ['ORGANIZER', 'REFEREE', 'SCORER'];
   readonly createUserForm = this.formBuilder.nonNullable.group({
@@ -28,11 +28,11 @@ export class AdminUsers {
   createUserMessage = '';
   isCreatingUser = false;
 
-  readonly usersState$ = this.refreshUsers$.pipe(
+  readonly statsState$ = this.refreshStats$.pipe(
     switchMap(() =>
-      this.adminUsersApi.listUsers().pipe(
-        map((users) => ({ users, error: null })),
-        catchError(() => of({ users: [], error: 'Nije moguce ucitati korisnike.' })),
+      this.adminUsersApi.getUserStats().pipe(
+        map((stats) => ({ stats, error: null })),
+        catchError(() => of({ stats: null, error: 'Nije moguce ucitati statistiku korisnika.' })),
       ),
     ),
   );
@@ -53,7 +53,7 @@ export class AdminUsers {
       next: () => {
         this.createUserMessage = 'Korisnik je kreiran.';
         this.createUserForm.reset({ role: 'SCORER' });
-        this.refreshUsers$.next();
+        this.refreshStats$.next();
       },
       error: () => {
         this.createUserMessage = 'Nije moguce kreirati korisnika.';

@@ -49,26 +49,21 @@
     }
   </form>
 
-  @if (usersState$ | async; as state) {
+  @if (statsState$ | async; as state) {
     @if (state.error) {
       <p>{{ state.error }}</p>
-    } @else {
-      <p>{{ state.users.length }} korisnika u sistemu</p>
+    } @else if (state.stats) {
+      <p>{{ state.stats.totalUsers }} korisnika u sistemu</p>
 
-      @if (state.users.length === 0) {
-        <p>Nema korisnika za prikaz.</p>
-      } @else {
-        <ul>
-          @for (user of state.users; track user.id) {
-            <li>
-              <strong>{{ user.firstName }} {{ user.lastName }}</strong>
-              <span>{{ user.email }} - {{ user.role }}</span>
-            </li>
-          }
-        </ul>
-      }
+      <ul>
+        <li><strong>PLAYER</strong><span>{{ state.stats.players }}</span></li>
+        <li><strong>ORGANIZER</strong><span>{{ state.stats.organizers }}</span></li>
+        <li><strong>REFEREE</strong><span>{{ state.stats.referees }}</span></li>
+        <li><strong>SCORER</strong><span>{{ state.stats.scorers }}</span></li>
+        <li><strong>ADMIN</strong><span>{{ state.stats.admins }}</span></li>
+      </ul>
     }
   } @else {
-    <p>Ucitavanje korisnika...</p>
+    <p>Ucitavanje statistike korisnika...</p>
   }
 </section>
