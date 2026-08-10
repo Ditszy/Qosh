@@ -5,13 +5,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, distinctUntilChanged, filter, finalize, forkJoin, map, Observable, of, scan, startWith, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
-import { TeamsApiService } from '../../../player/teams-api.service';
+import { TeamsApiService, type TeamDetail } from '../../../player/teams-api.service';
 import type { Tournament, TournamentLiveMessage, TournamentMatch, TournamentStatus } from '../tournament.models';
 import { TournamentsApiService } from '../tournaments-api.service';
 
 type TournamentDetailState =
   | { status: 'loading' }
-  | { status: 'loaded'; tournament: Tournament; matches: TournamentMatch[] }
+  | { status: 'loaded'; tournament: Tournament; teams: TeamDetail[]; matches: TournamentMatch[] }
   | { status: 'error' };
 
 type TournamentDetailLoadedState = Extract<TournamentDetailState, { status: 'loaded' }>;
@@ -52,10 +52,11 @@ export class TournamentDetail {
     switchMap((id) =>
       forkJoin({
         tournament: this.tournamentsApi.getTournament(id),
+        teams: this.teamsApi.listTournamentTeams(id),
         matches: this.tournamentsApi.listTournamentMatches(id),
       }).pipe(
-        switchMap(({ tournament, matches }) => {
-          const loadedState = { status: 'loaded', tournament, matches } satisfies TournamentDetailState;
+        switchMap(({ tournament, teams, matches }) => {
+          const loadedState = { status: 'loaded', tournament, teams, matches } satisfies TournamentDetailState;
 
           return this.tournamentsApi.watchTournamentLive(id).pipe(
             scan((state, message) => this.applyLiveMessage(state, message), loadedState),

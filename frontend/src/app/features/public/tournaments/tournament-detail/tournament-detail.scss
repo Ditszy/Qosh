@@ -133,15 +133,55 @@ dd {
   font-weight: 850;
 }
 
+.team-section,
 .match-section {
   display: grid;
   gap: 12px;
 }
 
+.team-section {
+  margin-bottom: 20px;
+}
+
+.team-section h3,
 .match-section h3 {
   margin: 0;
   color: #ffffff;
   font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.team-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.team-card {
+  border: 1px solid #2b303a;
+  background: #101218;
+  padding: 16px;
+}
+
+.team-card strong,
+.team-card span {
+  color: #ffffff;
+}
+
+.team-card ul {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  color: #b8bdc7;
+}
+
+.team-card li span {
+  margin-left: 8px;
+  color: #ff5a1f;
+  font-size: 0.72rem;
+  font-weight: 900;
   text-transform: uppercase;
 }
 

@@ -61,6 +61,33 @@
     </dl>
   </section>
 
+  <section class="team-section" aria-label="Timovi">
+    <h3>Timovi</h3>
+
+    @if (state.teams.length > 0) {
+    <div class="team-list">
+      @for (team of state.teams; track team.id) {
+      <article class="team-card">
+        <strong>{{ team.name }}</strong>
+        <span>{{ team.members.length }} / 4 igraca</span>
+        <ul>
+          @for (member of team.members; track member.id) {
+          <li>
+            {{ member.user.firstName }} {{ member.user.lastName }}
+            @if (member.role === 'CAPTAIN') {
+            <span>Kapiten</span>
+            }
+          </li>
+          }
+        </ul>
+      </article>
+      }
+    </div>
+    } @else {
+    <p class="surface-message">Jos nema prijavljenih timova.</p>
+    }
+  </section>
+
   <section class="match-section" aria-label="Mecevi">
     <h3>Mecevi</h3>
 
