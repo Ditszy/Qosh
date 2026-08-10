@@ -18,6 +18,15 @@ export type AdminCreateUserRequest = {
   role: AdminCreateUserRole;
 };
 
+export type AdminUserStats = {
+  totalUsers: number;
+  players: number;
+  organizers: number;
+  referees: number;
+  scorers: number;
+  admins: number;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -27,6 +36,10 @@ export class AdminUsersApiService {
 
   listUsers(): Observable<AdminManagedUser[]> {
     return this.http.get<AdminManagedUser[]>(this.apiUrl.build('/users'));
+  }
+
+  getUserStats(): Observable<AdminUserStats> {
+    return this.http.get<AdminUserStats>(this.apiUrl.build('/users/stats'));
   }
 
   createUser(payload: AdminCreateUserRequest): Observable<AdminManagedUser> {
