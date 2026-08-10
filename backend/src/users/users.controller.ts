@@ -20,6 +20,11 @@ export class UserController {
         return this.usersService.findAll();
     }
 
+    @Get('stats')
+    getStats() {
+        return this.usersService.getStats();
+    }
+
     @Get('players/search')
     @Roles(UserRole.PLAYER, UserRole.ADMIN)
     searchPlayers(@Query('q') query = '') {

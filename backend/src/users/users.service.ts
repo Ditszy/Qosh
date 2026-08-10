@@ -13,6 +13,11 @@ export type PublicUser = {
     role: UserRole;
 };
 
+export type UserStats = Record<
+    'totalUsers' | 'players' | 'organizers' | 'referees' | 'scorers' | 'admins',
+    number
+>;
+
 type UserWithPassword = PublicUser & {
     password: string;
 };
@@ -34,6 +39,28 @@ export class UsersService {
         return this.prisma.user.findMany({
             select: publicUserSelect,
         });
+    }
+
+    async getStats(): Promise<UserStats> {
+        const [totalUsers, roleCounts] = await Promise.all([
+            this.prisma.user.count(),
+            this.prisma.user.groupBy({
+                by: ['role'],
+                _count: { _all: true },
+            }),
+        ]);
+
+        const count = (role: UserRole) =>
+            roleCounts.find((item) => item.role === role)?._count._all ?? 0;
+
+        return {
+            totalUsers,
+            players: count(UserRole.PLAYER),
+            organizers: count(UserRole.ORGANIZER),
+            referees: count(UserRole.REFEREE),
+            scorers: count(UserRole.SCORER),
+            admins: count(UserRole.ADMIN),
+        };
     }
 
     async findOfficials(query: string, role?: UserRole): Promise<PublicUser[]> {
