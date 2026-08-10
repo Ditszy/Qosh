@@ -29,4 +29,10 @@ export class AdminUsers {
     map((users) => ({ users, error: null })),
     catchError(() => of({ users: [], error: 'Nije moguce ucitati korisnike.' })),
   );
+
+  createUser(): void {
+    if (this.createUserForm.invalid) {
+      this.createUserForm.markAllAsTouched();
+    }
+  }
 }

@@ -4,6 +4,46 @@
     <h1>Korisnici</h1>
   </header>
 
+  <form [formGroup]="createUserForm" (ngSubmit)="createUser()">
+    <h2>Novi operativni korisnik</h2>
+
+    <label>
+      Ime
+      <input type="text" formControlName="firstName" />
+    </label>
+
+    <label>
+      Prezime
+      <input type="text" formControlName="lastName" />
+    </label>
+
+    <label>
+      Korisnicko ime
+      <input type="text" formControlName="username" />
+    </label>
+
+    <label>
+      Email
+      <input type="email" formControlName="email" />
+    </label>
+
+    <label>
+      Privremena lozinka
+      <input type="password" formControlName="password" />
+    </label>
+
+    <label>
+      Uloga
+      <select formControlName="role">
+        @for (role of roleOptions; track role) {
+          <option [value]="role">{{ role }}</option>
+        }
+      </select>
+    </label>
+
+    <button type="submit" [disabled]="createUserForm.invalid">Kreiraj korisnika</button>
+  </form>
+
   @if (usersState$ | async; as state) {
     @if (state.error) {
       <p>{{ state.error }}</p>
