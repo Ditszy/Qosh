@@ -313,14 +313,12 @@ h1 {
   margin-bottom: 28px;
 }
 
-.feature-strip article,
-.access-panel {
+.feature-strip article {
   background: #101218;
   padding: 24px;
 }
 
 .feature-strip h2,
-.access-panel h2,
 .auth-view h2 {
   margin-top: 12px;
   color: #ffffff;
@@ -333,11 +331,6 @@ h1 {
   margin-top: 12px;
   color: #b8bdc7;
   line-height: 1.55;
-}
-
-.access-panel {
-  margin-bottom: 48px;
-  border: 1px solid #2b303a;
 }
 
 .route-placeholder {

@@ -12,7 +12,7 @@
     </nav>
 
     <div class="player-search">
-      <input type="search" placeholder="Pretrazi igrace" [formControl]="playerSearchControl" />
+      <input type="search" placeholder="Pretraži igrače" [formControl]="playerSearchControl" />
 
       @if (playerSearchState$ | async; as state) {
       @if (state.loading || state.error || state.results.length) {
@@ -109,10 +109,6 @@
       </article>
     </section>
 
-    <section id="access" class="access-panel" aria-label="Pregled navigacije po ulogama">
-      <p class="eyebrow">Navigacija po ulogama</p>
-      <h2>Gosti prvo vide javne stranice. Delovi za uloge se pojavljuju posle prijave.</h2>
-    </section>
     }
 
     <router-outlet />
