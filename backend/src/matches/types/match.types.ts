@@ -69,6 +69,8 @@ export type RefereeAssignedMatch = MatchWithRelations & {
     hasReport: boolean;
 };
 
+export type ScorerAssignedMatch = MatchWithRelations;
+
 export type MatchClockUpdateData = {
     status?: MatchStatus;
     clockStatus?: MatchClockStatus;

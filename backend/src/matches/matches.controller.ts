@@ -43,6 +43,17 @@ export class MatchesController {
         });
     }
 
+    @Get('matches/scorer/me')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    findMyScorerMatches(@Request() req: AuthenticatedRequest) {
+        return this.matchesService.findByScorer({
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
     @Get('matches/:id/events')
     findEventsByMatchId(@Param('id') id: string) {
         return this.matchesService.findEventsByMatchId(id);

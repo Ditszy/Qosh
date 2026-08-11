@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchStatus } from '../enums/match-status.enum';
-import { MatchActor, MatchRecord, MatchWithRelations, RefereeAssignedMatch } from '../types/match.types';
+import { MatchActor, MatchRecord, MatchWithRelations, RefereeAssignedMatch, ScorerAssignedMatch } from '../types/match.types';
 
 @Injectable()
 export class MatchesReadService {
@@ -64,6 +64,25 @@ export class MatchesReadService {
         })).sort((a, b) => this.refereeMatchPriority(a) - this.refereeMatchPriority(b));
     }
 
+    async findByScorer(actor: MatchActor): Promise<ScorerAssignedMatch[]> {
+        const matches = await this.prisma.match.findMany({
+            where: {
+                ...(actor.role === UserRole.ADMIN ? { scorerId: { not: null } } : { scorerId: actor.id }),
+                status: { not: MatchStatus.FINAL },
+            },
+            include: this.matchInclude(),
+            orderBy: [
+                { scheduledAt: 'asc' },
+                { round: 'asc' },
+                { bracketPosition: 'asc' },
+            ],
+        });
+
+        return matches
+            .map((match) => this.withCurrentClock(match))
+            .sort((a, b) => this.scorerMatchPriority(a) - this.scorerMatchPriority(b));
+    }
+
     private refereeMatchPriority(match: RefereeAssignedMatch): number {
         if (match.status === MatchStatus.FINAL && !match.hasReport) {
             return 0;
@@ -78,6 +97,10 @@ export class MatchesReadService {
         }
 
         return 3;
+    }
+
+    private scorerMatchPriority(match: ScorerAssignedMatch): number {
+        return match.status === MatchStatus.LIVE ? 0 : 1;
     }
 
     withCurrentClock<T extends MatchRecord>(match: T): T {

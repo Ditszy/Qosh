@@ -9,7 +9,7 @@ import { MatchFinalizationService } from './services/match-finalization.service'
 import { MatchLiveService } from './services/match-live.service';
 import { MatchSchedulingService } from './services/match-scheduling.service';
 import { MatchesReadService } from './services/matches-read.service';
-import { MatchActor, MatchWithRelations, RefereeAssignedMatch } from './types/match.types';
+import { MatchActor, MatchWithRelations, RefereeAssignedMatch, ScorerAssignedMatch } from './types/match.types';
 
 @Injectable()
 export class MatchesService {
@@ -37,6 +37,10 @@ export class MatchesService {
 
     async findByReferee(actor: MatchActor): Promise<RefereeAssignedMatch[]> {
         return this.matchesReadService.findByReferee(actor);
+    }
+
+    async findByScorer(actor: MatchActor): Promise<ScorerAssignedMatch[]> {
+        return this.matchesReadService.findByScorer(actor);
     }
 
     async schedule(id: string, scheduleMatchDto: ScheduleMatchDto, actor: MatchActor): Promise<MatchWithRelations> {
