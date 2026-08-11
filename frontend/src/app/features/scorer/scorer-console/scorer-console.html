@@ -38,11 +38,21 @@
   <button type="button" disabled>Unesi ID meča</button>
   }
   @if (match(); as loadedMatch) {
-  <p>{{ loadedMatch.teamA?.name ?? 'TBD' }} {{ loadedMatch.teamAScore }} - {{ loadedMatch.teamBScore }}
-    {{ loadedMatch.teamB?.name ?? 'TBD' }} | {{ loadedMatch.clockStatus }}</p>
+  <section class="clock-panel" aria-label="Stanje meča">
+    <div class="score-row">
+      <span>{{ loadedMatch.teamA?.name ?? 'TBD' }}</span>
+      <strong>{{ loadedMatch.teamAScore }} - {{ loadedMatch.teamBScore }}</strong>
+      <span>{{ loadedMatch.teamB?.name ?? 'TBD' }}</span>
+    </div>
+
+    <div class="timer-row">
+      <strong>{{ clockDisplay().minutes }}:{{ clockDisplay().seconds }}</strong>
+      <span>{{ clockStatusLabel() }}</span>
+    </div>
+  </section>
   }
 
-  <div>
+  <div class="clock-actions" aria-label="Kontrole sata">
     @if (showStartClock()) {
     <button type="button" [disabled]="!canStartClock()" (click)="controlClock('start')">Start</button>
     }
@@ -53,7 +63,7 @@
     <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()" (click)="controlClock('end')">Kraj</button>
   </div>
 
-  <div>
+  <div class="clock-adjustment">
     <label>
       Korekcija sata
       <input type="number" min="1" step="1" [ngModel]="clockAdjustmentSeconds()"

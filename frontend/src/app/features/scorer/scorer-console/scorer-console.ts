@@ -9,6 +9,10 @@ import type { MatchDetail, MatchEventType, MatchReadBundle } from '../../public/
 
 type ClockAction = 'start' | 'pause' | 'resume' | 'end';
 type EventButton = { label: string; type: MatchEventType };
+type ClockDisplay = {
+  minutes: string;
+  seconds: string;
+};
 
 const MATCH_EVENT_TYPES: MatchEventType[] = ['ONE_POINT_MADE', 'ONE_POINT_MISSED', 'TWO_POINT_MADE', 'TWO_POINT_MISSED', 'FREE_THROW_MADE', 'FREE_THROW_MISSED', 'REBOUND', 'ASSIST', 'STEAL', 'BLOCK', 'TURNOVER', 'FOUL'];
 const PLAYER_EVENT_BUTTONS: EventButton[] = [
@@ -52,6 +56,28 @@ export class ScorerConsole implements OnInit {
   protected readonly canRecordEvent = computed(() => !!this.matchId().trim() && !!this.eventTeamId().trim() && !this.pendingAction());
   protected readonly canAdjustClock = computed(() => !!this.matchId().trim() && this.clockAdjustmentSeconds() > 0 && !this.pendingAction());
   protected readonly match = computed(() => this.matchBundle()?.match ?? null);
+  protected readonly clockDisplay = computed<ClockDisplay>(() => {
+    const remainingSeconds = Math.max(0, this.match()?.clockRemainingSeconds ?? 600);
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+
+    return {
+      minutes: minutes.toString().padStart(2, '0'),
+      seconds: seconds.toString().padStart(2, '0'),
+    };
+  });
+  protected readonly clockStatusLabel = computed(() => {
+    switch (this.match()?.clockStatus) {
+      case 'RUNNING':
+        return 'Sat teče';
+      case 'PAUSED':
+        return 'Pauza';
+      case 'ENDED':
+        return 'Sat završen';
+      default:
+        return 'Nije počelo';
+    }
+  });
   protected readonly showStartClock = computed(() => {
     const match = this.match();
 
