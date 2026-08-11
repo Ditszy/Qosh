@@ -1,6 +1,30 @@
 <section aria-label="Scorer console">
   <h2>Zapisničar</h2>
-  <p>Otvori dodeljeni meč i prati stanje pre nego što krenu kontrole za unos dogadjaja.</p>
+  <p>Otvori dodeljeni meč i prati stanje pre nego što krenu kontrole za unos događaja.</p>
+
+  <section class="assigned-matches" aria-label="Dodeljeni mečevi">
+    <header>
+      <h3>Dodeljeni mečevi</h3>
+      <button type="button" [disabled]="assignedMatchesLoading()" (click)="loadAssignedMatches()">Osveži</button>
+    </header>
+
+    @if (assignedMatchesLoading()) {
+    <p>Učitavanje dodeljenih mečeva...</p>
+    } @else if (assignedMatches().length) {
+    <div class="assigned-match-list">
+      @for (assignedMatch of assignedMatches(); track assignedMatch.id) {
+      <button type="button" [class.active]="assignedMatch.id === matchId()" [disabled]="!!pendingAction()"
+        (click)="openAssignedMatch(assignedMatch)">
+        <strong>{{ assignedMatch.teamA?.name ?? 'TBD' }} - {{ assignedMatch.teamB?.name ?? 'TBD' }}</strong>
+        <span>{{ assignedMatch.tournament.name }} | R{{ assignedMatch.round }} / M{{ assignedMatch.bracketPosition
+          }}</span>
+      </button>
+      }
+    </div>
+    } @else {
+    <p>Nema dodeljenih nezavršenih mečeva.</p>
+    }
+  </section>
 
   <label>
     ID meča

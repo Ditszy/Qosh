@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize, switchMap } from 'rxjs';
@@ -32,12 +32,14 @@ const PLAYER_EVENT_BUTTONS: EventButton[] = [
   templateUrl: './scorer-console.html',
   styleUrl: './scorer-console.scss',
 })
-export class ScorerConsole {
+export class ScorerConsole implements OnInit {
   private readonly scorerApi = inject(ScorerMatchApiService);
   private readonly matchesApi = inject(MatchesApiService);
 
   protected readonly eventTypes = MATCH_EVENT_TYPES;
   protected readonly playerEventButtons = PLAYER_EVENT_BUTTONS;
+  protected readonly assignedMatches = signal<MatchDetail[]>([]);
+  protected readonly assignedMatchesLoading = signal(false);
   protected readonly matchId = signal('');
   protected readonly matchBundle = signal<MatchReadBundle | null>(null);
   protected readonly eventType = signal<MatchEventType>('ONE_POINT_MADE');
@@ -76,6 +78,30 @@ export class ScorerConsole {
 
     return id ? ['/matches', id, 'live'] : null;
   });
+
+  ngOnInit(): void {
+    this.loadAssignedMatches();
+  }
+
+  protected loadAssignedMatches(): void {
+    if (this.assignedMatchesLoading()) {
+      return;
+    }
+
+    this.assignedMatchesLoading.set(true);
+    this.scorerApi
+      .listAssignedMatches()
+      .pipe(finalize(() => this.assignedMatchesLoading.set(false)))
+      .subscribe({
+        next: (matches) => this.assignedMatches.set(matches),
+        error: () => this.errorMessage.set('Dodeljeni mečevi trenutno nisu dostupni.'),
+      });
+  }
+
+  protected openAssignedMatch(match: MatchDetail): void {
+    this.matchId.set(match.id);
+    this.loadMatch();
+  }
 
   protected updateMatchId(value: string): void {
     this.matchId.set(value);

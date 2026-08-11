@@ -23,6 +23,10 @@ export class ScorerMatchApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
 
+  listAssignedMatches(): Observable<MatchDetail[]> {
+    return this.http.get<MatchDetail[]>(this.apiUrl.build('/matches/scorer/me'));
+  }
+
   startClock(matchId: string): Observable<MatchDetail> {
     return this.postClockAction(matchId, 'start');
   }
