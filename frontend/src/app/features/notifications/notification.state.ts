@@ -30,6 +30,9 @@ export const NotificationsActions = createActionGroup({
     'Mark Read': props<{ notificationId: string }>(),
     'Mark Read Succeeded': props<{ notification: NotificationItem }>(),
     'Mark Read Failed': props<{ error: string }>(),
+    'Delete': props<{ notificationId: string }>(),
+    'Delete Succeeded': props<{ notificationId: string }>(),
+    'Delete Failed': props<{ error: string }>(),
   },
 });
 
@@ -47,6 +50,10 @@ export const notificationsReducer = createReducer(
     notificationsAdapter.upsertOne(notification, state),
   ),
   on(NotificationsActions.markReadFailed, (state, { error }) => ({ ...state, error })),
+  on(NotificationsActions.deleteSucceeded, (state, { notificationId }) =>
+    notificationsAdapter.removeOne(notificationId, state),
+  ),
+  on(NotificationsActions.deleteFailed, (state, { error }) => ({ ...state, error })),
 );
 
 export const selectNotificationsState = createFeatureSelector<NotificationsState>(notificationsFeatureKey);

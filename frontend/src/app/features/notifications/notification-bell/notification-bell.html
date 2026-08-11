@@ -25,11 +25,14 @@
       <p>{{ notification.body }}</p>
       <footer>
         <time>{{ notification.createdAt | date: 'short' }}</time>
-        @if (!notification.readAt) {
-        <button type="button" (click)="markRead(notification.id)">Označi kao pročitano</button>
-        } @else {
-        <span>Pročitano</span>
-        }
+        <div class="notification-actions">
+          @if (!notification.readAt) {
+          <button type="button" (click)="markRead(notification.id)">Označi kao pročitano</button>
+          } @else {
+          <span>Pročitano</span>
+          }
+          <button type="button" class="muted-action" (click)="deleteNotification(notification.id)">Obriši</button>
+        </div>
       </footer>
     </article>
     }

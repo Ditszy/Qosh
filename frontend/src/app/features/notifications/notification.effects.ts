@@ -52,3 +52,19 @@ export const markNotificationRead = createEffect(
     ),
   { functional: true },
 );
+
+export const deleteNotification = createEffect(
+  (actions$ = inject(Actions), notificationsApi = inject(NotificationsApiService)) =>
+    actions$.pipe(
+      ofType(NotificationsActions.delete),
+      concatMap(({ notificationId }) =>
+        notificationsApi.delete(notificationId).pipe(
+          map(() => NotificationsActions.deleteSucceeded({ notificationId })),
+          catchError(() =>
+            of(NotificationsActions.deleteFailed({ error: 'Notification could not be deleted.' })),
+          ),
+        ),
+      ),
+    ),
+  { functional: true },
+);

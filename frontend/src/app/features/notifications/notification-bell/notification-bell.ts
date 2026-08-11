@@ -44,6 +44,10 @@ export class NotificationBell implements OnInit {
     this.store.dispatch(NotificationsActions.markRead({ notificationId }));
   }
 
+  protected deleteNotification(notificationId: string): void {
+    this.store.dispatch(NotificationsActions.delete({ notificationId }));
+  }
+
   protected notificationTypeLabel(type: NotificationType): string {
     return notificationTypeLabels[type];
   }

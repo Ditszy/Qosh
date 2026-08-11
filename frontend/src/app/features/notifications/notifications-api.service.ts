@@ -22,6 +22,10 @@ export class NotificationsApiService {
     return this.http.patch<NotificationItem>(this.apiUrl.build(`/notifications/${notificationId}/read`), {});
   }
 
+  delete(notificationId: string): Observable<NotificationItem> {
+    return this.http.delete<NotificationItem>(this.apiUrl.build(`/notifications/${notificationId}`));
+  }
+
   watchMine(): Observable<NotificationLiveStreamMessage> {
     return this.liveStream.connect<NotificationLivePayload>('/notifications/live', {
       authenticated: true,
