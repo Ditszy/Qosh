@@ -10,6 +10,14 @@ import {
   selectNotificationsLoading,
   selectUnreadNotificationCount,
 } from '../notification.state';
+import type { NotificationType } from '../notification.models';
+
+const notificationTypeLabels: Record<NotificationType, string> = {
+  TEAM_INVITE: 'Poziv u tim',
+  MATCH_ASSIGNMENT: 'Zaduženje za utakmicu',
+  TOURNAMENT_STARTED: 'Turnir je počeo',
+  MATCH_SCHEDULE_CHANGED: 'Promena rasporeda',
+};
 
 @Component({
   selector: 'app-notification-bell',
@@ -34,5 +42,9 @@ export class NotificationBell implements OnInit {
 
   protected markRead(notificationId: string): void {
     this.store.dispatch(NotificationsActions.markRead({ notificationId }));
+  }
+
+  protected notificationTypeLabel(type: NotificationType): string {
+    return notificationTypeLabels[type];
   }
 }

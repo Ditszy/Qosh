@@ -32,10 +32,25 @@ section {
   top: calc(100% + 12px);
   z-index: 10;
   display: grid;
-  width: min(360px, 90vw);
+  width: min(390px, 92vw);
   border: 1px solid #2b303a;
   background: #101218;
   box-shadow: 0 18px 40px rgb(0 0 0 / 35%);
+}
+
+section > header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+}
+
+section h2 {
+  color: #ffffff;
+  font-size: 0.9rem;
+  margin: 0;
+  text-transform: uppercase;
 }
 
 article,
@@ -51,10 +66,12 @@ article.unread {
 
 article span,
 time,
-section > p {
+section > p,
+section > header span {
   color: #9ca3af;
   font-size: 0.72rem;
   font-weight: 900;
+  text-transform: uppercase;
 }
 
 article strong,
@@ -67,6 +84,7 @@ article footer {
   align-items: center;
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   margin-top: 8px;
 }
 
@@ -84,6 +102,7 @@ article button {
   font-size: 0.72rem;
   font-weight: 900;
   padding: 6px 8px;
+  white-space: nowrap;
 }
 
 article button:hover,
