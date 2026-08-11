@@ -1,5 +1,5 @@
 <section class="auth-view" aria-labelledby="register-title">
-  <p class="eyebrow">Novi igrac</p>
+  <p class="eyebrow">Novi igrač</p>
   <h2 id="register-title">Registracija</h2>
   <form class="auth-form" [formGroup]="registerForm" (ngSubmit)="submit()">
     <label>
@@ -11,7 +11,7 @@
       <input type="text" formControlName="lastName" autocomplete="family-name" />
     </label>
     <label>
-      Korisnicko ime
+      Korisničko ime
       <input type="text" formControlName="username" autocomplete="username" />
     </label>
     <label>
@@ -24,7 +24,7 @@
     </label>
 
     @if (registerForm.invalid && registerForm.touched) {
-    <p class="form-message">Popuni sva polja. Korisnicko ime mora imati 3, a lozinka 6 karaktera.</p>
+    <p class="form-message">Popuni sva polja. Korisničko ime mora imati 3, a lozinka 6 karaktera.</p>
     }
 
     @if (errorMessage()) {

@@ -361,8 +361,8 @@ h1 {
 }
 
 .auth-view {
-  max-width: 520px;
-  margin: 0 0 48px;
+  width: min(100%, 520px);
+  margin: 64px auto 80px;
   border: 1px solid #2b303a;
   background: #101218;
   padding: 24px;
