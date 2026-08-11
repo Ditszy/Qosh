@@ -26,6 +26,12 @@ type TournamentRecord = {
     organizerId: string;
     createdAt: Date;
     updatedAt: Date;
+    organizer?: {
+        id: string;
+        username: string;
+        firstName: string;
+        lastName: string;
+    };
 };
 
 @Injectable()
@@ -49,6 +55,7 @@ export class TournamentsService {
 
     async findAll(): Promise<TournamentRecord[]> {
         return this.prisma.tournament.findMany({
+            include: { organizer: { select: this.organizerSelect } },
             orderBy: [
                 { startsAt: 'asc' },
                 { createdAt: 'desc' },
@@ -57,7 +64,10 @@ export class TournamentsService {
     }
 
     async findById(id: string): Promise<TournamentRecord> {
-        const tournament = await this.prisma.tournament.findUnique({ where: { id } });
+        const tournament = await this.prisma.tournament.findUnique({
+            where: { id },
+            include: { organizer: { select: this.organizerSelect } },
+        });
 
         if (!tournament) {
             throw new NotFoundException('Tournament not found');
@@ -212,6 +222,13 @@ export class TournamentsService {
             tournament,
         });
     }
+
+    private readonly organizerSelect = {
+        id: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+    };
 
     private ensureCanManageTournament(tournament: TournamentRecord, actor: TournamentActor): void {
         if (actor.role === UserRole.ADMIN) {

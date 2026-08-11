@@ -135,7 +135,13 @@ export class TournamentDetail {
     message: TournamentLiveMessage,
   ): TournamentDetailLoadedState {
     if (message.type === 'tournament.status.changed') {
-      return { ...state, tournament: message.data.tournament };
+      return {
+        ...state,
+        tournament: {
+          ...message.data.tournament,
+          organizer: message.data.tournament.organizer ?? state.tournament.organizer,
+        },
+      };
     }
 
     if (message.type === 'tournament.bracket.generated') {

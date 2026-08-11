@@ -55,6 +55,12 @@
         <dt>Početak</dt>
         <dd>{{ state.tournament.startsAt | date: 'medium' }}</dd>
       </div>
+      @if (state.tournament.organizer) {
+      <div>
+        <dt>Organizator</dt>
+        <dd>{{ state.tournament.organizer.firstName }} {{ state.tournament.organizer.lastName }}</dd>
+      </div>
+      }
       <div>
         <dt>Kapacitet</dt>
         <dd>{{ state.tournament.maxTeams }} timova</dd>

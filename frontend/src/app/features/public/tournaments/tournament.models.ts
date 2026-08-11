@@ -26,6 +26,7 @@ export type Tournament = {
   maxTeams: number;
   status: TournamentStatus;
   organizerId: string;
+  organizer?: Pick<PublicUser, 'id' | 'username' | 'firstName' | 'lastName'>;
   createdAt: string;
   updatedAt: string;
 };
