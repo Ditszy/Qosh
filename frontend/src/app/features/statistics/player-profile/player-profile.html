@@ -1,17 +1,17 @@
-<section class="player-profile-page" aria-label="Profil igraca">
+<section class="player-profile-page" aria-label="Profil igrača">
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p class="surface-message">Ucitavanje profila...</p>
+  <p class="surface-message">Učitavanje profila...</p>
   }
   @case ('error') {
   <p class="surface-message error">Profil trenutno nije dostupan.</p>
   }
   @case ('loaded') {
   <header class="page-header">
-    <p class="eyebrow">Profil igraca</p>
+    <p class="eyebrow">Profil igrača</p>
     <h2>{{ state.profile.user.firstName }} {{ state.profile.user.lastName }}</h2>
-    <p>{{ state.profile.user.username }} / {{ state.profile.user.email }}</p>
+    <p>{{ state.profile.user.username }}</p>
   </header>
 
   <section class="profile-summary" aria-label="Ukupna statistika">
@@ -55,7 +55,7 @@
     </article>
 
     <article>
-      <h3>Sut</h3>
+      <h3>Šut</h3>
       <dl>
         <div>
           <dt>1P</dt>
@@ -122,7 +122,7 @@
       }
     </div>
     } @else {
-    <p class="surface-message">Jos nema zabelezenih utakmica za ovog igraca.</p>
+    <p class="surface-message">Još nema zabeleženih utakmica za ovog igrača.</p>
     }
   </section>
   }
