@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, switchMap } from 'rxjs';
@@ -35,10 +35,11 @@ const PLAYER_EVENT_BUTTONS: EventButton[] = [
   templateUrl: './scorer-console.html',
   styleUrl: './scorer-console.scss',
 })
-export class ScorerConsole implements OnInit {
+export class ScorerConsole implements OnInit, OnDestroy {
   private readonly scorerApi = inject(ScorerMatchApiService);
   private readonly matchesApi = inject(MatchesApiService);
   private readonly route = inject(ActivatedRoute);
+  private clockIntervalId: number | null = null;
 
   protected readonly playerEventButtons = PLAYER_EVENT_BUTTONS;
   protected readonly assignedMatches = signal<MatchDetail[]>([]);
@@ -50,10 +51,26 @@ export class ScorerConsole implements OnInit {
   protected readonly pendingAction = signal('');
   protected readonly errorMessage = signal('');
   protected readonly successMessage = signal('');
+  protected readonly clockTick = signal(Date.now());
   protected readonly canAdjustClock = computed(() => !!this.matchId().trim() && this.clockAdjustmentSeconds() > 0 && !this.pendingAction());
   protected readonly match = computed(() => this.matchBundle()?.match ?? null);
+  protected readonly displayedRemainingSeconds = computed(() => {
+    const match = this.match();
+
+    if (!match) {
+      return 600;
+    }
+
+    if (match.clockStatus !== 'RUNNING' || !match.clockLastStartedAt) {
+      return Math.max(0, match.clockRemainingSeconds);
+    }
+
+    const elapsedSeconds = Math.floor((this.clockTick() - Date.parse(match.clockLastStartedAt)) / 1000);
+
+    return Math.max(0, match.clockRemainingSeconds - elapsedSeconds);
+  });
   protected readonly clockDisplay = computed<ClockDisplay>(() => {
-    const remainingSeconds = Math.max(0, this.match()?.clockRemainingSeconds ?? 600);
+    const remainingSeconds = this.displayedRemainingSeconds();
     const minutes = Math.floor(remainingSeconds / 60);
     const seconds = remainingSeconds % 60;
 
@@ -63,6 +80,10 @@ export class ScorerConsole implements OnInit {
     };
   });
   protected readonly clockStatusLabel = computed(() => {
+    if (this.match()?.clockStatus === 'RUNNING' && this.displayedRemainingSeconds() === 0) {
+      return 'Sat završen';
+    }
+
     switch (this.match()?.clockStatus) {
       case 'RUNNING':
         return 'Sat teče';
@@ -107,6 +128,14 @@ export class ScorerConsole implements OnInit {
       this.loadMatch();
     } else {
       this.loadAssignedMatches();
+    }
+
+    this.clockIntervalId = window.setInterval(() => this.clockTick.set(Date.now()), 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.clockIntervalId !== null) {
+      window.clearInterval(this.clockIntervalId);
     }
   }
 
