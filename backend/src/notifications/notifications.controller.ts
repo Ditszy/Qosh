@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Request, Sse, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Patch, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UserRole } from '../common/user-role.enum';
@@ -27,6 +27,11 @@ export class NotificationsController {
     @Patch(':id/read')
     markAsRead(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
         return this.notificationsService.markAsRead(id, req.user.id);
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.notificationsService.remove(id, req.user.id);
     }
 
     @Sse('live')

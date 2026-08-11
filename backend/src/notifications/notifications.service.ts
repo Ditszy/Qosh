@@ -89,6 +89,23 @@ export class NotificationsService {
         });
     }
 
+    async remove(id: string, userId: string): Promise<NotificationRecord> {
+        const notification = await this.prisma.notification.findFirst({
+            where: {
+                id,
+                recipientId: userId,
+            },
+        });
+
+        if (!notification) {
+            throw new NotFoundException('Notification not found');
+        }
+
+        return this.prisma.notification.delete({
+            where: { id },
+        });
+    }
+
     private toLiveMessage(notification: NotificationRecord): NotificationLiveMessage {
         return { notification };
     }
