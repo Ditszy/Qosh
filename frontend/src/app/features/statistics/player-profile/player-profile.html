@@ -28,6 +28,24 @@
     </article>
 
     <article>
+      <span>1P%</span>
+      <strong>{{ percentageValue(state.profile.totals.onePointPercentage) }}</strong>
+      <small>{{ state.profile.totals.onePointMade }}/{{ state.profile.totals.onePointAttempted }}</small>
+    </article>
+
+    <article>
+      <span>2P%</span>
+      <strong>{{ percentageValue(state.profile.totals.twoPointPercentage) }}</strong>
+      <small>{{ state.profile.totals.twoPointMade }}/{{ state.profile.totals.twoPointAttempted }}</small>
+    </article>
+
+    <article>
+      <span>FT%</span>
+      <strong>{{ percentageValue(state.profile.totals.freeThrowPercentage) }}</strong>
+      <small>{{ state.profile.totals.freeThrowMade }}/{{ state.profile.totals.freeThrowAttempted }}</small>
+    </article>
+
+    <article>
       <span>Skokovi</span>
       <strong>{{ state.profile.totals.rebounds }}</strong>
       <small>{{ state.profile.totals.reboundsPerGame }} RPG</small>
@@ -37,6 +55,30 @@
       <span>Asistencije</span>
       <strong>{{ state.profile.totals.assists }}</strong>
       <small>{{ state.profile.totals.assistsPerGame }} APG</small>
+    </article>
+
+    <article>
+      <span>Ukradene</span>
+      <strong>{{ state.profile.totals.steals }}</strong>
+      <small>{{ state.profile.totals.stealsPerGame }} SPG</small>
+    </article>
+
+    <article>
+      <span>Blokade</span>
+      <strong>{{ state.profile.totals.blocks }}</strong>
+      <small>{{ state.profile.totals.blocksPerGame }} BPG</small>
+    </article>
+
+    <article>
+      <span>Izgubljene</span>
+      <strong>{{ state.profile.totals.turnovers }}</strong>
+      <small>{{ state.profile.totals.turnoversPerGame }} TPG</small>
+    </article>
+
+    <article>
+      <span>Faulovi</span>
+      <strong>{{ state.profile.totals.fouls }}</strong>
+      <small>{{ state.profile.totals.foulsPerGame }} FPG</small>
     </article>
   </section>
 
@@ -50,7 +92,7 @@
         }
       </p>
       } @else {
-      <p>Nema timova sa zabelezenom statistikom.</p>
+      <p>Nema timova sa zabeleženom statistikom.</p>
       }
     </article>
 
@@ -114,8 +156,32 @@
             <dd>{{ matchStat.assists }}</dd>
           </div>
           <div>
+            <dt>1P</dt>
+            <dd>{{ matchStat.onePointMade }}/{{ matchStat.onePointAttempted }}</dd>
+          </div>
+          <div>
+            <dt>2P</dt>
+            <dd>{{ matchStat.twoPointMade }}/{{ matchStat.twoPointAttempted }}</dd>
+          </div>
+          <div>
+            <dt>FT</dt>
+            <dd>{{ matchStat.freeThrowMade }}/{{ matchStat.freeThrowAttempted }}</dd>
+          </div>
+          <div>
             <dt>STL</dt>
             <dd>{{ matchStat.steals }}</dd>
+          </div>
+          <div>
+            <dt>BLK</dt>
+            <dd>{{ matchStat.blocks }}</dd>
+          </div>
+          <div>
+            <dt>TOV</dt>
+            <dd>{{ matchStat.turnovers }}</dd>
+          </div>
+          <div>
+            <dt>PF</dt>
+            <dd>{{ matchStat.fouls }}</dd>
           </div>
         </dl>
       </article>
