@@ -1,16 +1,16 @@
-<section class="live-match-page" aria-label="Live mec">
+<section class="live-match-page" aria-label="Live meč">
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p class="surface-message">Ucitavanje meca...</p>
+  <p class="surface-message">Učitavanje meča...</p>
   }
   @case ('error') {
-  <p class="surface-message error">Mec trenutno nije dostupan.</p>
+  <p class="surface-message error">Meč trenutno nije dostupan.</p>
   }
   @case ('loaded') {
   <section class="match-card" aria-label="Rezultat i vreme">
     <header class="match-card-header">
-      <span>Live mec</span>
+      <span>Live meč</span>
       <strong>{{ state.bundle.match.status }}</strong>
     </header>
     <div class="score-row active">
@@ -25,13 +25,23 @@
       <span>{{ teamName(state.bundle.match.teamB) }}</span>
       <strong>{{ state.bundle.match.teamBScore }}</strong>
     </div>
-    @if (canOpenReport(state.bundle.match)) {
-    <a [routerLink]="['/reports', state.bundle.match.id]">Otvori sudijski izvestaj</a>
-    }
   </section>
 
-  <section class="event-feed" aria-label="Tok meca">
-    <h3>Tok meca</h3>
+  <nav class="match-panels" aria-label="Detalji meča">
+    <button type="button" [class.active]="selectedPanel === 'events'" (click)="selectPanel('events')">
+      Tok meča
+    </button>
+    <button type="button" [class.active]="selectedPanel === 'boxScore'" (click)="selectPanel('boxScore')">
+      Box score
+    </button>
+    <button type="button" [class.active]="selectedPanel === 'report'" (click)="selectPanel('report')">
+      Izveštaj sudije
+    </button>
+  </nav>
+
+  @if (selectedPanel === 'events') {
+  <section class="event-feed" aria-label="Tok meča">
+    <h3>Tok meča</h3>
     @if (state.bundle.events.length > 0) {
     @for (event of state.bundle.events.slice(0, 6); track event.id) {
     <article>
@@ -41,11 +51,13 @@
     </article>
     }
     } @else {
-    <p class="surface-message">Jos nema zabelezenih dogadjaja.</p>
+    <p class="surface-message">Još nema zabeleženih događaja.</p>
     }
   </section>
+  }
 
-  <section class="box-score" aria-label="Statistika meca">
+  @if (selectedPanel === 'boxScore') {
+  <section class="box-score" aria-label="Statistika meča">
     <h3>Box score</h3>
     @for (team of state.bundle.statistics.teams; track team.team.id) {
     <article>
@@ -122,6 +134,24 @@
     </article>
     }
   </section>
+  }
+
+  @if (selectedPanel === 'report') {
+  <section class="report-panel" aria-label="Izveštaj sudije">
+    <h3>Izveštaj sudije</h3>
+    @if (state.bundle.refereeReport; as report) {
+    <article>
+      <strong>{{ report.referee.firstName }} {{ report.referee.lastName }}</strong>
+      <time>{{ report.createdAt | date: 'short' }}</time>
+      <p>{{ report.notes }}</p>
+    </article>
+    } @else if (state.bundle.match.status === 'FINAL') {
+    <p class="surface-message">Sudijski izveštaj još nije unet.</p>
+    } @else {
+    <p class="surface-message">Izveštaj sudije biće dostupan posle završetka meča.</p>
+    }
+  </section>
+  }
   }
   }
   }

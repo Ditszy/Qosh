@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { combineLatest, Observable } from 'rxjs';
+import { catchError, combineLatest, Observable, of } from 'rxjs';
 
 import { ApiUrlService } from '../../../core/api';
 import { LiveStreamService } from '../../../core/live';
 import type { MatchStatistics } from '../../statistics';
-import type { MatchDetail, MatchEvent, MatchLivePayload, MatchLiveStreamMessage, MatchReadBundle } from './match.models';
+import type { MatchDetail, MatchEvent, MatchLivePayload, MatchLiveStreamMessage, MatchReadBundle, MatchRefereeReport } from './match.models';
 
 @Injectable({
   providedIn: 'root',
@@ -27,11 +27,16 @@ export class MatchesApiService {
     return this.http.get<MatchStatistics>(this.apiUrl.build(`/matches/${matchId}/statistics`));
   }
 
+  getRefereeReport(matchId: string): Observable<MatchRefereeReport> {
+    return this.http.get<MatchRefereeReport>(this.apiUrl.build(`/matches/${matchId}/report`));
+  }
+
   getMatchReadBundle(matchId: string): Observable<MatchReadBundle> {
     return combineLatest({
       match: this.getMatch(matchId),
       events: this.listMatchEvents(matchId),
       statistics: this.getMatchStatistics(matchId),
+      refereeReport: this.getRefereeReport(matchId).pipe(catchError(() => of(null))),
     });
   }
 

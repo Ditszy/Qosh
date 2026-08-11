@@ -38,6 +38,16 @@ export type MatchEvent = {
   scorer: PublicUser;
 };
 
+export type MatchRefereeReport = {
+  id: string;
+  matchId: string;
+  refereeId: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+  referee: PublicUser;
+};
+
 export type MatchLiveSnapshot = {
   match: MatchDetail;
   events: MatchEvent[];
@@ -90,4 +100,5 @@ export type MatchReadBundle = {
   match: MatchDetail;
   events: MatchEvent[];
   statistics: MatchStatistics;
+  refereeReport: MatchRefereeReport | null;
 };

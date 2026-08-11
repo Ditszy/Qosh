@@ -3,7 +3,6 @@ import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, filter, map, of, scan, startWith, switchMap } from 'rxjs';
 
-import { AuthService } from '../../../../core/auth/auth';
 import type { MatchEvent, MatchEventType, MatchLiveStreamMessage, MatchReadBundle } from '../match.models';
 import type { MatchStatistics, StatisticLine, StatisticTotals } from '../../../statistics';
 import { MatchesApiService } from '../matches-api.service';
@@ -12,6 +11,7 @@ type LiveMatchState =
   | { status: 'loading' }
   | { status: 'loaded'; bundle: MatchReadBundle }
   | { status: 'error' };
+type MatchPanel = 'events' | 'boxScore' | 'report';
 
 const statCounters: (keyof StatisticTotals)[] = [
   'points',
@@ -51,10 +51,11 @@ const eventDeltas: Record<MatchEventType, Partial<StatisticTotals>> = {
   styleUrl: './live-match.scss',
 })
 export class LiveMatch {
-  private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly matchesApi = inject(MatchesApiService);
 
+  protected readonly activePanel = 'events' as MatchPanel;
+  protected selectedPanel: MatchPanel = this.activePanel;
   protected readonly state$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
     filter((id): id is string => Boolean(id)),
@@ -84,10 +85,8 @@ export class LiveMatch {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 
-  protected canOpenReport(match: MatchReadBundle['match']): boolean {
-    const role = this.authService.currentUser()?.role;
-
-    return match.status === 'FINAL' && (role === 'REFEREE' || role === 'ADMIN');
+  protected selectPanel(panel: MatchPanel): void {
+    this.selectedPanel = panel;
   }
 }
 
