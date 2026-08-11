@@ -4,6 +4,7 @@ import { publicUserSelect } from '../../users/users.service';
 import { CreateMatchEventDto } from '../dto/create-match-event.dto';
 import { MatchAccessService } from './match-access.service';
 import { MatchLiveService } from './match-live.service';
+import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchStatus } from '../enums/match-status.enum';
 import { MatchActor } from '../types/match.types';
 import {
@@ -31,6 +32,9 @@ export class MatchEventsService {
                 teamAScore: true,
                 teamBScore: true,
                 scorerId: true,
+                clockStatus: true,
+                clockRemainingSeconds: true,
+                clockLastStartedAt: true,
             },
         });
 
@@ -67,6 +71,10 @@ export class MatchEventsService {
         }
 
         const pointValue = getMatchEventPointValue(createMatchEventDto.type);
+        const occurredAt = createMatchEventDto.occurredAt
+            ? new Date(createMatchEventDto.occurredAt)
+            : new Date();
+        const clockRemainingSeconds = this.getEventClockRemainingSeconds(match, occurredAt);
 
         const { event, score } = await this.prisma.$transaction(async (tx) => {
             const event = await tx.matchEvent.create({
@@ -76,9 +84,8 @@ export class MatchEventsService {
                     playerId: createMatchEventDto.playerId,
                     scorerId: actor.id,
                     type: createMatchEventDto.type,
-                    occurredAt: createMatchEventDto.occurredAt
-                        ? new Date(createMatchEventDto.occurredAt)
-                        : new Date(),
+                    clockRemainingSeconds,
+                    occurredAt,
                 },
                 include: this.matchEventInclude(),
             });
@@ -159,6 +166,23 @@ export class MatchEventsService {
                 select: publicUserSelect,
             },
         };
+    }
+
+    private getEventClockRemainingSeconds(
+        match: {
+            clockStatus: string;
+            clockRemainingSeconds: number;
+            clockLastStartedAt: Date | null;
+        },
+        occurredAt: Date,
+    ): number {
+        if (match.clockStatus !== MatchClockStatus.RUNNING || !match.clockLastStartedAt) {
+            return Math.max(0, match.clockRemainingSeconds);
+        }
+
+        const elapsedSeconds = Math.floor((occurredAt.getTime() - match.clockLastStartedAt.getTime()) / 1000);
+
+        return Math.max(0, match.clockRemainingSeconds - elapsedSeconds);
     }
 
     private getScoreIncrementData(

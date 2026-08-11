@@ -218,6 +218,7 @@ model MatchEvent {
   scorerId   String         @db.Uuid
   scorer     User           @relation("MatchEventScorer", fields: [scorerId], references: [id])
   type       MatchEventType
+  clockRemainingSeconds Int?
   occurredAt DateTime       @default(now()) @db.Timestamptz
   createdAt  DateTime       @default(now()) @db.Timestamptz
 
