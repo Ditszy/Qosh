@@ -2,7 +2,7 @@
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p class="surface-message">Ucitavanje turnira...</p>
+  <p class="surface-message">Učitavanje turnira...</p>
   }
 
   @case ('error') {
@@ -17,7 +17,7 @@
     <div>
       <p class="eyebrow">Detalji turnira</p>
       <h2>{{ state.tournament.name }}</h2>
-      <span class="live-sync">Azuriranja uzivo</span>
+      <span class="live-sync">Ažuriranja uživo</span>
     </div>
     <div class="detail-actions">
       @if (canRegisterTeam(state.tournament)) {
@@ -52,7 +52,7 @@
         <dd>{{ state.tournament.location }}</dd>
       </div>
       <div>
-        <dt>Pocetak</dt>
+        <dt>Početak</dt>
         <dd>{{ state.tournament.startsAt | date: 'medium' }}</dd>
       </div>
       <div>
@@ -70,17 +70,17 @@
       @for (team of state.teams; track team.id) {
       <button class="team-card" type="button" (click)="openTeam(team)">
         <strong>{{ team.name }}</strong>
-        <span>{{ team.members.length }} / 4 igraca</span>
+        <span>{{ team.members.length }} / 4 igrača</span>
       </button>
       }
     </div>
     } @else {
-    <p class="surface-message">Jos nema prijavljenih timova.</p>
+    <p class="surface-message">Još nema prijavljenih timova.</p>
     }
   </section>
 
-  <section class="match-section" aria-label="Mecevi">
-    <h3>Mecevi</h3>
+  <section class="match-section" aria-label="Mečevi">
+    <h3>Mečevi</h3>
 
     @if (state.matches.length > 0) {
     <div class="match-list">
@@ -96,13 +96,13 @@
           <span>{{ match.status }}</span>
           <span>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Termin TBD' }}</span>
           <span>{{ match.location || state.tournament.location }}</span>
-          <a [routerLink]="['/matches', match.id, 'live']">Otvori mec</a>
+          <a [routerLink]="['/matches', match.id, 'live']">Otvori meč</a>
         </div>
       </article>
       }
     </div>
     } @else {
-    <p class="surface-message">Breket jos nije generisan.</p>
+    <p class="surface-message">Breket još nije generisan.</p>
     }
   </section>
 
@@ -116,7 +116,9 @@
     <ul>
       @for (member of team.members; track member.id) {
       <li>
-        <span>{{ member.user.firstName }} {{ member.user.lastName }}</span>
+        <a [routerLink]="['/profiles', member.user.id]" (click)="closeTeam()">
+          {{ member.user.firstName }} {{ member.user.lastName }}
+        </a>
         @if (member.role === 'CAPTAIN') {
         <strong>Kapiten</strong>
         }

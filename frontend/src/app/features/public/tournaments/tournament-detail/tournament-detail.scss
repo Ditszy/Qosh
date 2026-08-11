@@ -176,6 +176,10 @@ dd {
 }
 
 .team-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
   border: 1px solid #2b303a;
   background: #101218;
   cursor: pointer;
@@ -186,6 +190,13 @@ dd {
 .team-card strong,
 .team-card span {
   color: #ffffff;
+}
+
+.team-card span {
+  flex: 0 0 auto;
+  color: #9ca3af;
+  font-size: 0.78rem;
+  font-weight: 900;
 }
 
 .team-modal-backdrop {
@@ -215,6 +226,16 @@ dd {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.team-modal a {
+  color: #ffffff;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.team-modal a:hover {
+  color: #ffb199;
 }
 
 .team-modal h3 {
@@ -317,5 +338,10 @@ dd {
 
   .meta {
     text-align: left;
+  }
+
+  .team-card {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
