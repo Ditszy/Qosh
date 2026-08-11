@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize, switchMap } from 'rxjs';
 
 import { ScorerMatchApiService } from '../scorer-match-api.service';
@@ -15,17 +15,17 @@ type ClockDisplay = {
 };
 
 const PLAYER_EVENT_BUTTONS: EventButton[] = [
-  { label: '1P+', title: 'Jedan poen pogodak', type: 'ONE_POINT_MADE' },
-  { label: '1P-', title: 'Jedan poen promašaj', type: 'ONE_POINT_MISSED' },
-  { label: '2P+', title: 'Dva poena pogodak', type: 'TWO_POINT_MADE' },
-  { label: '2P-', title: 'Dva poena promašaj', type: 'TWO_POINT_MISSED' },
-  { label: 'SB+', title: 'Slobodno bacanje pogodak', type: 'FREE_THROW_MADE' },
-  { label: 'SB-', title: 'Slobodno bacanje promašaj', type: 'FREE_THROW_MISSED' },
+  { label: '+1P', title: 'Jedan poen pogodak', type: 'ONE_POINT_MADE' },
+  { label: '-1P', title: 'Jedan poen promašaj', type: 'ONE_POINT_MISSED' },
+  { label: '+2P', title: 'Dva poena pogodak', type: 'TWO_POINT_MADE' },
+  { label: '-2P', title: 'Dva poena promašaj', type: 'TWO_POINT_MISSED' },
+  { label: '+FT', title: 'Slobodno bacanje pogodak', type: 'FREE_THROW_MADE' },
+  { label: '-FT', title: 'Slobodno bacanje promašaj', type: 'FREE_THROW_MISSED' },
   { label: 'Skok', title: 'Skok', type: 'REBOUND' },
   { label: 'Asist', title: 'Asistencija', type: 'ASSIST' },
-  { label: 'Ukr.', title: 'Ukradena lopta', type: 'STEAL' },
+  { label: 'Ukr', title: 'Ukradena lopta', type: 'STEAL' },
   { label: 'Blok', title: 'Blokada', type: 'BLOCK' },
-  { label: 'Izg.', title: 'Izgubljena lopta', type: 'TURNOVER' },
+  { label: 'Izg', title: 'Izgubljena lopta', type: 'TURNOVER' },
   { label: 'Faul', title: 'Lična greška', type: 'FOUL' },
 ];
 
@@ -38,10 +38,12 @@ const PLAYER_EVENT_BUTTONS: EventButton[] = [
 export class ScorerConsole implements OnInit {
   private readonly scorerApi = inject(ScorerMatchApiService);
   private readonly matchesApi = inject(MatchesApiService);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly playerEventButtons = PLAYER_EVENT_BUTTONS;
   protected readonly assignedMatches = signal<MatchDetail[]>([]);
   protected readonly assignedMatchesLoading = signal(false);
+  protected readonly isConsoleRoute = signal(false);
   protected readonly matchId = signal('');
   protected readonly matchBundle = signal<MatchReadBundle | null>(null);
   protected readonly clockAdjustmentSeconds = signal(1);
@@ -97,7 +99,15 @@ export class ScorerConsole implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadAssignedMatches();
+    const routeMatchId = this.route.snapshot.paramMap.get('matchId')?.trim() ?? '';
+
+    this.isConsoleRoute.set(!!routeMatchId);
+    if (routeMatchId) {
+      this.matchId.set(routeMatchId);
+      this.loadMatch();
+    } else {
+      this.loadAssignedMatches();
+    }
   }
 
   protected loadAssignedMatches(): void {
@@ -113,15 +123,6 @@ export class ScorerConsole implements OnInit {
         next: (matches) => this.assignedMatches.set(matches),
         error: () => this.errorMessage.set('Dodeljeni mečevi trenutno nisu dostupni.'),
       });
-  }
-
-  protected openAssignedMatch(match: MatchDetail): void {
-    this.matchId.set(match.id);
-    this.loadMatch();
-  }
-
-  protected updateMatchId(value: string): void {
-    this.matchId.set(value);
   }
 
   protected updateClockAdjustmentSeconds(value: string | number): void {

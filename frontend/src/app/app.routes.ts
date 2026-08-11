@@ -31,6 +31,7 @@ export const routes: Routes = [
   { path: 'register', component: Register },
   { path: 'my-team', component: MyTeam, canActivate: [roleGuard], data: { roles: ['PLAYER'] } },
   { path: 'organizer', component: OrganizerDashboard, canActivate: [roleGuard], data: { roles: ['ORGANIZER', 'ADMIN'] } },
+  { path: 'scorer/matches/:matchId', component: ScorerConsole, canActivate: [roleGuard], data: { roles: ['SCORER', 'ADMIN'] } },
   { path: 'scorer', component: ScorerConsole, canActivate: [roleGuard], data: { roles: ['SCORER', 'ADMIN'] } },
   { path: 'reports/:matchId', component: RefereeReports, canActivate: [roleGuard], data: { roles: ['REFEREE', 'ADMIN'] } },
   { path: 'reports', component: RefereeReports, canActivate: [roleGuard], data: { roles: ['REFEREE', 'ADMIN'] } },

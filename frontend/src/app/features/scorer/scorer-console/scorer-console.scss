@@ -28,21 +28,24 @@ h2, h3, p { margin: 0; }
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.assigned-match-list button {
+.assigned-match-list a {
   display: grid;
   gap: 0.3rem;
   min-height: 4.5rem;
   text-align: left;
 }
 
-.assigned-match-list button.active {
-  border-color: #ff7a1a;
-}
-
 .assigned-match-list span {
   color: #aeb6c3;
   font-size: 0.78rem;
   font-weight: 800;
+}
+
+.assigned-match-list em {
+  color: #ffb36b;
+  font-style: normal;
+  font-weight: 900;
+  justify-self: start;
 }
 
 label {

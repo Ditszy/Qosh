@@ -1,7 +1,13 @@
 <section aria-label="Scorer console">
   <h2>Zapisničar</h2>
-  <p>Otvori dodeljeni meč i prati stanje pre nego što krenu kontrole za unos događaja.</p>
+  @if (isConsoleRoute()) {
+  <p>Vodi zapisnik za izabrani meč.</p>
+  <a routerLink="/scorer">Nazad na dodeljene mečeve</a>
+  } @else {
+  <p>Ovde su svi dodeljeni mečevi koji još nisu završeni.</p>
+  }
 
+  @if (!isConsoleRoute()) {
   <section class="assigned-matches" aria-label="Dodeljeni mečevi">
     <header>
       <h3>Dodeljeni mečevi</h3>
@@ -13,29 +19,25 @@
     } @else if (assignedMatches().length) {
     <div class="assigned-match-list">
       @for (assignedMatch of assignedMatches(); track assignedMatch.id) {
-      <button type="button" [class.active]="assignedMatch.id === matchId()" [disabled]="!!pendingAction()"
-        (click)="openAssignedMatch(assignedMatch)">
+      <a [routerLink]="['/scorer', 'matches', assignedMatch.id]">
         <strong>{{ assignedMatch.teamA?.name ?? 'TBD' }} - {{ assignedMatch.teamB?.name ?? 'TBD' }}</strong>
         <span>{{ assignedMatch.tournament.name }} | R{{ assignedMatch.round }} / M{{ assignedMatch.bracketPosition
           }}</span>
-      </button>
+        <em>Vodi zapisnik</em>
+      </a>
       }
     </div>
+    } @else if (errorMessage()) {
+    <p>{{ errorMessage() }}</p>
     } @else {
     <p>Nema dodeljenih nezavršenih mečeva.</p>
     }
   </section>
+  }
 
-  <label>
-    ID meča
-    <input type="text" [ngModel]="matchId()" (ngModelChange)="updateMatchId($event)" placeholder="UUID meča" />
-  </label>
-
+  @if (isConsoleRoute()) {
   @if (liveMatchLink(); as link) {
   <a [routerLink]="link">Otvori meč</a>
-  <button type="button" [disabled]="!!pendingAction()" (click)="loadMatch()">Učitaj meč</button>
-  } @else {
-  <button type="button" disabled>Unesi ID meča</button>
   }
   @if (match(); as loadedMatch) {
   <section class="clock-panel" aria-label="Stanje meča">
@@ -116,5 +118,6 @@
   }
   @if (errorMessage()) {
   <p>{{ errorMessage() }}</p>
+  }
   }
 </section>
