@@ -82,51 +82,20 @@
   </div>
   }
 
-  <form (ngSubmit)="recordEvent()">
-    <label>
-      Dogadjaj
-      <select [ngModel]="eventType()" (ngModelChange)="eventType.set($any($event))" name="eventType">
-        @for (type of eventTypes; track type) {
-        <option [value]="type">{{ type }}</option>
-        }
-      </select>
-    </label>
-
-    <label>
-      Tim
-      <select [ngModel]="eventTeamId()" (ngModelChange)="eventTeamId.set($event); eventPlayerId.set('')"
-        name="eventTeamId">
-        @for (team of teamStats(); track team.team.id) {
-        <option [value]="team.team.id">{{ team.team.name }}</option>
-        }
-      </select>
-    </label>
-
-    <label>
-      Igrac
-      <select [ngModel]="eventPlayerId()" (ngModelChange)="eventPlayerId.set($event)" name="eventPlayerId">
-        <option value="">Bez igraca</option>
-        @for (stat of selectedPlayers(); track stat.player.id) {
-        <option [value]="stat.player.id">{{ stat.player.firstName }} {{ stat.player.lastName }}</option>
-        }
-      </select>
-    </label>
-
-    <button type="submit" [disabled]="!canRecordEvent()">Sacuvaj dogadjaj</button>
-  </form>
-
   @if (teamStats().length) {
   <div>
     @for (team of teamStats(); track team.team.id) {
-    <section>
-      <h3>{{ team.team.name }}</h3>
+    <section class="quick-entry">
+      <header>
+        <h3>{{ team.team.name }}</h3>
+      </header>
       @for (stat of team.players; track stat.player.id) {
       <div>
         <strong>{{ stat.player.firstName }} {{ stat.player.lastName }}</strong>
         <span>{{ stat.points }} PTS | {{ stat.rebounds }} REB | {{ stat.assists }} AST | {{ stat.fouls }} PF</span>
         <div>
           @for (action of playerEventButtons; track action.type) {
-          <button type="button" [disabled]="!!pendingAction()"
+          <button type="button" [title]="action.title" [disabled]="!!pendingAction()"
             (click)="recordPlayerEvent(team.team.id, stat.player.id, action.type)">
             {{ action.label }}
           </button>

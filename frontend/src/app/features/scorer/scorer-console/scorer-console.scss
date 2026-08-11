@@ -93,6 +93,20 @@ section section {
   padding: 1rem;
 }
 
+.quick-entry header {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.quick-entry header span {
+  color: #aeb6c3;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .clock-panel {
   border-color: #ff7a1a;
   background: #15120f;
