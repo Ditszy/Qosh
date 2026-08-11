@@ -14,9 +14,9 @@ type TournamentListState =
 const statusLabels: Record<TournamentStatus, string> = {
   DRAFT: 'U pripremi',
   SIGNUPS_OPEN: 'Prijave otvorene',
-  SIGNUPS_LOCKED: 'Prijave zakljucane',
+  SIGNUPS_LOCKED: 'Prijave zaključane',
   IN_PROGRESS: 'U toku',
-  COMPLETED: 'Zavrsen',
+  COMPLETED: 'Završen',
   CANCELLED: 'Otkazan',
 };
 

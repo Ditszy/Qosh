@@ -7,7 +7,7 @@
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p class="surface-message">Ucitavanje turnira...</p>
+  <p class="surface-message">Učitavanje turnira...</p>
   }
 
   @case ('error') {
@@ -23,6 +23,8 @@
       <h3>{{ tournament.name }}</h3>
       @if (tournament.description) {
       <p>{{ tournament.description }}</p>
+      } @else {
+      <p class="muted">Opis turnira još nije dodat.</p>
       }
       <dl>
         <div>
