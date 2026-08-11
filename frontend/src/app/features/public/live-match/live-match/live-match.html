@@ -43,13 +43,15 @@
   <section class="event-feed" aria-label="Tok meča">
     <h3>Tok meča</h3>
     @if (state.bundle.events.length > 0) {
-    @for (event of state.bundle.events.slice(0, 6); track event.id) {
-    <article>
-      <span>{{ eventClockTime(event.clockRemainingSeconds) }}</span>
-      <strong>{{ event.type }}</strong>
-      <p>{{ event.team.name }} @if (event.player) { / {{ event.player.firstName }} {{ event.player.lastName }} }</p>
-    </article>
-    }
+    <div class="event-list">
+      @for (event of orderedEvents(state.bundle.events); track event.id) {
+      <article>
+        <span>{{ eventClockTime(event.clockRemainingSeconds) }}</span>
+        <strong>{{ event.type }}</strong>
+        <p>{{ event.team.name }} @if (event.player) { / {{ event.player.firstName }} {{ event.player.lastName }} }</p>
+      </article>
+      }
+    </div>
     } @else {
     <p class="surface-message">Još nema zabeleženih događaja.</p>
     }

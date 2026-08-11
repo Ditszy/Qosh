@@ -89,6 +89,14 @@ export class LiveMatch {
     return seconds === null ? '--:--' : this.clockTime(seconds);
   }
 
+  protected orderedEvents(events: MatchEvent[]): MatchEvent[] {
+    return [...events].sort((a, b) => {
+      const occurredDiff = Date.parse(b.occurredAt) - Date.parse(a.occurredAt);
+
+      return occurredDiff || Date.parse(b.createdAt) - Date.parse(a.createdAt);
+    });
+  }
+
   protected selectPanel(panel: MatchPanel): void {
     this.selectedPanel = panel;
   }

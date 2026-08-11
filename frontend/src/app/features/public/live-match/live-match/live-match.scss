@@ -82,6 +82,14 @@
   gap: 12px;
 }
 
+.event-list {
+  display: grid;
+  gap: 1px;
+  max-height: min(520px, 55vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .box-score h4 {
   margin: 0 0 12px;
   color: #ff5a1f;
@@ -152,4 +160,8 @@
 
 @media (max-width: 720px) {
   .match-panels { grid-template-columns: 1fr; }
+
+  .event-list {
+    max-height: 420px;
+  }
 }
