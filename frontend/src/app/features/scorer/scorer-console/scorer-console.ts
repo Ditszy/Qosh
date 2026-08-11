@@ -5,7 +5,7 @@ import { finalize, switchMap } from 'rxjs';
 
 import { ScorerMatchApiService } from '../scorer-match-api.service';
 import { MatchesApiService } from '../../public/live-match/matches-api.service';
-import type { MatchEventType, MatchReadBundle } from '../../public/live-match/match.models';
+import type { MatchDetail, MatchEventType, MatchReadBundle } from '../../public/live-match/match.models';
 
 type ClockAction = 'start' | 'pause' | 'resume' | 'end';
 type EventButton = { label: string; type: MatchEventType };
@@ -50,6 +50,12 @@ export class ScorerConsole {
   protected readonly canRecordEvent = computed(() => !!this.matchId().trim() && !!this.eventTeamId().trim() && !this.pendingAction());
   protected readonly canAdjustClock = computed(() => !!this.matchId().trim() && this.clockAdjustmentSeconds() > 0 && !this.pendingAction());
   protected readonly match = computed(() => this.matchBundle()?.match ?? null);
+  protected readonly showStartClock = computed(() => {
+    const match = this.match();
+
+    return !match || match.clockStatus === 'NOT_STARTED';
+  });
+  protected readonly canStartClock = computed(() => !!this.matchId().trim() && this.showStartClock() && !this.pendingAction());
   protected readonly canFinalizeMatch = computed(() => {
     const match = this.match();
 
@@ -126,7 +132,10 @@ export class ScorerConsole {
     this.successMessage.set('');
     this.pendingAction.set(action);
     request$.pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: (match) => this.successMessage.set(`Sat: ${match.clockStatus}, preostalo ${match.clockRemainingSeconds}s`),
+      next: (match) => {
+        this.replaceLoadedMatch(match);
+        this.successMessage.set(`Sat: ${match.clockStatus}, preostalo ${match.clockRemainingSeconds}s`);
+      },
       error: () => this.errorMessage.set('Kontrola sata nije uspela. Proveri ID meča i dodelu zapisničara.'),
     });
   }
@@ -162,6 +171,10 @@ export class ScorerConsole {
       return;
     }
 
+    if (!window.confirm('Finalizovati meč? Ovo zatvara utakmicu i upisuje pobednika.')) {
+      return;
+    }
+
     this.errorMessage.set('');
     this.successMessage.set('');
     this.pendingAction.set('finalize');
@@ -174,9 +187,9 @@ export class ScorerConsole {
           const winner = bundle.match.winnerTeam?.name ?? 'Pobednik';
 
           this.matchBundle.set(bundle);
-          this.successMessage.set(`Mec zavrsen. ${winner} ide dalje.`);
+          this.successMessage.set(`Meč završen. ${winner} ide dalje.`);
         },
-        error: () => this.errorMessage.set('Zatvaranje meca nije uspelo. Proveri rezultat, timove i status meca.'),
+        error: () => this.errorMessage.set('Zatvaranje meča nije uspelo. Proveri rezultat, timove i status meča.'),
       });
   }
 
@@ -209,9 +222,17 @@ export class ScorerConsole {
       .subscribe({
         next: (bundle) => {
           this.matchBundle.set(bundle);
-          this.successMessage.set(`Dogadjaj sacuvan: ${type}`);
+          this.successMessage.set(`Događaj sačuvan: ${type}`);
         },
-        error: () => this.errorMessage.set('Unos dogadjaja nije uspeo. Proveri ID meca, tim, igraca i status meca.'),
+        error: () => this.errorMessage.set('Unos događaja nije uspeo. Proveri ID meča, tim, igrača i status meča.'),
       });
+  }
+
+  private replaceLoadedMatch(match: MatchDetail): void {
+    const bundle = this.matchBundle();
+
+    if (bundle) {
+      this.matchBundle.set({ ...bundle, match });
+    }
   }
 }

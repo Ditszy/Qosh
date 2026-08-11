@@ -9,7 +9,7 @@
 
   @if (liveMatchLink(); as link) {
   <a [routerLink]="link">Otvori meč</a>
-  <button type="button" [disabled]="!!pendingAction()" (click)="loadMatch()">Ucitaj mec</button>
+  <button type="button" [disabled]="!!pendingAction()" (click)="loadMatch()">Učitaj meč</button>
   } @else {
   <button type="button" disabled>Unesi ID meča</button>
   }
@@ -19,8 +19,9 @@
   }
 
   <div>
-    <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()"
-      (click)="controlClock('start')">Start</button>
+    @if (showStartClock()) {
+    <button type="button" [disabled]="!canStartClock()" (click)="controlClock('start')">Start</button>
+    }
     <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()"
       (click)="controlClock('pause')">Pauza</button>
     <button type="button" [disabled]="!liveMatchLink() || !!pendingAction()"
@@ -40,7 +41,7 @@
 
   @if (match()) {
   <div>
-    <button type="button" [disabled]="!canFinalizeMatch()" (click)="finalizeMatch()">Finalizuj mec</button>
+    <button type="button" [disabled]="!canFinalizeMatch()" (click)="finalizeMatch()">Finalizuj meč</button>
     @if (!canFinalizeMatch()) {
     <span>Meč mora biti live, sa oba tima i bez nerešenog rezultata.</span>
     }
