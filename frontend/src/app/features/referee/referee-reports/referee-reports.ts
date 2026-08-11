@@ -57,7 +57,7 @@ export class RefereeReports implements OnInit {
       .pipe(finalize(() => this.isLoadingAssignedMatches.set(false)))
       .subscribe({
         next: (matches) => this.assignedMatches.set(matches),
-        error: () => this.errorMessage.set('Dodeljeni mecevi trenutno nisu dostupni.'),
+        error: () => this.errorMessage.set('Dodeljeni mečevi trenutno nisu dostupni.'),
       });
   }
 
@@ -69,7 +69,7 @@ export class RefereeReports implements OnInit {
       .pipe(finalize(() => this.isLoadingSelectedMatch.set(false)))
       .subscribe({
         next: (match) => this.selectedMatch.set(match),
-        error: () => this.errorMessage.set('Mec nije pronadjen.'),
+        error: () => this.errorMessage.set('Meč nije pronađen.'),
       });
   }
 
@@ -90,7 +90,7 @@ export class RefereeReports implements OnInit {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (report) => this.applyLoadedReport(report),
-        error: () => this.errorMessage.set('Izvestaj za ovaj mec nije pronadjen.'),
+        error: () => this.errorMessage.set('Izveštaj za ovaj meč nije pronađen.'),
       });
   }
 
@@ -122,10 +122,10 @@ export class RefereeReports implements OnInit {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
-          this.successMessage.set('Izvestaj je sacuvan.');
+          this.successMessage.set('Izveštaj je sačuvan.');
           this.loadReport(false);
         },
-        error: () => this.errorMessage.set('Izvestaj nije sacuvan. Proveri da li je mec finalan.'),
+        error: () => this.errorMessage.set('Izveštaj nije sačuvan. Proveri da li je meč finalan.'),
       });
   }
 
@@ -144,23 +144,23 @@ export class RefereeReports implements OnInit {
 
   protected submitButtonLabel(): string {
     if (this.hasLoadedReport()) {
-      return 'Izvestaj je vec sacuvan';
+      return 'Izveštaj je već sačuvan';
     }
 
     if (this.hasSelectedMatch() && this.selectedMatch()?.status !== 'FINAL') {
-      return 'Ceka se kraj meca';
+      return 'Čeka se kraj meča';
     }
 
-    return 'Sacuvaj izvestaj';
+    return 'Sačuvaj izveštaj';
   }
 
   protected matchStatusLabel(match: RefereeAssignedMatch): string {
     if (match.hasReport) {
-      return 'Izvestaj sacuvan';
+      return 'Izveštaj sačuvan';
     }
 
     if (match.status === 'FINAL') {
-      return 'Spreman za izvestaj';
+      return 'Spreman za izveštaj';
     }
 
     if (match.status === 'LIVE') {

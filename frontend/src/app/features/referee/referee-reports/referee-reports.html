@@ -1,17 +1,17 @@
 <section class="referee-reports">
   <header>
     <p>Sudija</p>
-    <h1>Izvestaj sa meca</h1>
+    <h1>Izveštaj sa meča</h1>
   </header>
 
   @if (!hasSelectedMatch()) {
-  <section class="assigned-matches" aria-label="Dodeljeni mecevi">
-    <h2>Dodeljeni mecevi</h2>
+  <section class="assigned-matches" aria-label="Dodeljeni mečevi">
+    <h2>Dodeljeni mečevi</h2>
 
     @if (isLoadingAssignedMatches()) {
-    <p class="message">Ucitavanje dodeljenih meceva...</p>
+    <p class="message">Učitavanje dodeljenih mečeva...</p>
     } @else if (assignedMatches().length === 0) {
-    <p class="message">Trenutno nemas dodeljene meceve.</p>
+    <p class="message">Trenutno nemaš dodeljene mečeve.</p>
     } @else {
     @for (match of assignedMatches(); track match.id) {
     <article>
@@ -33,22 +33,22 @@
 
   @if (hasSelectedMatch()) {
   <form [formGroup]="reportForm" (ngSubmit)="submitReport()">
-    <a class="back-link" routerLink="/reports">Nazad na dodeljene meceve</a>
+    <a class="back-link" routerLink="/reports">Nazad na dodeljene mečeve</a>
 
     @if (isLoadingSelectedMatch()) {
-    <p class="message">Ucitavanje meca...</p>
+    <p class="message">Učitavanje meča...</p>
     }
     @if (selectedMatch(); as match) {
     <p class="selected-match">
       {{ match.tournament.name }} - {{ match.teamA?.name || 'TBD' }} vs {{ match.teamB?.name || 'TBD' }}
     </p>
     @if (match.status !== 'FINAL') {
-    <p class="message error">Izvestaj se moze sacuvati tek kada je mec finalan.</p>
+    <p class="message error">Izveštaj se može sačuvati tek kada je meč finalan.</p>
     }
     }
     <label>
       Beleške
-      <textarea formControlName="notes" rows="7" placeholder="Unesi sudijski izvestaj"
+      <textarea formControlName="notes" rows="7" placeholder="Unesi sudijski izveštaj"
         [readonly]="hasLoadedReport()"></textarea>
     </label>
 
@@ -66,13 +66,5 @@
 
   @if (successMessage()) {
   <p class="message success">{{ successMessage() }}</p>
-  }
-
-  @if (loadedReport(); as report) {
-  <article class="report-preview">
-    <p>{{ report.match.tournament.name }}</p>
-    <h2>Runda {{ report.match.round }} - Mec {{ report.match.bracketPosition }}</h2>
-    <small>Sudija: {{ report.referee.firstName }} {{ report.referee.lastName }}</small>
-  </article>
   }
 </section>
