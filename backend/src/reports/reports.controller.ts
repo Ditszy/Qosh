@@ -16,25 +16,18 @@ type AuthenticatedRequest = {
 };
 
 @ApiTags('reports')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('matches/:matchId/report')
 export class ReportsController {
     constructor(private readonly reportsService: ReportsService) { }
 
     @Get()
-    @Roles(UserRole.ORGANIZER, UserRole.REFEREE, UserRole.ADMIN)
-    findByMatchId(
-        @Param('matchId') matchId: string,
-        @Request() req: AuthenticatedRequest,
-    ) {
-        return this.reportsService.findByMatchId(matchId, {
-            id: req.user.id,
-            role: req.user.role,
-        });
+    findByMatchId(@Param('matchId') matchId: string) {
+        return this.reportsService.findByMatchId(matchId);
     }
 
     @Post()
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.REFEREE, UserRole.ADMIN)
     create(
         @Param('matchId') matchId: string,

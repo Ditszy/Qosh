@@ -21,7 +21,7 @@ type ReportActor = {
 export class ReportsService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async findByMatchId(matchId: string, actor: ReportActor): Promise<RefereeReportWithRelations> {
+    async findByMatchId(matchId: string): Promise<RefereeReportWithRelations> {
         const report = await this.prisma.refereeReport.findUnique({
             where: { matchId },
             include: this.reportInclude(),
@@ -30,8 +30,6 @@ export class ReportsService {
         if (!report) {
             throw new NotFoundException('Referee report not found');
         }
-
-        this.ensureCanReadReport(report, actor);
 
         return report;
     }
@@ -72,22 +70,6 @@ export class ReportsService {
                 notes: createRefereeReportDto.notes,
             },
         });
-    }
-
-    private ensureCanReadReport(report: RefereeReportWithRelations, actor: ReportActor): void {
-        if (actor.role === UserRole.ADMIN) {
-            return;
-        }
-
-        if (actor.role === UserRole.ORGANIZER && report.match.tournament.organizerId === actor.id) {
-            return;
-        }
-
-        if (actor.role === UserRole.REFEREE && report.refereeId === actor.id) {
-            return;
-        }
-
-        throw new ForbiddenException('You cannot read this referee report');
     }
 
     private reportInclude() {
