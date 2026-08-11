@@ -85,6 +85,10 @@ export class LiveMatch {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 
+  protected eventClockTime(seconds: number | null): string {
+    return seconds === null ? '--:--' : this.clockTime(seconds);
+  }
+
   protected selectPanel(panel: MatchPanel): void {
     this.selectedPanel = panel;
   }

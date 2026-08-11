@@ -201,7 +201,6 @@ export class ScorerConsole implements OnInit, OnDestroy {
     request$.pipe(finalize(() => this.pendingAction.set(''))).subscribe({
       next: (match) => {
         this.replaceLoadedMatch(match);
-        this.successMessage.set(`Sat: ${match.clockStatus}, preostalo ${match.clockRemainingSeconds}s`);
       },
       error: () => this.errorMessage.set('Kontrola sata nije uspela. Proveri ID meča i dodelu zapisničara.'),
     });

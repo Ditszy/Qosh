@@ -45,7 +45,7 @@
     @if (state.bundle.events.length > 0) {
     @for (event of state.bundle.events.slice(0, 6); track event.id) {
     <article>
-      <span>{{ event.occurredAt | date: 'shortTime' }}</span>
+      <span>{{ eventClockTime(event.clockRemainingSeconds) }}</span>
       <strong>{{ event.type }}</strong>
       <p>{{ event.team.name }} @if (event.player) { / {{ event.player.firstName }} {{ event.player.lastName }} }</p>
     </article>

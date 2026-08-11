@@ -31,6 +31,7 @@ export type MatchEvent = {
   playerId: string | null;
   scorerId: string;
   type: MatchEventType;
+  clockRemainingSeconds: number | null;
   occurredAt: string;
   createdAt: string;
   team: TeamSummary;
