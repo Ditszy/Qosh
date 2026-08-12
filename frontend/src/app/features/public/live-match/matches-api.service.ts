@@ -5,7 +5,15 @@ import { catchError, combineLatest, Observable, of } from 'rxjs';
 import { ApiUrlService } from '../../../core/api';
 import { LiveStreamService } from '../../../core/live';
 import type { MatchStatistics } from '../../statistics';
-import type { MatchDetail, MatchEvent, MatchLivePayload, MatchLiveStreamMessage, MatchReadBundle, MatchRefereeReport } from './match.models';
+import type {
+  MatchDetail,
+  MatchEvent,
+  MatchLiveCenter,
+  MatchLivePayload,
+  MatchLiveStreamMessage,
+  MatchReadBundle,
+  MatchRefereeReport,
+} from './match.models';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +25,10 @@ export class MatchesApiService {
 
   getMatch(matchId: string): Observable<MatchDetail> {
     return this.http.get<MatchDetail>(this.apiUrl.build(`/matches/${matchId}`));
+  }
+
+  getLiveCenter(): Observable<MatchLiveCenter> {
+    return this.http.get<MatchLiveCenter>(this.apiUrl.build('/matches/live'));
   }
 
   listMatchEvents(matchId: string): Observable<MatchEvent[]> {

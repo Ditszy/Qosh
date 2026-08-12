@@ -103,3 +103,8 @@ export type MatchReadBundle = {
   statistics: MatchStatistics;
   refereeReport: MatchRefereeReport | null;
 };
+
+export type MatchLiveCenter = {
+  live: MatchDetail[];
+  upcoming: MatchDetail[];
+};
