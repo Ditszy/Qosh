@@ -4,7 +4,14 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchStatus } from '../enums/match-status.enum';
-import { MatchActor, MatchRecord, MatchWithRelations, RefereeAssignedMatch, ScorerAssignedMatch } from '../types/match.types';
+import {
+    MatchActor,
+    MatchRecord,
+    MatchWithRelations,
+    PublicLiveCenterMatches,
+    RefereeAssignedMatch,
+    ScorerAssignedMatch,
+} from '../types/match.types';
 
 @Injectable()
 export class MatchesReadService {
@@ -42,6 +49,41 @@ export class MatchesReadService {
         }
 
         return this.withCurrentClock(match);
+    }
+
+    async findPublicLiveCenter(): Promise<PublicLiveCenterMatches> {
+        const now = new Date();
+        const [live, upcoming] = await this.prisma.$transaction([
+            this.prisma.match.findMany({
+                where: { status: MatchStatus.LIVE },
+                include: this.matchInclude(),
+                orderBy: [
+                    { updatedAt: 'desc' },
+                    { scheduledAt: 'asc' },
+                ],
+                take: 12,
+            }),
+            this.prisma.match.findMany({
+                where: {
+                    status: MatchStatus.SCHEDULED,
+                    scheduledAt: { gte: now },
+                    teamAId: { not: null },
+                    teamBId: { not: null },
+                },
+                include: this.matchInclude(),
+                orderBy: [
+                    { scheduledAt: 'asc' },
+                    { round: 'asc' },
+                    { bracketPosition: 'asc' },
+                ],
+                take: 12,
+            }),
+        ]);
+
+        return {
+            live: live.map((match) => this.withCurrentClock(match)),
+            upcoming: upcoming.map((match) => this.withCurrentClock(match)),
+        };
     }
 
     async findByReferee(actor: MatchActor): Promise<RefereeAssignedMatch[]> {

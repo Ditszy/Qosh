@@ -71,6 +71,11 @@ export type RefereeAssignedMatch = MatchWithRelations & {
 
 export type ScorerAssignedMatch = MatchWithRelations;
 
+export type PublicLiveCenterMatches = {
+    live: MatchWithRelations[];
+    upcoming: MatchWithRelations[];
+};
+
 export type MatchClockUpdateData = {
     status?: MatchStatus;
     clockStatus?: MatchClockStatus;
