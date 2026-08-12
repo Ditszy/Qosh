@@ -23,7 +23,6 @@ export class RefereeReports implements OnInit {
   protected readonly isLoading = signal(false);
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal('');
-  protected readonly successMessage = signal('');
   protected readonly loadedReport = signal<RefereeReportDetail | null>(null);
   protected readonly hasSelectedMatch = signal(false);
   protected readonly isLoadingAssignedMatches = signal(false);
@@ -122,7 +121,6 @@ export class RefereeReports implements OnInit {
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
-          this.successMessage.set('Izveštaj je sačuvan.');
           this.loadReport(false);
         },
         error: () => this.errorMessage.set('Izveštaj nije sačuvan. Proveri da li je meč finalan.'),
@@ -131,7 +129,6 @@ export class RefereeReports implements OnInit {
 
   private clearMessages(): void {
     this.errorMessage.set('');
-    this.successMessage.set('');
   }
 
   protected hasLoadedReport(): boolean {
