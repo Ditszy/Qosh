@@ -28,9 +28,26 @@
 }
 
 .list-tools {
-  display: flex;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: end;
   margin-bottom: 14px;
+}
+
+.list-tools p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.list-tools p span {
+  border: 1px solid #2b303a;
+  color: #d8dbe2;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  font-weight: 900;
 }
 
 .list-tools label {
@@ -43,11 +60,51 @@
 }
 
 .list-tools select {
+  width: 220px;
   min-height: 38px;
   border: 1px solid #2b303a;
   background: #101218;
   color: #ffffff;
   padding: 0 12px;
+}
+
+@media (max-width: 760px) {
+  .list-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .list-tools select {
+    width: 100%;
+  }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.pagination button {
+  border: 1px solid #ff5a1f;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+  padding: 9px 12px;
+  text-transform: uppercase;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.pagination span {
+  color: #b8bdc7;
+  font-size: 0.85rem;
+  font-weight: 900;
 }
 
 .tournament-grid {

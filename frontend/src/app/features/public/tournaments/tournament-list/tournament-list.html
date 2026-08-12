@@ -15,20 +15,36 @@
   }
 
   @case ('loaded') {
-  @if (state.tournaments.length > 0) {
   <div class="list-tools">
+    <p>
+      <span>{{ selectedStatusLabel() }}</span>
+      <span>{{ sortLabel() }}</span>
+      <span>{{ state.page.total }} ukupno</span>
+    </p>
+
+    <label>
+      Status
+      <select name="statusFilter" [(ngModel)]="statusFilter" (ngModelChange)="applyStatus()">
+        <option value="">Svi statusi</option>
+        @for (option of statusOptions; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+
     <label>
       Sortiraj
-      <select [value]="sortMode()" (change)="setSortMode($any($event.target).value)">
-        <option value="startsAtAsc">Najskorije</option>
-        <option value="startsAtDesc">Najkasnije</option>
-        <option value="nameAsc">Naziv A-Z</option>
+      <select name="sortSelection" [(ngModel)]="sortSelection" (ngModelChange)="applySort()">
+        <option value="startsAt:asc">Najskorije</option>
+        <option value="startsAt:desc">Najkasnije</option>
+        <option value="name:asc">Naziv A-Z</option>
       </select>
     </label>
   </div>
 
+  @if (state.page.items.length > 0) {
   <div class="tournament-grid">
-    @for (tournament of sortedTournaments(state.tournaments); track tournament.id) {
+    @for (tournament of state.page.items; track tournament.id) {
     <a class="tournament-card" [routerLink]="['/tournaments', tournament.id]">
       <span class="status">{{ statusLabel(tournament.status) }}</span>
       <h3>{{ tournament.name }}</h3>
@@ -51,6 +67,13 @@
       </dl>
     </a>
     }
+  </div>
+
+  <div class="pagination" aria-label="Stranice turnira">
+    <button type="button" [disabled]="state.page.page <= 1" (click)="goToPage(state.page.page - 1)">Prethodna</button>
+    <span>Strana {{ state.page.page }} / {{ state.page.totalPages }}</span>
+    <button type="button" [disabled]="state.page.page >= state.page.totalPages"
+      (click)="goToPage(state.page.page + 1)">Sledeća</button>
   </div>
   } @else {
   <p class="surface-message">Nema objavljenih turnira.</p>
