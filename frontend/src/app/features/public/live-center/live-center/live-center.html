@@ -1,0 +1,82 @@
+<section class="live-center-page" aria-label="Mečevi uživo">
+  <header class="page-header">
+    <p class="eyebrow">Live centar</p>
+    <h2>Mečevi uživo</h2>
+    <button type="button" (click)="refresh()">Osveži</button>
+  </header>
+
+  @if (state$ | async; as state) {
+  @switch (state.status) {
+  @case ('loading') {
+  <p class="surface-message">Učitavanje mečeva...</p>
+  }
+
+  @case ('error') {
+  <p class="surface-message error">Live centar trenutno nije dostupan.</p>
+  }
+
+  @case ('loaded') {
+  <section class="match-section" aria-label="Mečevi koji su u toku">
+    <div class="section-title">
+      <h3>U toku</h3>
+      <span>{{ state.data.live.length }}</span>
+    </div>
+
+    @if (state.data.live.length > 0) {
+    <div class="match-grid">
+      @for (match of state.data.live; track match.id) {
+      <a class="match-card live" [routerLink]="['/matches', match.id, 'live']">
+        <span class="status">Live</span>
+        <strong>{{ match.tournament.name }}</strong>
+        <div class="score-line">
+          <span>{{ teamName(match, 'A') }}</span>
+          <b>{{ match.teamAScore }}</b>
+        </div>
+        <div class="score-line">
+          <span>{{ teamName(match, 'B') }}</span>
+          <b>{{ match.teamBScore }}</b>
+        </div>
+        <footer>
+          <span>Runda {{ match.round }}</span>
+          <span>{{ clockLabel(match) }}</span>
+        </footer>
+      </a>
+      }
+    </div>
+    } @else {
+    <p class="surface-message">Trenutno nema aktivnih mečeva.</p>
+    }
+  </section>
+
+  <section class="match-section" aria-label="Sledeći zakazani mečevi">
+    <div class="section-title">
+      <h3>Sledeći mečevi</h3>
+      <span>{{ state.data.upcoming.length }}</span>
+    </div>
+
+    @if (state.data.upcoming.length > 0) {
+    <div class="match-grid">
+      @for (match of state.data.upcoming; track match.id) {
+      <a class="match-card" [routerLink]="['/matches', match.id, 'live']">
+        <span class="status scheduled">Zakazano</span>
+        <strong>{{ match.tournament.name }}</strong>
+        <div class="versus">
+          <span>{{ teamName(match, 'A') }}</span>
+          <b>vs</b>
+          <span>{{ teamName(match, 'B') }}</span>
+        </div>
+        <footer>
+          <span>Runda {{ match.round }}</span>
+          <span>{{ match.scheduledAt | date: 'short' }}</span>
+        </footer>
+      </a>
+      }
+    </div>
+    } @else {
+    <p class="surface-message">Nema zakazanih mečeva.</p>
+    }
+  </section>
+  }
+  }
+  }
+</section>
