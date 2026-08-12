@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { catchError, map, Observable, of, startWith } from 'rxjs';
 
@@ -10,6 +10,8 @@ type TournamentListState =
   | { status: 'loading' }
   | { status: 'loaded'; tournaments: Tournament[] }
   | { status: 'error' };
+
+type TournamentSort = 'startsAtAsc' | 'startsAtDesc' | 'nameAsc';
 
 const statusLabels: Record<TournamentStatus, string> = {
   DRAFT: 'U pripremi',
@@ -28,6 +30,7 @@ const statusLabels: Record<TournamentStatus, string> = {
 })
 export class TournamentList {
   private readonly tournamentsApi = inject(TournamentsApiService);
+  protected readonly sortMode = signal<TournamentSort>('startsAtAsc');
 
   protected readonly state$: Observable<TournamentListState> = this.tournamentsApi.listTournaments().pipe(
     map((tournaments) => ({ status: 'loaded', tournaments }) satisfies TournamentListState),
@@ -37,5 +40,24 @@ export class TournamentList {
 
   protected statusLabel(status: TournamentStatus): string {
     return statusLabels[status];
+  }
+
+  protected sortedTournaments(tournaments: Tournament[]): Tournament[] {
+    const sorted = [...tournaments];
+
+    if (this.sortMode() === 'nameAsc') {
+      return sorted.sort((first, second) => first.name.localeCompare(second.name));
+    }
+
+    return sorted.sort((first, second) => {
+      const firstTime = new Date(first.startsAt).getTime();
+      const secondTime = new Date(second.startsAt).getTime();
+
+      return this.sortMode() === 'startsAtDesc' ? secondTime - firstTime : firstTime - secondTime;
+    });
+  }
+
+  protected setSortMode(value: string): void {
+    this.sortMode.set(value as TournamentSort);
   }
 }

@@ -16,8 +16,19 @@
 
   @case ('loaded') {
   @if (state.tournaments.length > 0) {
+  <div class="list-tools">
+    <label>
+      Sortiraj
+      <select [value]="sortMode()" (change)="setSortMode($any($event.target).value)">
+        <option value="startsAtAsc">Najskorije</option>
+        <option value="startsAtDesc">Najkasnije</option>
+        <option value="nameAsc">Naziv A-Z</option>
+      </select>
+    </label>
+  </div>
+
   <div class="tournament-grid">
-    @for (tournament of state.tournaments; track tournament.id) {
+    @for (tournament of sortedTournaments(state.tournaments); track tournament.id) {
     <a class="tournament-card" [routerLink]="['/tournaments', tournament.id]">
       <span class="status">{{ statusLabel(tournament.status) }}</span>
       <h3>{{ tournament.name }}</h3>

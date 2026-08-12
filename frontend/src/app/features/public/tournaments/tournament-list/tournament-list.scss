@@ -27,6 +27,29 @@
   color: #ffb199;
 }
 
+.list-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.list-tools label {
+  display: grid;
+  gap: 6px;
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.list-tools select {
+  min-height: 38px;
+  border: 1px solid #2b303a;
+  background: #101218;
+  color: #ffffff;
+  padding: 0 12px;
+}
+
 .tournament-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
