@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../../core/api';
 import { LiveStreamService } from '../../../core/live/live-stream.service';
-import type { Tournament, TournamentLiveMessage, TournamentMatch } from './tournament.models';
+import type { PaginatedTournaments, Tournament, TournamentListQuery, TournamentLiveMessage, TournamentMatch } from './tournament.models';
 
 @Injectable({
   providedIn: 'root',
@@ -14,8 +14,14 @@ export class TournamentsApiService {
   private readonly apiUrl = inject(ApiUrlService);
   private readonly liveStream = inject(LiveStreamService);
 
-  listTournaments(): Observable<Tournament[]> {
-    return this.http.get<Tournament[]>(this.apiUrl.build('/tournaments'));
+  listTournaments(query: TournamentListQuery = {}): Observable<PaginatedTournaments> {
+    const params = Object.fromEntries(
+      (Object.entries(query) as [string, unknown][])
+        .filter(([, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => [key, String(value)]),
+    );
+
+    return this.http.get<PaginatedTournaments>(this.apiUrl.build('/tournaments'), { params });
   }
 
   getTournament(id: string): Observable<Tournament> {

@@ -31,6 +31,26 @@ export type Tournament = {
   updatedAt: string;
 };
 
+export type TournamentSortBy = 'startsAt' | 'name' | 'createdAt';
+
+export type TournamentSortDirection = 'asc' | 'desc';
+
+export type TournamentListQuery = {
+  page?: number;
+  pageSize?: number;
+  status?: TournamentStatus;
+  sortBy?: TournamentSortBy;
+  sortDirection?: TournamentSortDirection;
+};
+
+export type PaginatedTournaments = {
+  items: Tournament[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
 export type TeamSummary = {
   id: string;
   name: string;
