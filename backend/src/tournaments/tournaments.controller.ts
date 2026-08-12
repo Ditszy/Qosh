@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Request, Sse, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
+import { FindTournamentsDto } from './dto/find-tournaments.dto';
 import { TournamentLiveService } from './tournament-live.service';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
 import { TournamentsService } from './tournaments.service';
@@ -26,8 +27,8 @@ export class TournamentsController {
     ) { }
 
     @Get()
-    findAll() {
-        return this.tournamentsService.findAll();
+    findAll(@Query() query: FindTournamentsDto) {
+        return this.tournamentsService.findAll(query);
     }
 
     @Get(':id')

@@ -5,6 +5,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationRecord } from '../notifications/types/notification.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
+import { FindTournamentsDto } from './dto/find-tournaments.dto';
 import { TournamentLiveEvent } from './types/tournament-live.types';
 import { TournamentLiveService } from './tournament-live.service';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
@@ -34,6 +35,14 @@ type TournamentRecord = {
     };
 };
 
+export type PaginatedTournaments = {
+    items: TournamentRecord[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+};
+
 @Injectable()
 export class TournamentsService {
     constructor(
@@ -53,14 +62,34 @@ export class TournamentsService {
         });
     }
 
-    async findAll(): Promise<TournamentRecord[]> {
-        return this.prisma.tournament.findMany({
-            include: { organizer: { select: this.organizerSelect } },
-            orderBy: [
-                { startsAt: 'asc' },
-                { createdAt: 'desc' },
-            ],
-        });
+    async findAll(query: FindTournamentsDto = {}): Promise<PaginatedTournaments> {
+        const page = query.page ?? 1;
+        const pageSize = query.pageSize ?? 12;
+        const sortBy = query.sortBy ?? 'startsAt';
+        const sortDirection = query.sortDirection ?? 'asc';
+        const where = query.status ? { status: query.status } : {};
+
+        const [items, total] = await this.prisma.$transaction([
+            this.prisma.tournament.findMany({
+                where,
+                include: { organizer: { select: this.organizerSelect } },
+                orderBy: [
+                    { [sortBy]: sortDirection },
+                    { createdAt: 'desc' },
+                ],
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+            }),
+            this.prisma.tournament.count({ where }),
+        ]);
+
+        return {
+            items,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.max(1, Math.ceil(total / pageSize)),
+        };
     }
 
     async findById(id: string): Promise<TournamentRecord> {
