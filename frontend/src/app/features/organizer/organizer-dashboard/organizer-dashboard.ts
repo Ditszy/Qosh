@@ -31,8 +31,9 @@ export class OrganizerDashboard {
 
   protected readonly state$ = this.reload$.pipe(
     startWith(void 0),
-    switchMap(() => this.tournamentsApi.listTournaments()),
-    switchMap((tournaments) => {
+    switchMap(() => this.tournamentsApi.listTournaments({ pageSize: 50 })),
+    switchMap((page) => {
+      const tournaments = page.items;
       const user = this.auth.currentUser();
       const owned = user?.role === 'ADMIN' ? tournaments : tournaments.filter((item) => item.organizerId === user?.id);
 
