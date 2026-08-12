@@ -22,6 +22,11 @@ type AuthenticatedRequest = {
 export class MatchesController {
     constructor(private readonly matchesService: MatchesService) { }
 
+    @Get('matches/live')
+    findPublicLiveCenter() {
+        return this.matchesService.findPublicLiveCenter();
+    }
+
     @Get('matches/:id')
     findById(@Param('id') id: string) {
         return this.matchesService.findById(id);
