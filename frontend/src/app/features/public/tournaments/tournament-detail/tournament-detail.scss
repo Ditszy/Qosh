@@ -171,25 +171,30 @@ dd {
 
 .team-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
 }
 
 .team-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
   border: 1px solid #2b303a;
   background: #101218;
   cursor: pointer;
   padding: 16px;
   text-align: left;
+  flex-wrap: wrap;
 }
 
 .team-card strong,
 .team-card span {
   color: #ffffff;
+}
+
+.team-card strong {
+  overflow-wrap: anywhere;
 }
 
 .team-card span {
