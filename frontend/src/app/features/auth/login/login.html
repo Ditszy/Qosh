@@ -1,26 +1,28 @@
-<section class="auth-view" aria-labelledby="login-title">
-  <p class="eyebrow">Autentifikacija</p>
-  <h2 id="login-title">Prijava</h2>
-  <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submit()">
-    <label>
-      Email
-      <input type="email" formControlName="email" autocomplete="email" />
-    </label>
-    <label>
-      Lozinka
-      <input type="password" formControlName="password" autocomplete="current-password" />
-    </label>
+<div class="auth-page">
+  <section class="auth-view" aria-labelledby="login-title">
+    <p class="eyebrow">Autentifikacija</p>
+    <h2 id="login-title">Prijava</h2>
+    <form class="auth-form" [formGroup]="loginForm" (ngSubmit)="submit()">
+      <label>
+        Email
+        <input type="email" formControlName="email" autocomplete="email" />
+      </label>
+      <label>
+        Lozinka
+        <input type="password" formControlName="password" autocomplete="current-password" />
+      </label>
 
-    @if (loginForm.invalid && loginForm.touched) {
-    <p class="form-message">Unesi validan email i lozinku.</p>
-    }
+      @if (loginForm.invalid && loginForm.touched) {
+      <p class="form-message">Unesi validan email i lozinku.</p>
+      }
 
-    @if (errorMessage()) {
-    <p class="form-message">{{ errorMessage() }}</p>
-    }
+      @if (errorMessage()) {
+      <p class="form-message">{{ errorMessage() }}</p>
+      }
 
-    <button class="solid-action large" type="submit" [disabled]="isSubmitting()">
-      {{ isSubmitting() ? 'Prijava...' : 'Prijavi se' }}
-    </button>
-  </form>
-</section>
+      <button class="solid-action large" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Prijava...' : 'Prijavi se' }}
+      </button>
+    </form>
+  </section>
+</div>
