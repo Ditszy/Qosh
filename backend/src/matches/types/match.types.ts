@@ -73,6 +73,7 @@ export type ScorerAssignedMatch = MatchWithRelations;
 
 export type PublicLiveCenterMatches = {
     live: MatchWithRelations[];
+    recent: MatchWithRelations[];
     upcoming: MatchWithRelations[];
 };
 

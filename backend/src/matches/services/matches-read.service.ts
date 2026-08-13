@@ -53,7 +53,7 @@ export class MatchesReadService {
 
     async findPublicLiveCenter(): Promise<PublicLiveCenterMatches> {
         const now = new Date();
-        const [live, upcoming] = await this.prisma.$transaction([
+        const [live, recent, upcoming] = await this.prisma.$transaction([
             this.prisma.match.findMany({
                 where: { status: MatchStatus.LIVE },
                 include: this.matchInclude(),
@@ -62,6 +62,19 @@ export class MatchesReadService {
                     { scheduledAt: 'asc' },
                 ],
                 take: 12,
+            }),
+            this.prisma.match.findMany({
+                where: {
+                    status: MatchStatus.FINAL,
+                    teamAId: { not: null },
+                    teamBId: { not: null },
+                },
+                include: this.matchInclude(),
+                orderBy: [
+                    { updatedAt: 'desc' },
+                    { scheduledAt: 'desc' },
+                ],
+                take: 6,
             }),
             this.prisma.match.findMany({
                 where: {
@@ -82,6 +95,7 @@ export class MatchesReadService {
 
         return {
             live: live.map((match) => this.withCurrentClock(match)),
+            recent: recent.map((match) => this.withCurrentClock(match)),
             upcoming: upcoming.map((match) => this.withCurrentClock(match)),
         };
     }
