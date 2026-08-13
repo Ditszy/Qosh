@@ -1,7 +1,7 @@
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { catchError, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { forkJoin } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth';
 import { TeamsApiService, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
@@ -14,33 +14,34 @@ type MyTeamState =
 
 @Component({
   selector: 'app-my-team',
-  imports: [AsyncPipe, DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule],
   templateUrl: './my-team.html',
   styleUrl: './my-team.scss',
 })
 export class MyTeam {
   private readonly authService = inject(AuthService);
   private readonly teamsApi = inject(TeamsApiService);
-  private readonly reload$ = new Subject<void>();
   protected readonly currentUser = this.authService.currentUser;
   protected readonly actionError = signal<string | null>(null);
   protected readonly invitePlayerIds = signal<Record<string, string>>({});
   protected readonly inviteSearches = signal<Record<string, string>>({});
   protected readonly inviteSearchResults = signal<Record<string, PublicUser[]>>({});
+  protected readonly state = signal<MyTeamState>({ status: 'loading' });
 
-  protected readonly state$ = this.reload$.pipe(
-    startWith(undefined),
-    switchMap(() =>
-      forkJoin({
-        teams: this.teamsApi.listMyTeams(),
-        invites: this.teamsApi.listMyPendingInvites(),
-      }).pipe(
-        map(({ teams, invites }) => ({ status: 'loaded', teams, invites }) satisfies MyTeamState),
-        startWith({ status: 'loading' } satisfies MyTeamState),
-        catchError(() => of({ status: 'error' } satisfies MyTeamState)),
-      ),
-    ),
-  );
+  constructor() {
+    this.loadPage();
+  }
+
+  private loadPage(): void {
+    this.state.set({ status: 'loading' });
+    forkJoin({
+      teams: this.teamsApi.listMyTeams(),
+      invites: this.teamsApi.listMyPendingInvites(),
+    }).subscribe({
+      next: ({ teams, invites }) => this.state.set({ status: 'loaded', teams, invites }),
+      error: () => this.state.set({ status: 'error' }),
+    });
+  }
 
   protected teamLabel(invite: TeamInvite): string {
     return invite.team ? `${invite.team.name} / ${invite.team.tournament.name}` : 'Poziv za tim';
@@ -102,7 +103,7 @@ export class MyTeam {
     const invitedUserId = this.invitePlayerId(teamId).trim();
 
     if (!invitedUserId) {
-      this.actionError.set('Izaberi igraca.');
+      this.actionError.set('Izaberi igrača.');
       return;
     }
 
@@ -119,15 +120,15 @@ export class MyTeam {
   protected removeMember(teamId: string, memberId: string): void {
     this.actionError.set(null);
     this.teamsApi.removeMember(teamId, memberId).subscribe({
-      next: () => this.reload$.next(),
-      error: () => this.actionError.set('Uklanjanje igraca nije uspelo.'),
+      next: (team) => this.replaceTeam(team),
+      error: () => this.actionError.set('Uklanjanje igrača nije uspelo.'),
     });
   }
 
   protected transferCaptain(teamId: string, memberId: string): void {
     this.actionError.set(null);
     this.teamsApi.transferCaptain(teamId, memberId).subscribe({
-      next: () => this.reload$.next(),
+      next: (team) => this.replaceTeam(team),
       error: () => this.actionError.set('Promena kapitena nije uspela.'),
     });
   }
@@ -135,7 +136,10 @@ export class MyTeam {
   protected acceptInvite(inviteId: string): void {
     this.actionError.set(null);
     this.teamsApi.acceptInvite(inviteId).subscribe({
-      next: () => this.reload$.next(),
+      next: (team) => {
+        this.removeInvite(inviteId);
+        this.replaceTeam(team);
+      },
       error: () => this.actionError.set('Prihvatanje poziva nije uspelo.'),
     });
   }
@@ -143,8 +147,29 @@ export class MyTeam {
   protected declineInvite(inviteId: string): void {
     this.actionError.set(null);
     this.teamsApi.declineInvite(inviteId).subscribe({
-      next: () => this.reload$.next(),
+      next: () => this.removeInvite(inviteId),
       error: () => this.actionError.set('Odbijanje poziva nije uspelo.'),
     });
+  }
+
+  private replaceTeam(team: TeamDetail): void {
+    const state = this.state();
+
+    if (state.status !== 'loaded') {
+      return;
+    }
+
+    const teams = state.teams.some((currentTeam) => currentTeam.id === team.id)
+      ? state.teams.map((currentTeam) => currentTeam.id === team.id ? team : currentTeam)
+      : [...state.teams, team];
+    this.state.set({ ...state, teams });
+  }
+
+  private removeInvite(inviteId: string): void {
+    const state = this.state();
+
+    if (state.status === 'loaded') {
+      this.state.set({ ...state, invites: state.invites.filter((invite) => invite.id !== inviteId) });
+    }
   }
 }

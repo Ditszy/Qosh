@@ -1,14 +1,14 @@
 <section class="route-placeholder" aria-label="Moj tim">
-  <p class="eyebrow">Igrac</p>
+  <p class="eyebrow">Igrač</p>
   <h2>Moj tim</h2>
   @if (actionError()) {
   <p>{{ actionError() }}</p>
   }
 
-  @if (state$ | async; as state) {
+  @if (state(); as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p>Ucitavanje poziva...</p>
+  <p>Učitavanje poziva...</p>
   }
 
   @case ('error') {
@@ -23,36 +23,37 @@
     <article>
       <strong>{{ team.name }}</strong>
       <div class="roster-list">
-      @for (member of team.members; track member.id) {
-      <div class="roster-row">
-        <span>{{ memberLabel(member) }}</span>
-      @if (canRemoveMember(team, member)) {
-        <div class="roster-actions">
-      <button type="button" class="text-action" (click)="transferCaptain(team.id, member.id)">Kapiten</button>
-      <button type="button" class="text-action" (click)="removeMember(team.id, member.id)">Ukloni</button>
+        @for (member of team.members; track member.id) {
+        <div class="roster-row">
+          <span>{{ memberLabel(member) }}</span>
+          @if (canRemoveMember(team, member)) {
+          <div class="roster-actions">
+            <button type="button" class="text-action" (click)="transferCaptain(team.id, member.id)">Kapiten</button>
+            <button type="button" class="text-action" (click)="removeMember(team.id, member.id)">Ukloni</button>
+          </div>
+          }
         </div>
-      }
-      </div>
-      }
+        }
       </div>
       @if (isCaptain(team)) {
       <div class="invite-search">
-        <input type="text" [ngModel]="inviteSearch(team.id)" (ngModelChange)="setInviteSearch(team.id, $event)" placeholder="Pretrazi igraca" />
+        <input type="text" [ngModel]="inviteSearch(team.id)" (ngModelChange)="setInviteSearch(team.id, $event)"
+          placeholder="Pretraži igraca" />
         <button type="button" class="solid-action" (click)="sendInvite(team.id)">Pozovi</button>
       </div>
       <div class="search-results">
-      @for (player of searchResults(team.id); track player.id) {
-      <button type="button" class="text-action" (click)="selectInvitePlayer(team.id, player)">
-        {{ player.username }} / {{ player.firstName }} {{ player.lastName }}
-      </button>
-      }
+        @for (player of searchResults(team.id); track player.id) {
+        <button type="button" class="text-action" (click)="selectInvitePlayer(team.id, player)">
+          {{ player.username }} / {{ player.firstName }} {{ player.lastName }}
+        </button>
+        }
       </div>
       }
     </article>
     }
   </div>
   } @else {
-  <p>Nisi clan nijednog tima.</p>
+  <p>Nisi član nijednog tima.</p>
   }
 
   <h3>Pozivi</h3>
@@ -71,7 +72,7 @@
     }
   </div>
   } @else {
-  <p>Nemas pozive na cekanju.</p>
+  <p>Nemaš pozive na čekanju.</p>
   }
   }
   }
