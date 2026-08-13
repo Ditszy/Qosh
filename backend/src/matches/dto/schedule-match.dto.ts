@@ -11,9 +11,9 @@ export class ScheduleMatchDto {
 
     @IsOptional()
     @IsUUID()
-    scorerId?: string;
+    scorerId?: string | null;
 
     @IsOptional()
     @IsUUID()
-    refereeId?: string;
+    refereeId?: string | null;
 }

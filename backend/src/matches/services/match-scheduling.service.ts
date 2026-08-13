@@ -40,11 +40,11 @@ export class MatchSchedulingService {
             throw new BadRequestException('Final matches cannot be scheduled');
         }
 
-        if (scheduleMatchDto.scorerId !== undefined) {
+        if (scheduleMatchDto.scorerId !== undefined && scheduleMatchDto.scorerId !== null) {
             await this.ensureUserHasRole(scheduleMatchDto.scorerId, UserRole.SCORER, 'Scorer not found');
         }
 
-        if (scheduleMatchDto.refereeId !== undefined) {
+        if (scheduleMatchDto.refereeId !== undefined && scheduleMatchDto.refereeId !== null) {
             await this.ensureUserHasRole(scheduleMatchDto.refereeId, UserRole.REFEREE, 'Referee not found');
         }
 
@@ -61,8 +61,8 @@ export class MatchSchedulingService {
         const data: {
             scheduledAt?: Date;
             location?: string;
-            scorerId?: string;
-            refereeId?: string;
+            scorerId?: string | null;
+            refereeId?: string | null;
         } = {};
 
         if (scheduledAt !== undefined) {
