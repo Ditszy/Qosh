@@ -66,27 +66,30 @@
         </div>
       </div>
 
-      <div class="match-card" aria-label="Pregled utakmice uživo">
+      @if (landingPreview$ | async; as preview) {
+      <a class="match-card" [routerLink]="preview.match ? ['/matches', preview.match.id, 'live'] : '/live'"
+        aria-label="Pregled utakmice uživo">
         <div class="match-card-header">
-          <span>Uživo centar</span>
-          <strong>Qosh Open</strong>
+          <span>{{ landingPreviewLabel(preview.match) }}</span>
+          <strong>{{ preview.match?.tournament?.name ?? 'Qosh Open' }}</strong>
         </div>
-        <div class="score-row">
-          <span>Blok 21</span>
-          <strong>17</strong>
+        <div class="score-row" [class.active]="landingIsLeader(preview.match, 'A')">
+          <span>{{ landingTeamName(preview.match, 'A') }}</span>
+          <strong>{{ preview.match?.teamAScore ?? 17 }}</strong>
         </div>
-        <div class="score-row active">
-          <span>Tigrovi</span>
-          <strong>15</strong>
+        <div class="score-row" [class.active]="landingIsLeader(preview.match, 'B')">
+          <span>{{ landingTeamName(preview.match, 'B') }}</span>
+          <strong>{{ preview.match?.teamBScore ?? 15 }}</strong>
         </div>
         <div class="clock-row">
-          <span>04:18</span>
-          <strong>U toku</strong>
+          <span>{{ landingClockLabel(preview.match) }}</span>
+          <strong>{{ landingStatusLabel(preview.match) }}</strong>
         </div>
         <div class="court-preview" aria-hidden="true">
           <span></span>
         </div>
-      </div>
+      </a>
+      }
     </section>
 
     <section class="feature-strip" aria-label="Delovi platforme">

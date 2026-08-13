@@ -106,5 +106,6 @@ export type MatchReadBundle = {
 
 export type MatchLiveCenter = {
   live: MatchDetail[];
+  recent: MatchDetail[];
   upcoming: MatchDetail[];
 };

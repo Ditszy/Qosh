@@ -208,8 +208,19 @@ h1 {
 }
 
 .match-card {
+  display: block;
   border: 1px solid #2b303a;
   background: #101218;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.match-card:hover {
+  border-color: #ff5a1f;
+  transform: translateY(-2px);
 }
 
 .match-card-header,
