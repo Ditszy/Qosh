@@ -38,11 +38,29 @@ on conflict ("email") do update set
   "lastName" = excluded."lastName",
   "role" = excluded."role";
 
+insert into "users" ("id", "email", "username", "password", "firstName", "lastName", "role")
+select
+  format('00000000-0000-4000-8000-%s', lpad((100 + player_number)::text, 12, '0'))::uuid,
+  format('player%s@qosh.demo', player_number),
+  format('qosh_player%s', player_number),
+  '$2b$10$diM8AdqES1sm8M1tj7pBU.SetSxDW1CWtiPlTi23cAHi3qokizIKu',
+  'Demo',
+  format('Player %s', player_number),
+  'PLAYER'::"UserRole"
+from generate_series(17, 40) as players(player_number)
+on conflict ("email") do update set
+  "username" = excluded."username",
+  "password" = excluded."password",
+  "firstName" = excluded."firstName",
+  "lastName" = excluded."lastName",
+  "role" = excluded."role";
+
 insert into "tournaments" ("id", "name", "description", "location", "startsAt", "maxTeams", "status", "organizerId", "createdAt", "updatedAt")
 values
-  ('11111111-1111-4111-8111-111111111111', 'Qosh Bracket Lab', 'Locked tournament with four complete teams. Generate the bracket from the organizer dashboard.', 'Belgrade Sports Hall', '2026-08-15T18:00:00.000Z', 8, 'SIGNUPS_LOCKED', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
-  ('11111111-1111-4111-8111-111111111112', 'Qosh Signup Lab', 'Open tournament for testing team creation, player search, invites, and roster changes.', 'Novi Sad Outdoor Court', '2026-08-22T17:30:00.000Z', 8, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
-  ('11111111-1111-4111-8111-111111111113', 'Qosh Draft Lab', 'Draft tournament for testing organizer setup and opening signups.', 'Zemun Arena', '2026-08-29T19:00:00.000Z', 12, 'DRAFT', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now())
+  ('11111111-1111-4111-8111-111111111111', 'Qosh Open Dorcol', 'Open signup tournament with five complete 3-player teams.', 'Belgrade Sports Hall', '2026-08-15T18:00:00.000Z', 8, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111112', 'Qosh Open Novi Sad', 'Open signup tournament with thirteen complete 3-player teams.', 'Novi Sad Outdoor Court', '2026-08-22T17:30:00.000Z', 16, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111113', 'Qosh Open Zemun', 'Open signup tournament with five complete 3-player teams.', 'Zemun Arena', '2026-08-29T19:00:00.000Z', 8, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111114', 'Qosh Open Night', 'Open signup tournament with five complete 3-player teams.', 'Ada Night Court', '2026-09-05T20:00:00.000Z', 8, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now())
 on conflict ("id") do update set
   "name" = excluded."name",
   "description" = excluded."description",
@@ -59,36 +77,104 @@ values
   ('33333333-3333-4333-8333-333333333333', 'South Arc', '11111111-1111-4111-8111-111111111111', now(), now()),
   ('44444444-4444-4444-8444-444444444444', 'East Forge', '11111111-1111-4111-8111-111111111111', now(), now()),
   ('55555555-5555-4555-8555-555555555555', 'West Line', '11111111-1111-4111-8111-111111111111', now(), now()),
+  ('88888888-8888-4888-8888-888888888888', 'Baseline Five', '11111111-1111-4111-8111-111111111111', now(), now()),
   ('66666666-6666-4666-8666-666666666666', 'Signup Sparks', '11111111-1111-4111-8111-111111111112', now(), now()),
-  ('77777777-7777-4777-8777-777777777777', 'Open Court', '11111111-1111-4111-8111-111111111112', now(), now())
+  ('77777777-7777-4777-8777-777777777777', 'Open Court', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('99999999-9999-4999-8999-999999999999', 'River Hands', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('12121212-1212-4212-8212-121212121212', 'Backboard Crew', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('13131313-1313-4313-8313-131313131313', 'Corner Three', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('25252525-2525-4525-8525-252525252525', 'Petrovaradin Step', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('26262626-2626-4626-8626-262626262626', 'Dunav Screen', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('27272727-2727-4727-8727-272727272727', 'Varadin Cutters', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('28282828-2828-4828-8828-282828282828', 'Bridge Runners', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('29292929-2929-4929-8929-292929292929', 'Limanski Rim', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('30303030-3030-4030-8030-303030303030', 'Detelinara Press', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('31313131-3131-4131-8131-313131313131', 'Kej Shooters', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('32323232-3232-4232-8232-323232323232', 'Arena Novi Sad', '11111111-1111-4111-8111-111111111112', now(), now()),
+  ('14141414-1414-4414-8414-141414141414', 'Zemun Drive', '11111111-1111-4111-8111-111111111113', now(), now()),
+  ('15151515-1515-4515-8515-151515151515', 'Glass Work', '11111111-1111-4111-8111-111111111113', now(), now()),
+  ('16161616-1616-4616-8616-161616161616', 'Paint Patrol', '11111111-1111-4111-8111-111111111113', now(), now()),
+  ('17171717-1717-4717-8717-171717171717', 'Fast Break', '11111111-1111-4111-8111-111111111113', now(), now()),
+  ('18181818-1818-4818-8818-181818181818', 'Zebra Cut', '11111111-1111-4111-8111-111111111113', now(), now()),
+  ('19191919-1919-4919-8919-191919191919', 'Night Shift', '11111111-1111-4111-8111-111111111114', now(), now()),
+  ('20202020-2020-4020-8020-202020202020', 'Late Clock', '11111111-1111-4111-8111-111111111114', now(), now()),
+  ('21212121-2121-4121-8121-212121212121', 'Orange Rim', '11111111-1111-4111-8111-111111111114', now(), now()),
+  ('23232323-2323-4323-8323-232323232323', 'Blacktop Unit', '11111111-1111-4111-8111-111111111114', now(), now()),
+  ('24242424-2424-4424-8424-242424242424', 'Final Possession', '11111111-1111-4111-8111-111111111114', now(), now())
 on conflict ("id") do update set
   "name" = excluded."name",
   "tournamentId" = excluded."tournamentId",
   "updatedAt" = now();
 
+delete from "team_members"
+where "teamId" in (
+  '22222222-2222-4222-8222-222222222222', '33333333-3333-4333-8333-333333333333',
+  '44444444-4444-4444-8444-444444444444', '55555555-5555-4555-8555-555555555555',
+  '88888888-8888-4888-8888-888888888888', '66666666-6666-4666-8666-666666666666',
+  '77777777-7777-4777-8777-777777777777', '99999999-9999-4999-8999-999999999999',
+  '12121212-1212-4212-8212-121212121212', '13131313-1313-4313-8313-131313131313',
+  '25252525-2525-4525-8525-252525252525', '26262626-2626-4626-8626-262626262626',
+  '27272727-2727-4727-8727-272727272727', '28282828-2828-4828-8828-282828282828',
+  '29292929-2929-4929-8929-292929292929', '30303030-3030-4030-8030-303030303030',
+  '31313131-3131-4131-8131-313131313131', '32323232-3232-4232-8232-323232323232',
+  '14141414-1414-4414-8414-141414141414', '15151515-1515-4515-8515-151515151515',
+  '16161616-1616-4616-8616-161616161616', '17171717-1717-4717-8717-171717171717',
+  '18181818-1818-4818-8818-181818181818', '19191919-1919-4919-8919-191919191919',
+  '20202020-2020-4020-8020-202020202020', '21212121-2121-4121-8121-212121212121',
+  '23232323-2323-4323-8323-232323232323', '24242424-2424-4424-8424-242424242424'
+);
+
+with roster ("teamId", "captain", "memberOne", "memberTwo") as (
+  values
+    ('22222222-2222-4222-8222-222222222222', 'player1@qosh.demo', 'player2@qosh.demo', 'player3@qosh.demo'),
+    ('33333333-3333-4333-8333-333333333333', 'player4@qosh.demo', 'player5@qosh.demo', 'player6@qosh.demo'),
+    ('44444444-4444-4444-8444-444444444444', 'player7@qosh.demo', 'player8@qosh.demo', 'player9@qosh.demo'),
+    ('55555555-5555-4555-8555-555555555555', 'player10@qosh.demo', 'player11@qosh.demo', 'player12@qosh.demo'),
+    ('88888888-8888-4888-8888-888888888888', 'player13@qosh.demo', 'player14@qosh.demo', 'player15@qosh.demo'),
+    ('66666666-6666-4666-8666-666666666666', 'player1@qosh.demo', 'player2@qosh.demo', 'player3@qosh.demo'),
+    ('77777777-7777-4777-8777-777777777777', 'player4@qosh.demo', 'player5@qosh.demo', 'player6@qosh.demo'),
+    ('99999999-9999-4999-8999-999999999999', 'player7@qosh.demo', 'player8@qosh.demo', 'player9@qosh.demo'),
+    ('12121212-1212-4212-8212-121212121212', 'player10@qosh.demo', 'player11@qosh.demo', 'player12@qosh.demo'),
+    ('13131313-1313-4313-8313-131313131313', 'player13@qosh.demo', 'player14@qosh.demo', 'player15@qosh.demo'),
+    ('25252525-2525-4525-8525-252525252525', 'player16@qosh.demo', 'player17@qosh.demo', 'player18@qosh.demo'),
+    ('26262626-2626-4626-8626-262626262626', 'player19@qosh.demo', 'player20@qosh.demo', 'player21@qosh.demo'),
+    ('27272727-2727-4727-8727-272727272727', 'player22@qosh.demo', 'player23@qosh.demo', 'player24@qosh.demo'),
+    ('28282828-2828-4828-8828-282828282828', 'player25@qosh.demo', 'player26@qosh.demo', 'player27@qosh.demo'),
+    ('29292929-2929-4929-8929-292929292929', 'player28@qosh.demo', 'player29@qosh.demo', 'player30@qosh.demo'),
+    ('30303030-3030-4030-8030-303030303030', 'player31@qosh.demo', 'player32@qosh.demo', 'player33@qosh.demo'),
+    ('31313131-3131-4131-8131-313131313131', 'player34@qosh.demo', 'player35@qosh.demo', 'player36@qosh.demo'),
+    ('32323232-3232-4232-8232-323232323232', 'player37@qosh.demo', 'player38@qosh.demo', 'player39@qosh.demo'),
+    ('14141414-1414-4414-8414-141414141414', 'player1@qosh.demo', 'player2@qosh.demo', 'player3@qosh.demo'),
+    ('15151515-1515-4515-8515-151515151515', 'player4@qosh.demo', 'player5@qosh.demo', 'player6@qosh.demo'),
+    ('16161616-1616-4616-8616-161616161616', 'player7@qosh.demo', 'player8@qosh.demo', 'player9@qosh.demo'),
+    ('17171717-1717-4717-8717-171717171717', 'player10@qosh.demo', 'player11@qosh.demo', 'player12@qosh.demo'),
+    ('18181818-1818-4818-8818-181818181818', 'player13@qosh.demo', 'player14@qosh.demo', 'player15@qosh.demo'),
+    ('19191919-1919-4919-8919-191919191919', 'player1@qosh.demo', 'player2@qosh.demo', 'player3@qosh.demo'),
+    ('20202020-2020-4020-8020-202020202020', 'player4@qosh.demo', 'player5@qosh.demo', 'player6@qosh.demo'),
+    ('21212121-2121-4121-8121-212121212121', 'player7@qosh.demo', 'player8@qosh.demo', 'player9@qosh.demo'),
+    ('23232323-2323-4323-8323-232323232323', 'player10@qosh.demo', 'player11@qosh.demo', 'player12@qosh.demo'),
+    ('24242424-2424-4424-8424-242424242424', 'player13@qosh.demo', 'player14@qosh.demo', 'player15@qosh.demo')
+),
+expanded_roster as (
+  select "teamId", "captain" as "email", 'CAPTAIN' as "role" from roster
+  union all select "teamId", "memberOne", 'MEMBER' from roster
+  union all select "teamId", "memberTwo", 'MEMBER' from roster
+),
+numbered_roster as (
+  select row_number() over (order by "teamId", "role", "email") as "rowNumber", * from expanded_roster
+)
 insert into "team_members" ("id", "teamId", "userId", "role", "joinedAt")
-values
-  ('aaaaaaaa-0001-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', (select "id" from "users" where "email" = 'player1@qosh.demo'), 'CAPTAIN', now()),
-  ('aaaaaaaa-0002-4000-8000-000000000002', '22222222-2222-4222-8222-222222222222', (select "id" from "users" where "email" = 'player2@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0003-4000-8000-000000000003', '22222222-2222-4222-8222-222222222222', (select "id" from "users" where "email" = 'player3@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0004-4000-8000-000000000004', '33333333-3333-4333-8333-333333333333', (select "id" from "users" where "email" = 'player4@qosh.demo'), 'CAPTAIN', now()),
-  ('aaaaaaaa-0005-4000-8000-000000000005', '33333333-3333-4333-8333-333333333333', (select "id" from "users" where "email" = 'player5@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0006-4000-8000-000000000006', '33333333-3333-4333-8333-333333333333', (select "id" from "users" where "email" = 'player6@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0007-4000-8000-000000000007', '44444444-4444-4444-8444-444444444444', (select "id" from "users" where "email" = 'player7@qosh.demo'), 'CAPTAIN', now()),
-  ('aaaaaaaa-0008-4000-8000-000000000008', '44444444-4444-4444-8444-444444444444', (select "id" from "users" where "email" = 'player8@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0009-4000-8000-000000000009', '44444444-4444-4444-8444-444444444444', (select "id" from "users" where "email" = 'player9@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0010-4000-8000-000000000010', '55555555-5555-4555-8555-555555555555', (select "id" from "users" where "email" = 'player10@qosh.demo'), 'CAPTAIN', now()),
-  ('aaaaaaaa-0011-4000-8000-000000000011', '55555555-5555-4555-8555-555555555555', (select "id" from "users" where "email" = 'player11@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0012-4000-8000-000000000012', '55555555-5555-4555-8555-555555555555', (select "id" from "users" where "email" = 'player12@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0013-4000-8000-000000000013', '66666666-6666-4666-8666-666666666666', (select "id" from "users" where "email" = 'player13@qosh.demo'), 'CAPTAIN', now()),
-  ('aaaaaaaa-0014-4000-8000-000000000014', '66666666-6666-4666-8666-666666666666', (select "id" from "users" where "email" = 'player14@qosh.demo'), 'MEMBER', now()),
-  ('aaaaaaaa-0015-4000-8000-000000000015', '77777777-7777-4777-8777-777777777777', (select "id" from "users" where "email" = 'player15@qosh.demo'), 'CAPTAIN', now())
-on conflict ("teamId", "userId") do update set
-  "role" = excluded."role";
+select
+  format('aaaaaaaa-%s-4000-8000-%s', lpad("rowNumber"::text, 4, '0'), lpad("rowNumber"::text, 12, '0'))::uuid,
+  "teamId"::uuid,
+  (select "id" from "users" where "email" = numbered_roster."email"),
+  "role"::"TeamMemberRole",
+  now()
+from numbered_roster;
 
 insert into "team_invites" ("id", "teamId", "invitedUserId", "inviterId", "status", "createdAt", "respondedAt")
 values
-  ('bbbbbbbb-0001-4000-8000-000000000001', '77777777-7777-4777-8777-777777777777', (select "id" from "users" where "email" = 'player16@qosh.demo'), (select "id" from "users" where "email" = 'player15@qosh.demo'), 'PENDING', now(), null)
+  ('bbbbbbbb-0001-4000-8000-000000000001', '88888888-8888-4888-8888-888888888888', (select "id" from "users" where "email" = 'player40@qosh.demo'), (select "id" from "users" where "email" = 'player13@qosh.demo'), 'PENDING', now(), null)
 on conflict ("id") do update set
   "teamId" = excluded."teamId",
   "invitedUserId" = excluded."invitedUserId",
