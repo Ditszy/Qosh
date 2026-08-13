@@ -5,7 +5,7 @@ import { finalize, switchMap } from 'rxjs';
 
 import { ScorerMatchApiService } from '../scorer-match-api.service';
 import { MatchesApiService } from '../../public/live-match/matches-api.service';
-import type { MatchDetail, MatchEventType, MatchReadBundle } from '../../public/live-match/match.models';
+import type { MatchDetail, MatchEvent, MatchEventType, MatchReadBundle } from '../../public/live-match/match.models';
 
 type ClockAction = 'start' | 'pause' | 'resume' | 'end';
 type EventButton = { label: string; title: string; type: MatchEventType };
@@ -28,6 +28,21 @@ const PLAYER_EVENT_BUTTONS: EventButton[] = [
   { label: 'Izg', title: 'Izgubljena lopta', type: 'TURNOVER' },
   { label: 'Faul', title: 'Lična greška', type: 'FOUL' },
 ];
+
+const STAT_INCREMENTS: Partial<Record<MatchEventType, Record<string, number>>> = {
+  ONE_POINT_MADE: { points: 1, onePointMade: 1, onePointAttempted: 1 },
+  ONE_POINT_MISSED: { onePointAttempted: 1 },
+  TWO_POINT_MADE: { points: 2, twoPointMade: 1, twoPointAttempted: 1 },
+  TWO_POINT_MISSED: { twoPointAttempted: 1 },
+  FREE_THROW_MADE: { points: 1, freeThrowMade: 1, freeThrowAttempted: 1 },
+  FREE_THROW_MISSED: { freeThrowAttempted: 1 },
+  REBOUND: { rebounds: 1 },
+  ASSIST: { assists: 1 },
+  STEAL: { steals: 1 },
+  BLOCK: { blocks: 1 },
+  TURNOVER: { turnovers: 1 },
+  FOUL: { fouls: 1 },
+};
 
 @Component({
   selector: 'app-scorer-console',
@@ -279,11 +294,10 @@ export class ScorerConsole implements OnInit, OnDestroy {
         teamId,
         ...(playerId ? { playerId } : {}),
       })
-      .pipe(switchMap(() => this.matchesApi.getMatchReadBundle(matchId)))
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
-        next: (bundle) => {
-          this.matchBundle.set(bundle);
+        next: (event) => {
+          this.applyRecordedEvent(event);
           this.successMessage.set(`Događaj sačuvan: ${type}`);
         },
         error: () => this.errorMessage.set('Unos događaja nije uspeo. Proveri ID meča, tim, igrača i status meča.'),
@@ -296,5 +310,51 @@ export class ScorerConsole implements OnInit, OnDestroy {
     if (bundle) {
       this.matchBundle.set({ ...bundle, match });
     }
+  }
+
+  private applyRecordedEvent(event: MatchEvent): void {
+    const bundle = this.matchBundle();
+
+    if (!bundle) {
+      return;
+    }
+
+    this.matchBundle.set({
+      ...bundle,
+      match: this.applyScore(bundle.match, event),
+      events: [event, ...bundle.events],
+      statistics: {
+        ...bundle.statistics,
+        teams: bundle.statistics.teams.map((team) => ({
+          ...team,
+          players: team.players.map((playerStat) =>
+            playerStat.player.id === event.playerId ? this.incrementPlayerStat(playerStat, event.type) : playerStat,
+          ),
+          totals: team.team.id === event.teamId ? this.incrementPlayerStat(team.totals, event.type) : team.totals,
+        })),
+      },
+    });
+  }
+
+  private applyScore(match: MatchDetail, event: MatchEvent): MatchDetail {
+    const points = STAT_INCREMENTS[event.type]?.['points'] ?? 0;
+
+    if (!points) {
+      return match;
+    }
+
+    return event.teamId === match.teamAId
+      ? { ...match, teamAScore: match.teamAScore + points }
+      : { ...match, teamBScore: match.teamBScore + points };
+  }
+
+  private incrementPlayerStat<T extends Record<string, unknown>>(stat: T, type: MatchEventType): T {
+    return Object.entries(STAT_INCREMENTS[type] ?? {}).reduce(
+      (updatedStat, [key, value]) => ({
+        ...updatedStat,
+        [key]: Number(updatedStat[key] ?? 0) + value,
+      }),
+      stat,
+    );
   }
 }
