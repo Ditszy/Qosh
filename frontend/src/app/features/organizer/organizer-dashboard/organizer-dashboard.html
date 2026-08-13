@@ -31,9 +31,9 @@
   </form>
 
   <div class="official-search">
-    <h2>Sluzbena lica</h2>
+    <h2>Službena lica</h2>
     <label>
-      Zapisnicar
+      Zapisničar
       <input type="search" placeholder="Ime, username ili email" (input)="searchScorers($any($event.target).value)" />
     </label>
     <label>
@@ -48,7 +48,7 @@
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p class="surface-message">Ucitavanje turnira...</p>
+  <p class="surface-message">Učitavanje turnira...</p>
   }
   @case ('error') {
   <p class="surface-message error-message">Turniri trenutno nisu dostupni.</p>
@@ -101,7 +101,16 @@
               {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
             </a>
             <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
+            <small>{{ match.location || tournament.location }}</small>
+            <small>
+              Zapisničar: {{ match.scorer ? (match.scorer.firstName + ' ' + match.scorer.lastName) : 'nije dodeljen' }}
+              · Sudija: {{ match.referee ? (match.referee.firstName + ' ' + match.referee.lastName) : 'nije dodeljen' }}
+            </small>
           </div>
+          <button class="match-edit-button" type="button" (click)="editMatch(match.id)">
+            Izmeni
+          </button>
+          @if (editingMatchId() === match.id) {
           <form class="schedule-form" #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
             <input type="datetime-local" name="scheduledAt" ngModel required />
             <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
@@ -121,7 +130,11 @@
             <button type="submit" [disabled]="scheduleForm.invalid || pendingAction() === 'schedule:' + match.id">
               Sačuvaj termin
             </button>
+            <button class="secondary-button" type="button" (click)="cancelMatchEdit()">
+              Otkaži
+            </button>
           </form>
+          }
         </li>
         }
       </ol>
@@ -130,7 +143,7 @@
     }
   </ul>
   } @else {
-  <p class="surface-message">Nemas turnire za upravljanje.</p>
+  <p class="surface-message">Nemaš turnire za upravljanje.</p>
   }
   }
   }

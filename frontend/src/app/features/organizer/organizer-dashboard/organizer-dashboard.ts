@@ -26,6 +26,7 @@ export class OrganizerDashboard {
   protected readonly pendingAction = signal('');
   protected readonly errorMessage = signal('');
   protected readonly officialSearchError = signal('');
+  protected readonly editingMatchId = signal('');
   protected readonly scorers = signal<OfficialUser[]>([]);
   protected readonly referees = signal<OfficialUser[]>([]);
 
@@ -130,9 +131,20 @@ export class OrganizerDashboard {
       })
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
-        next: () => this.reload$.next(),
+        next: () => {
+          this.editingMatchId.set('');
+          this.reload$.next();
+        },
         error: () => this.errorMessage.set('Termin nije sačuvan.'),
       });
+  }
+
+  protected editMatch(id: string): void {
+    this.editingMatchId.set(id);
+  }
+
+  protected cancelMatchEdit(): void {
+    this.editingMatchId.set('');
   }
 
   protected searchScorers(query: string): void {
@@ -155,7 +167,7 @@ export class OrganizerDashboard {
     this.officialSearchError.set('');
     this.officialsApi.searchOfficials(search, { role }).subscribe({
       next: (officials) => target.set(officials),
-      error: () => this.officialSearchError.set('Sluzbena lica nisu ucitana.'),
+      error: () => this.officialSearchError.set('Službena lica nisu učitana.'),
     });
   }
 }

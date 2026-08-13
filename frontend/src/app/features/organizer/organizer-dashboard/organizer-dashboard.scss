@@ -152,6 +152,19 @@ button:disabled {
   gap: 0.55rem;
 }
 
+.schedule-form {
+  grid-column: 1 / -1;
+}
+
+.match-edit-button {
+  min-width: 6.5rem;
+}
+
+.secondary-button {
+  background: #10151f;
+  color: #f7f8fa;
+}
+
 .match-list {
   border-top: 1px solid #293241;
   padding-top: 0.85rem;
