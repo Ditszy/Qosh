@@ -21,6 +21,7 @@ type TournamentDetailState =
   | { status: 'error' };
 
 type TournamentDetailLoadedState = Extract<TournamentDetailState, { status: 'loaded' }>;
+type BracketRound = { round: number; matches: TournamentMatch[] };
 
 const statusLabels: Record<TournamentStatus, string> = {
   DRAFT: 'U pripremi',
@@ -120,6 +121,21 @@ export class TournamentDetail {
 
   protected teamName(team: TournamentMatch['teamA']): string {
     return team?.name ?? 'TBD';
+  }
+
+  protected bracketRounds(matches: TournamentMatch[]): BracketRound[] {
+    const rounds = new Map<number, TournamentMatch[]>();
+
+    for (const match of matches) {
+      rounds.set(match.round, [...(rounds.get(match.round) ?? []), match]);
+    }
+
+    return [...rounds.entries()]
+      .sort(([firstRound], [secondRound]) => firstRound - secondRound)
+      .map(([round, roundMatches]) => ({
+        round,
+        matches: roundMatches.sort((first, second) => first.bracketPosition - second.bracketPosition),
+      }));
   }
 
   protected openTeam(team: TournamentTeamDetail): void {

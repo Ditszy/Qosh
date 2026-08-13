@@ -86,25 +86,33 @@
   </section>
 
   <section class="match-section" aria-label="Mečevi">
-    <h3>Mečevi</h3>
+    <h3>Breket</h3>
 
     @if (state.matches.length > 0) {
-    <div class="match-list">
-      @for (match of state.matches; track match.id) {
-      <article class="match-row">
-        <div class="round">R{{ match.round }} / M{{ match.bracketPosition }}</div>
-        <div class="teams">
-          <strong>{{ teamName(match.teamA) }}</strong>
-          <span>{{ match.teamAScore }} : {{ match.teamBScore }}</span>
-          <strong>{{ teamName(match.teamB) }}</strong>
+    <div class="bracket-board">
+      @for (round of bracketRounds(state.matches); track round.round; let lastRound = $last) {
+      <section class="bracket-round" [class.final-round]="lastRound" [attr.aria-label]="'Runda ' + round.round">
+        <h4>Runda {{ round.round }}</h4>
+        <div class="round-matches">
+          @for (match of round.matches; track match.id) {
+          <article class="bracket-match" [class.has-connector]="!lastRound">
+            <div class="match-label">M{{ match.bracketPosition }}</div>
+            <div class="bracket-team" [class.winner]="match.winnerTeamId === match.teamAId">
+              <span>{{ teamName(match.teamA) }}</span>
+              <strong>{{ match.teamAScore }}</strong>
+            </div>
+            <div class="bracket-team" [class.winner]="match.winnerTeamId === match.teamBId">
+              <span>{{ teamName(match.teamB) }}</span>
+              <strong>{{ match.teamBScore }}</strong>
+            </div>
+            <footer>
+              <span>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Termin TBD' }}</span>
+              <a [routerLink]="['/matches', match.id, 'live']">Otvori meč</a>
+            </footer>
+          </article>
+          }
         </div>
-        <div class="meta">
-          <span>{{ match.status }}</span>
-          <span>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Termin TBD' }}</span>
-          <span>{{ match.location || state.tournament.location }}</span>
-          <a [routerLink]="['/matches', match.id, 'live']">Otvori meč</a>
-        </div>
-      </article>
+      </section>
       }
     </div>
     } @else {
