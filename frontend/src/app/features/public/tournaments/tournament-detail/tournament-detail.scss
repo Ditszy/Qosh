@@ -258,47 +258,42 @@ dd {
 }
 
 .bracket-board {
-  display: grid;
-  grid-auto-columns: minmax(240px, 1fr);
-  grid-auto-flow: column;
-  gap: 40px;
   overflow-x: auto;
 }
 
-.bracket-round {
-  display: grid;
-  min-width: 240px;
+.bracket-stage {
+  position: relative;
 }
 
-.bracket-round h4 {
+.bracket-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bracket-lines path {
+  fill: none;
+  stroke: #3b414d;
+  stroke-width: 2;
+}
+
+.round-title {
+  position: absolute;
+  top: 0;
   margin: 0;
   color: #9ca3af;
 }
 
-.round-matches {
-  display: grid;
-  align-content: center;
-  gap: 20px;
-}
-
 .bracket-match {
-  position: relative;
+  position: absolute;
+  width: 240px;
+  height: 110px;
   border: 1px solid #2b303a;
   background: #101218;
   padding: 12px;
 }
 
-.bracket-match.has-connector::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: -41px;
-  width: 40px;
-  border-top: 2px solid #3b414d;
-}
-
-.match-label,
-.bracket-match footer {
+.match-label {
   color: #9ca3af;
 }
 
@@ -319,15 +314,10 @@ dd {
   color: #ff5a1f;
 }
 
-.bracket-match footer {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 12px;
-}
-
 .bracket-match a {
   color: #ff5a1f;
+  display: inline-block;
+  margin-top: 12px;
 }
 
 @media (max-width: 760px) {
