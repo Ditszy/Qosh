@@ -39,7 +39,6 @@ h2 {
 }
 
 .create-form,
-.official-search,
 .tournament-card,
 .surface-message {
   border: 1px solid #293241;
@@ -48,18 +47,15 @@ h2 {
   padding: 1rem;
 }
 
-.create-form,
-.official-search {
+.create-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.85rem;
 }
 
 .create-form h2,
-.official-search h2,
 .create-form button,
-.create-form p,
-.official-search p {
+.create-form p {
   grid-column: 1 / -1;
 }
 
@@ -73,6 +69,7 @@ label {
 input,
 select,
 button {
+  box-sizing: border-box;
   min-height: 2.45rem;
   border: 1px solid #384151;
   border-radius: 6px;
@@ -165,6 +162,41 @@ button:disabled {
   color: #f7f8fa;
 }
 
+.official-picker {
+  box-sizing: border-box;
+  position: relative;
+}
+
+.autocomplete-list {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  width: 100%;
+  max-height: 12rem;
+  overflow: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  border: 1px solid #384151;
+  border-radius: 6px;
+  background: #10151f;
+  box-shadow: 0 0.75rem 1.5rem rgb(0 0 0 / 35%);
+}
+
+.autocomplete-list button {
+  width: 100%;
+  min-height: 2rem;
+  border: 0;
+  background: transparent;
+  color: #f7f8fa;
+  text-align: left;
+}
+
+.autocomplete-list button:hover {
+  background: #1b2432;
+}
+
 .match-list {
   border-top: 1px solid #293241;
   padding-top: 0.85rem;
@@ -176,9 +208,29 @@ button:disabled {
   padding: 0.85rem;
 }
 
-.schedule-form input,
-.schedule-form select {
+.schedule-form > input:not([type='hidden']),
+.schedule-form > select,
+.schedule-form > button,
+.official-picker {
+  flex: 0 0 min(100%, 190px);
   width: min(100%, 190px);
+}
+
+.schedule-form > input:not([type='hidden']),
+.schedule-form > select,
+.schedule-form > button,
+.official-picker input {
+  height: 2.45rem;
+  min-height: 2.45rem;
+  line-height: 1;
+}
+
+.official-picker input {
+  width: 100%;
+}
+
+.schedule-form input[type='hidden'] {
+  display: none;
 }
 
 .surface-message {

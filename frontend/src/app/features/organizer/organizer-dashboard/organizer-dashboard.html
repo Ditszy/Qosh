@@ -30,21 +30,6 @@
     </button>
   </form>
 
-  <div class="official-search">
-    <h2>Službena lica</h2>
-    <label>
-      Zapisničar
-      <input type="search" placeholder="Ime, username ili email" (input)="searchScorers($any($event.target).value)" />
-    </label>
-    <label>
-      Sudija
-      <input type="search" placeholder="Ime, username ili email" (input)="searchReferees($any($event.target).value)" />
-    </label>
-    @if (officialSearchError()) {
-    <p class="error-message">{{ officialSearchError() }}</p>
-    }
-  </div>
-
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
@@ -115,29 +100,43 @@
             <input type="datetime-local" name="scheduledAt" [ngModel]="matchScheduleInput(match.scheduledAt)"
               required />
             <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
-            <select name="scorerId" [ngModel]="match.scorerId || ''">
-              <option value="">Bez zapisničara</option>
-              @if (match.scorer && !hasOfficial(scorers(), match.scorer.id)) {
-              <option [value]="match.scorer.id">
-                {{ match.scorer.firstName }} {{ match.scorer.lastName }} ({{ match.scorer.username }})
-              </option>
+            <label class="official-picker">
+              <input type="search" placeholder="Traži zapisničara"
+                [ngModel]="officialInputValue(match.id, 'SCORER', match.scorer)" [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="searchScorers($event)" />
+              @if (scorers().length > 0) {
+              <ul class="autocomplete-list">
+                @for (scorer of scorers(); track scorer.id) {
+                <li>
+                  <button type="button" (click)="selectOfficial(match.id, 'SCORER', scorer, scorerIdModel)">
+                    {{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})
+                  </button>
+                </li>
+                }
+              </ul>
               }
-              @for (scorer of scorers(); track scorer.id) {
-              <option [value]="scorer.id">{{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})</option>
+            </label>
+            <input type="hidden" name="scorerId" [ngModel]="match.scorerId || ''" #scorerIdModel="ngModel" />
+            <label class="official-picker">
+              <input type="search" placeholder="Traži sudiju"
+                [ngModel]="officialInputValue(match.id, 'REFEREE', match.referee)"
+                [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchReferees($event)" />
+              @if (referees().length > 0) {
+              <ul class="autocomplete-list">
+                @for (referee of referees(); track referee.id) {
+                <li>
+                  <button type="button" (click)="selectOfficial(match.id, 'REFEREE', referee, refereeIdModel)">
+                    {{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
+                  </button>
+                </li>
+                }
+              </ul>
               }
-            </select>
-            <select name="refereeId" [ngModel]="match.refereeId || ''">
-              <option value="">Bez sudije</option>
-              @if (match.referee && !hasOfficial(referees(), match.referee.id)) {
-              <option [value]="match.referee.id">
-                {{ match.referee.firstName }} {{ match.referee.lastName }} ({{ match.referee.username }})
-              </option>
-              }
-              @for (referee of referees(); track referee.id) {
-              <option [value]="referee.id">{{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
-              </option>
-              }
-            </select>
+            </label>
+            <input type="hidden" name="refereeId" [ngModel]="match.refereeId || ''" #refereeIdModel="ngModel" />
+            @if (officialSearchError()) {
+            <p class="error-message">{{ officialSearchError() }}</p>
+            }
             <button type="submit" [disabled]="scheduleForm.invalid || pendingAction() === 'schedule:' + match.id">
               Sačuvaj termin
             </button>

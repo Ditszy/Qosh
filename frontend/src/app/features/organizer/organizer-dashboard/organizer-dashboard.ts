@@ -1,6 +1,6 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { FormsModule, NgForm, NgModel } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { catchError, finalize, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
 
@@ -8,6 +8,8 @@ import { AuthService } from '../../../core/auth/auth';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
 import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
+
+type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'username'>;
 
 @Component({
   selector: 'app-organizer-dashboard',
@@ -27,6 +29,7 @@ export class OrganizerDashboard {
   protected readonly errorMessage = signal('');
   protected readonly officialSearchError = signal('');
   protected readonly editingMatchId = signal('');
+  protected readonly selectedOfficialNames = signal<Record<string, string>>({});
   protected readonly scorers = signal<OfficialUser[]>([]);
   protected readonly referees = signal<OfficialUser[]>([]);
 
@@ -158,8 +161,22 @@ export class OrganizerDashboard {
     return localDate.toISOString().slice(0, 16);
   }
 
-  protected hasOfficial(officials: OfficialUser[], id: string): boolean {
-    return officials.some((official) => official.id === id);
+  protected officialInputValue(matchId: string, role: OfficialRole, official: OfficialDisplayUser | null): string {
+    return this.selectedOfficialNames()[this.officialKey(matchId, role)] || (official ? this.officialName(official) : '');
+  }
+
+  protected selectOfficial(matchId: string, role: OfficialRole, official: OfficialUser, model: NgModel): void {
+    model.control.setValue(official.id);
+    this.selectedOfficialNames.update((selected) => ({
+      ...selected,
+      [this.officialKey(matchId, role)]: this.officialName(official),
+    }));
+
+    if (role === 'SCORER') {
+      this.scorers.set([]);
+    } else {
+      this.referees.set([]);
+    }
   }
 
   protected searchScorers(query: string): void {
@@ -184,5 +201,13 @@ export class OrganizerDashboard {
       next: (officials) => target.set(officials),
       error: () => this.officialSearchError.set('Službena lica nisu učitana.'),
     });
+  }
+
+  private officialKey(matchId: string, role: OfficialRole): string {
+    return `${matchId}:${role}`;
+  }
+
+  private officialName(official: OfficialDisplayUser): string {
+    return `${official.firstName} ${official.lastName} (${official.username})`;
   }
 }
