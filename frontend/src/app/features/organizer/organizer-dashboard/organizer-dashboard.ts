@@ -147,6 +147,21 @@ export class OrganizerDashboard {
     this.editingMatchId.set('');
   }
 
+  protected matchScheduleInput(scheduledAt: string | null): string {
+    if (!scheduledAt) {
+      return '';
+    }
+
+    const date = new Date(scheduledAt);
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+
+    return localDate.toISOString().slice(0, 16);
+  }
+
+  protected hasOfficial(officials: OfficialUser[], id: string): boolean {
+    return officials.some((official) => official.id === id);
+  }
+
   protected searchScorers(query: string): void {
     this.searchOfficials(query, 'SCORER');
   }

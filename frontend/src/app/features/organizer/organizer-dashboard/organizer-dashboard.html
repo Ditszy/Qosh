@@ -112,16 +112,27 @@
           </button>
           @if (editingMatchId() === match.id) {
           <form class="schedule-form" #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
-            <input type="datetime-local" name="scheduledAt" ngModel required />
+            <input type="datetime-local" name="scheduledAt" [ngModel]="matchScheduleInput(match.scheduledAt)"
+              required />
             <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
             <select name="scorerId" [ngModel]="match.scorerId || ''">
               <option value="">Bez zapisničara</option>
+              @if (match.scorer && !hasOfficial(scorers(), match.scorer.id)) {
+              <option [value]="match.scorer.id">
+                {{ match.scorer.firstName }} {{ match.scorer.lastName }} ({{ match.scorer.username }})
+              </option>
+              }
               @for (scorer of scorers(); track scorer.id) {
               <option [value]="scorer.id">{{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})</option>
               }
             </select>
             <select name="refereeId" [ngModel]="match.refereeId || ''">
               <option value="">Bez sudije</option>
+              @if (match.referee && !hasOfficial(referees(), match.referee.id)) {
+              <option [value]="match.referee.id">
+                {{ match.referee.firstName }} {{ match.referee.lastName }} ({{ match.referee.username }})
+              </option>
+              }
               @for (referee of referees(); track referee.id) {
               <option [value]="referee.id">{{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
               </option>
