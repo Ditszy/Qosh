@@ -117,6 +117,9 @@
               }
             </label>
             <input type="hidden" name="scorerId" [ngModel]="match.scorerId || ''" #scorerIdModel="ngModel" />
+            <button class="secondary-button" type="button" (click)="clearOfficial(match.id, 'SCORER', scorerIdModel)">
+              Bez zapisničara
+            </button>
             <label class="official-picker">
               <input type="search" placeholder="Traži sudiju"
                 [ngModel]="officialInputValue(match.id, 'REFEREE', match.referee)"
@@ -134,6 +137,9 @@
               }
             </label>
             <input type="hidden" name="refereeId" [ngModel]="match.refereeId || ''" #refereeIdModel="ngModel" />
+            <button class="secondary-button" type="button" (click)="clearOfficial(match.id, 'REFEREE', refereeIdModel)">
+              Bez sudije
+            </button>
             @if (officialSearchError()) {
             <p class="error-message">{{ officialSearchError() }}</p>
             }

@@ -18,8 +18,8 @@ export type UpdateOrganizerTournamentRequest = Partial<OrganizerTournamentReques
 export type ScheduleMatchRequest = {
   scheduledAt?: string;
   location?: string;
-  scorerId?: string;
-  refereeId?: string;
+  scorerId?: string | null;
+  refereeId?: string | null;
 };
 
 @Injectable({

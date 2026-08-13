@@ -29,7 +29,7 @@ export class OrganizerDashboard {
   protected readonly errorMessage = signal('');
   protected readonly officialSearchError = signal('');
   protected readonly editingMatchId = signal('');
-  protected readonly selectedOfficialNames = signal<Record<string, string>>({});
+  protected readonly selectedOfficialNames = signal<Record<string, string | null>>({});
   protected readonly scorers = signal<OfficialUser[]>([]);
   protected readonly referees = signal<OfficialUser[]>([]);
 
@@ -129,8 +129,8 @@ export class OrganizerDashboard {
       .scheduleMatch(id, {
         scheduledAt: new Date(value.scheduledAt).toISOString(),
         location: value.location,
-        scorerId: value.scorerId || undefined,
-        refereeId: value.refereeId || undefined,
+        scorerId: value.scorerId || null,
+        refereeId: value.refereeId || null,
       })
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
@@ -162,7 +162,10 @@ export class OrganizerDashboard {
   }
 
   protected officialInputValue(matchId: string, role: OfficialRole, official: OfficialDisplayUser | null): string {
-    return this.selectedOfficialNames()[this.officialKey(matchId, role)] || (official ? this.officialName(official) : '');
+    const key = this.officialKey(matchId, role);
+    const selected = this.selectedOfficialNames();
+
+    return key in selected ? selected[key] ?? '' : official ? this.officialName(official) : '';
   }
 
   protected selectOfficial(matchId: string, role: OfficialRole, official: OfficialUser, model: NgModel): void {
@@ -170,6 +173,20 @@ export class OrganizerDashboard {
     this.selectedOfficialNames.update((selected) => ({
       ...selected,
       [this.officialKey(matchId, role)]: this.officialName(official),
+    }));
+
+    if (role === 'SCORER') {
+      this.scorers.set([]);
+    } else {
+      this.referees.set([]);
+    }
+  }
+
+  protected clearOfficial(matchId: string, role: OfficialRole, model: NgModel): void {
+    model.control.setValue('');
+    this.selectedOfficialNames.update((selected) => ({
+      ...selected,
+      [this.officialKey(matchId, role)]: null,
     }));
 
     if (role === 'SCORER') {

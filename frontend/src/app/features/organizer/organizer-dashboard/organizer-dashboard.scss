@@ -142,8 +142,7 @@ button:disabled {
   font-weight: 950;
 }
 
-.tournament-actions,
-.schedule-form {
+.tournament-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
@@ -151,6 +150,13 @@ button:disabled {
 
 .schedule-form {
   grid-column: 1 / -1;
+  display: grid;
+  gap: 0.65rem;
+  width: min(100%, 22rem);
+  padding: 0.75rem;
+  border: 1px solid #293241;
+  border-radius: 8px;
+  background: #10151f;
 }
 
 .match-edit-button {
@@ -212,8 +218,7 @@ button:disabled {
 .schedule-form > select,
 .schedule-form > button,
 .official-picker {
-  flex: 0 0 min(100%, 190px);
-  width: min(100%, 190px);
+  width: 100%;
 }
 
 .schedule-form > input:not([type='hidden']),
