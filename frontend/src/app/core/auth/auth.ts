@@ -1,7 +1,7 @@
 import { computed, inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Store } from '@ngrx/store';
-import { tap } from 'rxjs';
+import { EMPTY, catchError, tap } from 'rxjs';
 
 import { ApiUrlService } from '../api';
 import { AuthActions, selectAccessToken, selectAuthSession, selectCurrentUser } from './auth.state';
@@ -63,7 +63,13 @@ export class AuthService {
   }
 
   logout(): void {
-    this.http.post(this.apiUrl.build('/auth/logout'), {}, { withCredentials: true }).subscribe();
+    this.clearSession();
+    this.http.post(this.apiUrl.build('/auth/logout'), {}, { withCredentials: true }).pipe(
+      catchError(() => EMPTY),
+    ).subscribe();
+  }
+
+  clearSession(): void {
     this.store.dispatch(AuthActions.logout());
   }
 

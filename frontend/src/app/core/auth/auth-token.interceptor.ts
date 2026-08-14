@@ -5,7 +5,7 @@ import { Observable, catchError, finalize, shareReplay, switchMap, throwError } 
 
 import { API_BASE_URL } from '../api';
 import { AuthService, AuthSession } from './auth';
-import { AuthActions, selectAccessToken } from './auth.state';
+import { selectAccessToken } from './auth.state';
 
 let refreshSessionRequest$: Observable<AuthSession> | null = null;
 
@@ -48,7 +48,7 @@ export const authTokenInterceptor: HttpInterceptorFn = (request, next) => {
 
       return getRefreshSessionRequest(authService).pipe(
         catchError((refreshError: unknown) => {
-          store.dispatch(AuthActions.logout());
+          authService.clearSession();
 
           return throwError(() => refreshError);
         }),
