@@ -1,11 +1,11 @@
-import { Body, Controller, Post, Request, Res, UseGuards } from "@nestjs/common";
-import type { Response } from "express";
+import { Body, Controller, Post, Request, Res, UnauthorizedException, UseGuards } from "@nestjs/common";
+import type { Request as ExpressRequest, Response } from "express";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LocalAuthGuard } from "./local-auth.guard";
 import { LoginDto } from "./dto/login.dto";
 import { ApiTags } from "@nestjs/swagger";
-import { setRefreshTokenCookie } from "./auth-cookie";
+import { getRefreshTokenFromCookie, setRefreshTokenCookie } from "./auth-cookie";
 
 @ApiTags('auth')
 @Controller('auth')
@@ -28,5 +28,23 @@ export class AuthController {
         setRefreshTokenCookie(response, refreshToken, expiresAt);
 
         return this.authService.login(req.user);
+    }
+
+    @Post('refresh')
+    async refresh(
+        @Request() request: ExpressRequest,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        const currentRefreshToken = getRefreshTokenFromCookie(request);
+
+        if (!currentRefreshToken) {
+            throw new UnauthorizedException('Missing refresh token');
+        }
+
+        const { refreshToken, expiresAt, session } =
+            await this.authService.refreshSession(currentRefreshToken);
+        setRefreshTokenCookie(response, refreshToken, expiresAt);
+
+        return session;
     }
 }

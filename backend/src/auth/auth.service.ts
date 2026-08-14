@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { UsersService } from "../users/users.service";
 import { JwtService } from "@nestjs/jwt";
@@ -82,6 +82,58 @@ export class AuthService {
         return { refreshToken, expiresAt };
     }
 
+    async refreshSession(refreshToken: string) {
+        const now = new Date();
+        const currentSession = await this.prisma.refreshSession.findUnique({
+            where: { tokenHash: this.hashRefreshToken(refreshToken) },
+        });
+
+        if (!currentSession) {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
+        if (currentSession.revokedAt || currentSession.expiresAt <= now) {
+            if (currentSession.revokedAt && currentSession.replacedById) {
+                await this.revokeRefreshTokenFamily(currentSession.tokenFamilyId, now);
+            }
+
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
+        const user = await this.usersService.findById(currentSession.userId);
+        if (!user) {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
+        const nextRefreshToken = this.generateRefreshToken();
+        const expiresAt = this.getRefreshTokenExpiry();
+
+        await this.prisma.$transaction(async (tx) => {
+            const replacement = await tx.refreshSession.create({
+                data: {
+                    userId: currentSession.userId,
+                    tokenHash: this.hashRefreshToken(nextRefreshToken),
+                    tokenFamilyId: currentSession.tokenFamilyId,
+                    expiresAt,
+                },
+            });
+
+            await tx.refreshSession.update({
+                where: { id: currentSession.id },
+                data: { revokedAt: now, replacedById: replacement.id },
+            });
+        });
+
+        return {
+            refreshToken: nextRefreshToken,
+            expiresAt,
+            session: {
+                access_token: this.createAccessToken(user),
+                user,
+            },
+        };
+    }
+
     createAccessToken(user: { id: string; email: string; role: UserRole }) {
         return this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
     }
@@ -102,5 +154,12 @@ export class AuthService {
         const days = Number(configuredDays) || DEFAULT_REFRESH_TOKEN_EXPIRATION_DAYS;
 
         return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    }
+
+    private async revokeRefreshTokenFamily(tokenFamilyId: string, revokedAt: Date): Promise<void> {
+        await this.prisma.refreshSession.updateMany({
+            where: { tokenFamilyId, revokedAt: null },
+            data: { revokedAt },
+        });
     }
 }

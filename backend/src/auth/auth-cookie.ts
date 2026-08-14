@@ -1,4 +1,4 @@
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 
 export const REFRESH_TOKEN_COOKIE_NAME = 'qosh_refresh';
 
@@ -14,4 +14,8 @@ export function setRefreshTokenCookie(
         path: '/auth',
         expires: expiresAt,
     });
+}
+
+export function getRefreshTokenFromCookie(request: Request): string | undefined {
+    return request.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
 }
