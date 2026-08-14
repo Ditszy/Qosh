@@ -3,8 +3,11 @@ import {
     ConflictException,
     ForbiddenException,
     Injectable,
+    MessageEvent,
     NotFoundException,
 } from '@nestjs/common';
+import { Observable, Subject } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { UserRole } from '../common/user-role.enum';
 import { NotificationType } from '../notifications/enums/notification-type.enum';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -55,6 +58,15 @@ type DisbandTeamResult = {
     tournamentId: string;
 };
 
+type MyTeamLiveEvent =
+    | { type: 'team.updated'; data: { team: TeamWithMembers } }
+    | { type: 'team.removed'; data: { teamId: string } };
+
+type MyTeamLiveUpdate = {
+    userId: string;
+    event: MyTeamLiveEvent;
+};
+
 type TeamInviteRecord = {
     id: string;
     teamId: string;
@@ -91,6 +103,8 @@ type TeamInviteWithTeam = TeamInviteWithUsers & {
 
 @Injectable()
 export class TeamsService {
+    private readonly myTeamUpdates$ = new Subject<MyTeamLiveUpdate>();
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly notificationsService: NotificationsService,
@@ -161,8 +175,19 @@ export class TeamsService {
         this.tournamentLiveService.publish(createdTeam.tournamentId, TournamentLiveEvent.TEAM_CREATED, {
             team: liveTeam,
         });
+        this.publishTeamUpdated(liveTeam);
 
         return liveTeam;
+    }
+
+    watchMyTeams(userId: string): Observable<MessageEvent> {
+        return this.myTeamUpdates$.pipe(
+            filter((update) => update.userId === userId),
+            map((update) => ({
+                type: update.event.type,
+                data: update.event.data,
+            })),
+        );
     }
 
     async findByTournamentId(tournamentId: string): Promise<TeamWithMembers[]> {
@@ -376,6 +401,7 @@ export class TeamsService {
         this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
             team: liveTeam,
         });
+        this.publishTeamUpdated(liveTeam);
 
         return liveTeam;
     }
@@ -489,8 +515,48 @@ export class TeamsService {
         this.tournamentLiveService.publish(team.tournamentId, TournamentLiveEvent.TEAM_REMOVED, {
             teamId,
         });
+        this.publishTeamRemoved(team.members.map((member) => member.userId), teamId);
 
         return { success: true, teamId, tournamentId: team.tournamentId };
+    }
+
+    async leave(teamId: string, actor: TeamActor): Promise<TeamWithMembers> {
+        const team = await this.prisma.team.findUnique({
+            where: { id: teamId },
+            include: {
+                tournament: true,
+                members: true,
+            },
+        });
+
+        if (!team) {
+            throw new NotFoundException('Team not found');
+        }
+
+        this.ensureSignupsOpen(team.tournament.status);
+
+        const membership = team.members.find((member) => member.userId === actor.id);
+
+        if (!membership) {
+            throw new ForbiddenException('You are not a member of this team');
+        }
+
+        if (membership.role === TeamMemberRole.CAPTAIN) {
+            throw new BadRequestException('Team captain must transfer captaincy or disband the team');
+        }
+
+        await this.prisma.teamMember.delete({
+            where: { id: membership.id },
+        });
+
+        const liveTeam = await this.findById(teamId);
+        this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
+            team: liveTeam,
+        });
+        this.publishTeamUpdated(liveTeam);
+        this.publishTeamRemoved([actor.id], teamId);
+
+        return liveTeam;
     }
 
     async findPendingInvitesByTeam(teamId: string, actor: TeamActor): Promise<TeamInviteWithUsers[]> {
@@ -553,6 +619,8 @@ export class TeamsService {
         this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
             team: liveTeam,
         });
+        this.publishTeamUpdated(liveTeam);
+        this.publishTeamRemoved([member.userId], teamId);
 
         return liveTeam;
     }
@@ -606,6 +674,7 @@ export class TeamsService {
         this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
             team: liveTeam,
         });
+        this.publishTeamUpdated(liveTeam);
 
         return liveTeam;
     }
@@ -650,6 +719,30 @@ export class TeamsService {
 
         if (!captainMembership) {
             throw new ForbiddenException('Only team captains can manage this team');
+        }
+    }
+
+    private publishTeamUpdated(team: TeamWithMembers): void {
+        for (const member of team.members) {
+            this.myTeamUpdates$.next({
+                userId: member.userId,
+                event: {
+                    type: 'team.updated',
+                    data: { team },
+                },
+            });
+        }
+    }
+
+    private publishTeamRemoved(userIds: string[], teamId: string): void {
+        for (const userId of userIds) {
+            this.myTeamUpdates$.next({
+                userId,
+                event: {
+                    type: 'team.removed',
+                    data: { teamId },
+                },
+            });
         }
     }
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
@@ -93,6 +93,14 @@ export class TeamsController {
         return this.teamsService.findMyTeams(req.user.id);
     }
 
+    @Sse('me/live')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER)
+    watchMyTeams(@Request() req: AuthenticatedRequest) {
+        return this.teamsService.watchMyTeams(req.user.id);
+    }
+
     @Get(':teamId/invites')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -129,6 +137,17 @@ export class TeamsController {
         @Request() req: AuthenticatedRequest,
     ) {
         return this.teamsService.transferCaptain(teamId, memberId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Delete(':teamId/leave')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER)
+    leave(@Param('teamId') teamId: string, @Request() req: AuthenticatedRequest) {
+        return this.teamsService.leave(teamId, {
             id: req.user.id,
             role: req.user.role,
         });
