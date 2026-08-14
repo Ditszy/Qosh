@@ -2,12 +2,12 @@ import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { catchError, distinctUntilChanged, EMPTY, finalize, forkJoin, map, Observable, of, Subscription, switchMap } from 'rxjs';
+import { catchError, distinctUntilChanged, EMPTY, finalize, forkJoin, map, Observable, of, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth';
 import { NotificationsActions, selectAllNotifications } from '../../notifications';
-import { TeamsApiService, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
-import type { PublicUser, TournamentLiveMessage } from '../../public/tournaments/tournament.models';
+import { TeamsApiService, type MyTeamLiveMessage, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
+import type { PublicUser } from '../../public/tournaments/tournament.models';
 import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
 
 type MyTeamState =
@@ -27,7 +27,9 @@ export class MyTeam {
   private readonly teamsApi = inject(TeamsApiService);
   private readonly tournamentsApi = inject(TournamentsApiService);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly liveSubscriptions = new Map<string, Subscription>();
+  private readonly teamLiveSubscription = this.teamsApi.watchMyTeams().pipe(
+    catchError(() => EMPTY),
+  ).subscribe((message) => this.applyTeamLiveMessage(message));
   private readonly notificationSubscription = this.store.select(selectAllNotifications).pipe(
     map((notifications) => notifications.find((notification) => notification.type === 'TEAM_INVITE')?.id ?? null),
     distinctUntilChanged(),
@@ -42,12 +44,13 @@ export class MyTeam {
   protected readonly inviteSearches = signal<Record<string, string>>({});
   protected readonly inviteSearchResults = signal<Record<string, PublicUser[]>>({});
   protected readonly disbandingTeamIds = signal<Record<string, boolean>>({});
+  protected readonly leavingTeamIds = signal<Record<string, boolean>>({});
   protected readonly state = signal<MyTeamState>({ status: 'loading' });
 
   constructor() {
     this.destroyRef.onDestroy(() => {
       this.notificationSubscription.unsubscribe();
-      this.clearLiveSubscriptions();
+      this.teamLiveSubscription.unsubscribe();
     });
     this.store.dispatch(NotificationsActions.watchMine());
     this.loadPage();
@@ -61,7 +64,6 @@ export class MyTeam {
     }).subscribe({
       next: ({ teams, invites }) => {
         this.state.set({ status: 'loaded', teams, invites });
-        this.syncLiveSubscriptions(teams);
       },
       error: () => this.state.set({ status: 'error' }),
     });
@@ -125,8 +127,16 @@ export class MyTeam {
     return this.isCaptain(team) && team.tournament?.status === 'SIGNUPS_OPEN';
   }
 
+  protected canLeaveTeam(team: TeamDetail): boolean {
+    return !this.isCaptain(team) && team.tournament?.status === 'SIGNUPS_OPEN';
+  }
+
   protected isDisbanding(teamId: string): boolean {
     return Boolean(this.disbandingTeamIds()[teamId]);
+  }
+
+  protected isLeaving(teamId: string): boolean {
+    return Boolean(this.leavingTeamIds()[teamId]);
   }
 
   protected invitePlayerId(teamId: string): string {
@@ -215,6 +225,21 @@ export class MyTeam {
     });
   }
 
+  protected leaveTeam(team: TeamDetail): void {
+    if (!this.canLeaveTeam(team) || !confirm(`Napustiti tim "${team.name}"?`)) {
+      return;
+    }
+
+    this.actionError.set(null);
+    this.leavingTeamIds.update((ids) => ({ ...ids, [team.id]: true }));
+    this.teamsApi.leaveTeam(team.id).pipe(
+      finalize(() => this.leavingTeamIds.update((ids) => ({ ...ids, [team.id]: false }))),
+    ).subscribe({
+      next: () => this.removeTeam(team.id),
+      error: () => this.actionError.set('Napuštanje tima nije uspelo.'),
+    });
+  }
+
   protected acceptInvite(inviteId: string): void {
     this.actionError.set(null);
     this.teamsApi.acceptInvite(inviteId).subscribe({
@@ -245,7 +270,6 @@ export class MyTeam {
       ? state.teams.map((currentTeam) => currentTeam.id === team.id ? team : currentTeam)
       : [...state.teams, team];
     this.state.set({ ...state, teams });
-    this.syncLiveSubscriptions(teams);
   }
 
   private removeInvite(inviteId: string): void {
@@ -262,37 +286,16 @@ export class MyTeam {
     if (state.status === 'loaded') {
       const teams = state.teams.filter((team) => team.id !== teamId);
       this.state.set({ ...state, teams });
-      this.syncLiveSubscriptions(teams);
     }
   }
 
-  private syncLiveSubscriptions(teams: TeamDetail[]): void {
-    const tournamentIds = new Set(teams.map((team) => team.tournamentId));
-
-    for (const [tournamentId, subscription] of this.liveSubscriptions) {
-      if (!tournamentIds.has(tournamentId)) {
-        subscription.unsubscribe();
-        this.liveSubscriptions.delete(tournamentId);
-      }
-    }
-
-    for (const tournamentId of tournamentIds) {
-      if (!this.liveSubscriptions.has(tournamentId)) {
-        const subscription = this.tournamentsApi.watchTournamentLive(tournamentId).pipe(
-          catchError(() => EMPTY),
-        ).subscribe((message) => this.applyLiveMessage(message));
-        this.liveSubscriptions.set(tournamentId, subscription);
-      }
-    }
-  }
-
-  private applyLiveMessage(message: TournamentLiveMessage): void {
-    if (message.type === 'tournament.team.removed') {
+  private applyTeamLiveMessage(message: MyTeamLiveMessage): void {
+    if (message.type === 'team.removed') {
       this.removeTeam(message.data.teamId);
       return;
     }
 
-    if (message.type === 'tournament.roster.updated') {
+    if (message.type === 'team.updated') {
       const currentUserId = this.currentUser()?.id;
       const team = message.data.team;
 
@@ -302,11 +305,6 @@ export class MyTeam {
       }
 
       this.replaceTeam({ ...team, tournament: this.findTeam(team.id)?.tournament });
-      return;
-    }
-
-    if (message.type === 'tournament.status.changed') {
-      this.updateTournamentStatus(message.data.tournament);
     }
   }
 
@@ -316,26 +314,4 @@ export class MyTeam {
     return state.status === 'loaded' ? state.teams.find((team) => team.id === teamId) ?? null : null;
   }
 
-  private updateTournamentStatus(tournament: TeamDetail['tournament']): void {
-    const state = this.state();
-
-    if (state.status !== 'loaded' || !tournament) {
-      return;
-    }
-
-    this.state.set({
-      ...state,
-      teams: state.teams.map((team) =>
-        team.tournamentId === tournament.id ? { ...team, tournament } : team,
-      ),
-    });
-  }
-
-  private clearLiveSubscriptions(): void {
-    for (const subscription of this.liveSubscriptions.values()) {
-      subscription.unsubscribe();
-    }
-
-    this.liveSubscriptions.clear();
-  }
 }

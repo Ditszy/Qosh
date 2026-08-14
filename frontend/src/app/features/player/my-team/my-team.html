@@ -28,6 +28,11 @@
           {{ isDisbanding(team.id) ? 'Raspuštanje...' : 'Raspusti tim' }}
         </button>
         }
+        @if (canLeaveTeam(team)) {
+        <button type="button" class="danger-action" [disabled]="isLeaving(team.id)" (click)="leaveTeam(team)">
+          {{ isLeaving(team.id) ? 'Napuštanje...' : 'Napusti tim' }}
+        </button>
+        }
       </div>
       <div class="roster-list">
         @for (member of team.members; track member.id) {

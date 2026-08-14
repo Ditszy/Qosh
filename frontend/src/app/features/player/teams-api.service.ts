@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../core/api';
+import { LiveStreamService } from '../../core/live';
 import type { PublicUser, Tournament } from '../public/tournaments/tournament.models';
 
 export type TeamMemberRole = 'CAPTAIN' | 'MEMBER';
@@ -25,11 +26,15 @@ export type TeamInvite = {
 export type CreateTeamRequest = { name: string; tournamentId: string };
 export type SendTeamInviteRequest = { invitedUserId: string };
 export type DisbandTeamResponse = { success: true; teamId: string; tournamentId: string };
+export type MyTeamLiveMessage =
+  | { type: 'team.updated'; data: { team: TeamDetail } }
+  | { type: 'team.removed'; data: { teamId: string } };
 
 @Injectable({ providedIn: 'root' })
 export class TeamsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
+  private readonly liveStream = inject(LiveStreamService);
 
   createTeam(request: CreateTeamRequest): Observable<TeamDetail> {
     return this.http.post<TeamDetail>(this.apiUrl.build('/teams'), request);
@@ -74,5 +79,15 @@ export class TeamsApiService {
 
   disbandTeam(teamId: string): Observable<DisbandTeamResponse> {
     return this.http.delete<DisbandTeamResponse>(this.apiUrl.build(`/teams/${teamId}`));
+  }
+
+  leaveTeam(teamId: string): Observable<TeamDetail> {
+    return this.http.delete<TeamDetail>(this.apiUrl.build(`/teams/${teamId}/leave`));
+  }
+
+  watchMyTeams(): Observable<MyTeamLiveMessage> {
+    return this.liveStream.connect<MyTeamLiveMessage['data']>('/teams/me/live', {
+      authenticated: true,
+    }) as Observable<MyTeamLiveMessage>;
   }
 }
