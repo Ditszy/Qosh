@@ -94,6 +94,7 @@ model User {
   matchPlayerStats       MatchPlayerStat[]
   notifications          Notification[]
   refereeReports         RefereeReport[]
+  refreshSessions        RefreshSession[]
 
   @@map("users")
 }
@@ -281,6 +282,27 @@ model Notification {
   @@index([teamId])
   @@index([inviteId])
   @@map("notifications")
+}
+
+model RefreshSession {
+  id             String          @id @default(uuid()) @db.Uuid
+  userId         String          @db.Uuid
+  user           User            @relation(fields: [userId], references: [id])
+  tokenHash      String          @unique
+  tokenFamilyId  String          @db.Uuid
+  expiresAt      DateTime        @db.Timestamptz
+  revokedAt      DateTime?       @db.Timestamptz
+  replacedById   String?         @unique @db.Uuid
+  replacedBy     RefreshSession? @relation("RefreshSessionReplacement", fields: [replacedById], references: [id])
+  replaces       RefreshSession? @relation("RefreshSessionReplacement")
+  createdAt      DateTime        @default(now()) @db.Timestamptz
+  updatedAt      DateTime        @updatedAt @db.Timestamptz
+
+  @@index([userId])
+  @@index([tokenFamilyId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+  @@map("refresh_sessions")
 }
 
 model RefereeReport {
