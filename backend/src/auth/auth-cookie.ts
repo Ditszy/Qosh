@@ -1,0 +1,17 @@
+import type { Response } from 'express';
+
+export const REFRESH_TOKEN_COOKIE_NAME = 'qosh_refresh';
+
+export function setRefreshTokenCookie(
+    response: Response,
+    refreshToken: string,
+    expiresAt: Date,
+): void {
+    response.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/auth',
+        expires: expiresAt,
+    });
+}
