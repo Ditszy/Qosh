@@ -21,7 +21,14 @@
   <div class="invite-list">
     @for (team of state.teams; track team.id) {
     <article>
-      <strong>{{ team.name }}</strong>
+      <div class="team-heading">
+        <strong>{{ team.name }}</strong>
+        @if (canDisbandTeam(team)) {
+        <button type="button" class="danger-action" [disabled]="isDisbanding(team.id)" (click)="disbandTeam(team)">
+          {{ isDisbanding(team.id) ? 'Raspuštanje...' : 'Raspusti tim' }}
+        </button>
+        }
+      </div>
       <div class="roster-list">
         @for (member of team.members; track member.id) {
         <div class="roster-row">

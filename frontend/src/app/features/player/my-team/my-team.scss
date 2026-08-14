@@ -17,6 +17,13 @@
   padding: 14px;
 }
 
+.team-heading {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .roster-row {
   display: flex;
   gap: 10px;
@@ -44,4 +51,22 @@
 
 .search-results {
   margin-top: -4px;
+}
+
+.danger-action {
+  min-height: 34px;
+  border: 1px solid #7f1d1d;
+  background: #2a0d0d;
+  color: #fecaca;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 900;
+  padding: 0 12px;
+  text-transform: uppercase;
+}
+
+.danger-action:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
