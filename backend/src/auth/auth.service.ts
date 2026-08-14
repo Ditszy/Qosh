@@ -134,6 +134,20 @@ export class AuthService {
         };
     }
 
+    async revokeRefreshSession(refreshToken?: string): Promise<void> {
+        if (!refreshToken) {
+            return;
+        }
+
+        await this.prisma.refreshSession.updateMany({
+            where: {
+                tokenHash: this.hashRefreshToken(refreshToken),
+                revokedAt: null,
+            },
+            data: { revokedAt: new Date() },
+        });
+    }
+
     createAccessToken(user: { id: string; email: string; role: UserRole }) {
         return this.jwtService.sign({ sub: user.id, email: user.email, role: user.role });
     }

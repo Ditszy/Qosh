@@ -5,7 +5,7 @@ import { RegisterDto } from "./dto/register.dto";
 import { LocalAuthGuard } from "./local-auth.guard";
 import { LoginDto } from "./dto/login.dto";
 import { ApiTags } from "@nestjs/swagger";
-import { getRefreshTokenFromCookie, setRefreshTokenCookie } from "./auth-cookie";
+import { clearRefreshTokenCookie, getRefreshTokenFromCookie, setRefreshTokenCookie } from "./auth-cookie";
 
 @ApiTags('auth')
 @Controller('auth')
@@ -46,5 +46,16 @@ export class AuthController {
         setRefreshTokenCookie(response, refreshToken, expiresAt);
 
         return session;
+    }
+
+    @Post('logout')
+    async logout(
+        @Request() request: ExpressRequest,
+        @Res({ passthrough: true }) response: Response,
+    ) {
+        await this.authService.revokeRefreshSession(getRefreshTokenFromCookie(request));
+        clearRefreshTokenCookie(response);
+
+        return { success: true };
     }
 }

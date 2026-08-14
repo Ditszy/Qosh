@@ -16,6 +16,15 @@ export function setRefreshTokenCookie(
     });
 }
 
+export function clearRefreshTokenCookie(response: Response): void {
+    response.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/auth',
+    });
+}
+
 export function getRefreshTokenFromCookie(request: Request): string | undefined {
     return request.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
 }
