@@ -33,8 +33,6 @@ export type AuthSession = {
   user: AuthUser;
 };
 
-const storageKey = 'qosh.auth.session';
-
 @Injectable({
   providedIn: 'root',
 })
@@ -48,12 +46,14 @@ export class AuthService {
   readonly accessToken = this.store.selectSignal(selectAccessToken);
   readonly isAuthenticated = computed(() => Boolean(this.accessToken()));
 
-  constructor() {
-    this.store.dispatch(AuthActions.hydrateSession({ session: this.readSession() }));
+  login(credentials: LoginRequest) {
+    return this.http.post<AuthSession>(this.apiUrl.build('/auth/login'), credentials, { withCredentials: true }).pipe(
+      tap((session) => this.saveSession(session)),
+    );
   }
 
-  login(credentials: LoginRequest) {
-    return this.http.post<AuthSession>(this.apiUrl.build('/auth/login'), credentials).pipe(
+  refreshSession() {
+    return this.http.post<AuthSession>(this.apiUrl.build('/auth/refresh'), {}, { withCredentials: true }).pipe(
       tap((session) => this.saveSession(session)),
     );
   }
@@ -63,27 +63,11 @@ export class AuthService {
   }
 
   logout(): void {
-    localStorage.removeItem(storageKey);
+    this.http.post(this.apiUrl.build('/auth/logout'), {}, { withCredentials: true }).subscribe();
     this.store.dispatch(AuthActions.logout());
   }
 
   private saveSession(session: AuthSession): void {
-    localStorage.setItem(storageKey, JSON.stringify(session));
     this.store.dispatch(AuthActions.loginSucceeded({ session }));
-  }
-
-  private readSession(): AuthSession | null {
-    const rawSession = localStorage.getItem(storageKey);
-
-    if (!rawSession) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(rawSession) as AuthSession;
-    } catch {
-      localStorage.removeItem(storageKey);
-      return null;
-    }
   }
 }
