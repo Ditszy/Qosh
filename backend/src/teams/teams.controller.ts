@@ -134,6 +134,17 @@ export class TeamsController {
         });
     }
 
+    @Delete(':teamId')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    disband(@Param('teamId') teamId: string, @Request() req: AuthenticatedRequest) {
+        return this.teamsService.disband(teamId, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
     @Get('tournament/:tournamentId')
     findByTournamentId(@Param('tournamentId') tournamentId: string) {
         return this.teamsService.findByTournamentId(tournamentId);

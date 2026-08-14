@@ -45,6 +45,16 @@ type TeamWithMembers = TeamRecord & {
     members: Array<TeamMemberRecord & { user: PublicUser }>;
 };
 
+type TeamWithMembersAndTournament = TeamWithMembers & {
+    tournament: TournamentSummary;
+};
+
+type DisbandTeamResult = {
+    success: true;
+    teamId: string;
+    tournamentId: string;
+};
+
 type TeamInviteRecord = {
     id: string;
     teamId: string;
@@ -302,7 +312,7 @@ export class TeamsService {
         return result.invite;
     }
 
-    async acceptInvite(inviteId: string, actor: TeamActor): Promise<TeamInviteWithUsers> {
+    async acceptInvite(inviteId: string, actor: TeamActor): Promise<TeamWithMembers> {
         const invite = await this.findPendingInviteForResponse(inviteId, actor.id);
 
         const acceptedInvite = await this.prisma.$transaction(async (tx) => {
@@ -367,7 +377,7 @@ export class TeamsService {
             team: liveTeam,
         });
 
-        return acceptedInvite;
+        return liveTeam;
     }
 
     async declineInvite(inviteId: string, actor: TeamActor): Promise<TeamInviteWithUsers> {
@@ -428,7 +438,7 @@ export class TeamsService {
         });
     }
 
-    async findMyTeams(userId: string): Promise<TeamWithMembers[]> {
+    async findMyTeams(userId: string): Promise<TeamWithMembersAndTournament[]> {
         return this.prisma.team.findMany({
             where: {
                 members: {
@@ -436,6 +446,7 @@ export class TeamsService {
                 },
             },
             include: {
+                tournament: true,
                 members: {
                     include: {
                         user: {
@@ -451,6 +462,35 @@ export class TeamsService {
                 createdAt: 'desc',
             },
         });
+    }
+
+    async disband(teamId: string, actor: TeamActor): Promise<DisbandTeamResult> {
+        const team = await this.prisma.team.findUnique({
+            where: { id: teamId },
+            include: {
+                tournament: true,
+                members: true,
+            },
+        });
+
+        if (!team) {
+            throw new NotFoundException('Team not found');
+        }
+
+        this.ensureSignupsOpen(team.tournament.status);
+        this.ensureCanManageTeam(team, actor);
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.teamInvite.deleteMany({ where: { teamId } });
+            await tx.teamMember.deleteMany({ where: { teamId } });
+            await tx.team.delete({ where: { id: teamId } });
+        });
+
+        this.tournamentLiveService.publish(team.tournamentId, TournamentLiveEvent.TEAM_REMOVED, {
+            teamId,
+        });
+
+        return { success: true, teamId, tournamentId: team.tournamentId };
     }
 
     async findPendingInvitesByTeam(teamId: string, actor: TeamActor): Promise<TeamInviteWithUsers[]> {
