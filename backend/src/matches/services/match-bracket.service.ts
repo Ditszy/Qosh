@@ -14,10 +14,13 @@ type MatchCreateInput = {
     bracketPosition: number;
     teamAId?: string;
     teamBId?: string;
+    scheduledAt?: Date;
     nextRound?: number;
     nextBracketPosition?: number;
     nextMatchSlot?: MatchSlot;
 };
+
+const MATCH_SCHEDULE_INTERVAL_MINUTES = 15;
 
 type SecondRoundSlot = {
     teamId?: string;
@@ -167,6 +170,8 @@ export class MatchBracketService {
             }
         }
 
+        this.assignGeneratedSchedule(matchesToCreate, tournament.startsAt);
+
         const matches = await this.prisma.$transaction(async (tx) => {
             await tx.match.createMany({
                 data: matchesToCreate,
@@ -199,6 +204,14 @@ export class MatchBracketService {
             nextBracketPosition: Math.ceil(bracketPosition / 2),
             nextMatchSlot: bracketPosition % 2 === 1 ? MatchSlot.TEAM_A : MatchSlot.TEAM_B,
         };
+    }
+
+    private assignGeneratedSchedule(matches: MatchCreateInput[], startsAt: Date): void {
+        matches.forEach((match, index) => {
+            match.scheduledAt = new Date(
+                startsAt.getTime() + index * MATCH_SCHEDULE_INTERVAL_MINUTES * 60 * 1000,
+            );
+        });
     }
 
     private shuffle<T>(items: T[]): T[] {
