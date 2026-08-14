@@ -3,15 +3,17 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BehaviorSubject, catchError, finalize, map, of, switchMap } from 'rxjs';
 
-import { AdminCreateUserRole, AdminUsersApiService } from '../admin-users-api.service';
+import { AdminCreateUserRole, AdminUserStats, AdminUsersApiService } from '../admin-users-api.service';
 
 const roleLabels: Record<AdminCreateUserRole | 'PLAYER' | 'ADMIN', string> = {
-  PLAYER: 'Igraci',
+  PLAYER: 'Igrači',
   ORGANIZER: 'Organizatori',
   REFEREE: 'Sudije',
-  SCORER: 'Zapisnicari',
+  SCORER: 'Zapisničari',
   ADMIN: 'Administratori',
 };
+
+type UserStatKey = Exclude<keyof AdminUserStats, 'totalUsers'>;
 
 @Component({
   selector: 'app-admin-users',
@@ -26,6 +28,13 @@ export class AdminUsers {
 
   readonly roleOptions: AdminCreateUserRole[] = ['ORGANIZER', 'REFEREE', 'SCORER'];
   readonly roleLabels = roleLabels;
+  readonly roleStats: { label: string; key: UserStatKey }[] = [
+    { label: roleLabels.PLAYER, key: 'players' },
+    { label: roleLabels.ORGANIZER, key: 'organizers' },
+    { label: roleLabels.REFEREE, key: 'referees' },
+    { label: roleLabels.SCORER, key: 'scorers' },
+    { label: roleLabels.ADMIN, key: 'admins' },
+  ];
   readonly createUserForm = this.formBuilder.nonNullable.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],

@@ -1,7 +1,8 @@
 <section class="admin-users">
-  <header>
-    <p>Admin</p>
-    <h1>Korisnici</h1>
+  <header class="page-header">
+    <p>Admin panel</p>
+    <h1>Upravljanje korisnicima</h1>
+    <span>Kreiraj operativne naloge i prati raspodelu uloga.</span>
   </header>
 
   <form [formGroup]="createUserForm" (ngSubmit)="createUser()">
@@ -18,7 +19,7 @@
     </label>
 
     <label>
-      Korisnicko ime
+      Korisničko ime
       <input type="text" formControlName="username" />
     </label>
 
@@ -53,17 +54,20 @@
   @if (state.error) {
   <p>{{ state.error }}</p>
   } @else if (state.stats) {
-  <p>{{ state.stats.totalUsers }} korisnika u sistemu</p>
+  <section class="stats-panel">
+    <div>
+      <p>Ukupno korisnika</p>
+      <strong>{{ state.stats.totalUsers }}</strong>
+    </div>
 
-  <ul>
-    <li><strong>{{ roleLabels.PLAYER }}</strong><span>{{ state.stats.players }}</span></li>
-    <li><strong>{{ roleLabels.ORGANIZER }}</strong><span>{{ state.stats.organizers }}</span></li>
-    <li><strong>{{ roleLabels.REFEREE }}</strong><span>{{ state.stats.referees }}</span></li>
-    <li><strong>{{ roleLabels.SCORER }}</strong><span>{{ state.stats.scorers }}</span></li>
-    <li><strong>{{ roleLabels.ADMIN }}</strong><span>{{ state.stats.admins }}</span></li>
-  </ul>
+    <ul>
+      @for (item of roleStats; track item.key) {
+      <li><span>{{ item.label }}</span><strong>{{ state.stats[item.key] }}</strong></li>
+      }
+    </ul>
+  </section>
   }
   } @else {
-  <p>Ucitavanje statistike korisnika...</p>
+  <p>Učitavanje statistike korisnika...</p>
   }
 </section>
