@@ -8,6 +8,8 @@ import { LocalStrategy } from "./local.strategy";
 import { JwtStrategy } from "./jwt.strategy";
 import { AuthService } from "./auth.service";
 
+const DEFAULT_ACCESS_TOKEN_EXPIRATION_SECONDS = 900;
+
 @Module({
     imports: [
         UsersModule,
@@ -17,7 +19,12 @@ import { AuthService } from "./auth.service";
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
                 secret: config.getOrThrow<string>('JWT_SECRET'),
-                signOptions: { expiresIn: parseInt(config.get('JWT_EXPIRATION', '3600'), 10) },
+                signOptions: {
+                    expiresIn: parseInt(
+                        config.get('JWT_EXPIRATION', String(DEFAULT_ACCESS_TOKEN_EXPIRATION_SECONDS)),
+                        10,
+                    ),
+                },
             }),
         }),
     ],
