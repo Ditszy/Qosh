@@ -2,7 +2,7 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, distinctUntilChanged, filter, finalize, forkJoin, map, Observable, of, scan, startWith, switchMap } from 'rxjs';
+import { catchError, distinctUntilChanged, filter, finalize, forkJoin, map, merge, Observable, of, scan, startWith, Subject, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
 import { TeamsApiService } from '../../../player/teams-api.service';
@@ -61,6 +61,7 @@ export class TournamentDetail {
   protected readonly signupSubmitting = signal(false);
   protected readonly signupFeedback = signal<string | null>(null);
   protected readonly selectedTeam = signal<TournamentTeamDetail | null>(null);
+  private readonly localLiveMessages$ = new Subject<TournamentLiveMessage>();
 
   private readonly tournamentId$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -78,7 +79,7 @@ export class TournamentDetail {
         switchMap(({ tournament, teams, matches }) => {
           const loadedState = { status: 'loaded', tournament, teams, matches } satisfies TournamentDetailState;
 
-          return this.tournamentsApi.watchTournamentLive(id).pipe(
+          return merge(this.tournamentsApi.watchTournamentLive(id), this.localLiveMessages$).pipe(
             scan((state, message) => this.applyLiveMessage(state, message), loadedState),
             startWith(loadedState),
             catchError(() => of(loadedState)),
@@ -122,10 +123,11 @@ export class TournamentDetail {
       .createTeam({ name, tournamentId: tournament.id })
       .pipe(finalize(() => this.signupSubmitting.set(false)))
       .subscribe({
-        next: () => {
+        next: (team) => {
           this.teamNameInput.set('');
           this.signupOpen.set(false);
           this.signupFeedback.set('Tim je prijavljen.');
+          this.localLiveMessages$.next({ type: 'tournament.team.created', data: { team } });
         },
         error: () => this.signupFeedback.set('Prijava tima nije uspela.'),
       });

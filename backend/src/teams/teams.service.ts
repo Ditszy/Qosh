@@ -87,7 +87,7 @@ export class TeamsService {
         private readonly tournamentLiveService: TournamentLiveService,
     ) { }
 
-    async create(createTeamDto: CreateTeamDto, captainId: string): Promise<TeamRecord> {
+    async create(createTeamDto: CreateTeamDto, captainId: string): Promise<TeamWithMembers> {
         const tournament = await this.prisma.tournament.findUnique({
             where: { id: createTeamDto.tournamentId },
         });
@@ -152,7 +152,7 @@ export class TeamsService {
             team: liveTeam,
         });
 
-        return createdTeam;
+        return liveTeam;
     }
 
     async findByTournamentId(tournamentId: string): Promise<TeamWithMembers[]> {

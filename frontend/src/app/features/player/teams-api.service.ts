@@ -30,8 +30,8 @@ export class TeamsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
 
-  createTeam(request: CreateTeamRequest): Observable<TeamSummary> {
-    return this.http.post<TeamSummary>(this.apiUrl.build('/teams'), request);
+  createTeam(request: CreateTeamRequest): Observable<TeamDetail> {
+    return this.http.post<TeamDetail>(this.apiUrl.build('/teams'), request);
   }
 
   listTournamentTeams(tournamentId: string): Observable<TeamDetail[]> {
