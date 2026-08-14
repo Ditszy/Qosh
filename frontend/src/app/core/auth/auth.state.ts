@@ -15,7 +15,6 @@ export const initialAuthState: AuthState = {
 export const AuthActions = createActionGroup({
   source: 'Auth',
   events: {
-    'Hydrate Session': props<{ session: AuthSession | null }>(),
     'Login Succeeded': props<{ session: AuthSession }>(),
     Logout: emptyProps(),
   },
@@ -23,7 +22,6 @@ export const AuthActions = createActionGroup({
 
 export const authReducer = createReducer(
   initialAuthState,
-  on(AuthActions.hydrateSession, (state, { session }) => ({ ...state, session })),
   on(AuthActions.loginSucceeded, (state, { session }) => ({ ...state, session })),
   on(AuthActions.logout, (state) => ({ ...state, session: null })),
 );
