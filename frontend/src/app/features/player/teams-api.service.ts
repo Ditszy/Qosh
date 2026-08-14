@@ -9,7 +9,7 @@ export type TeamMemberRole = 'CAPTAIN' | 'MEMBER';
 export type TeamInviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'CANCELLED';
 export type TeamSummary = { id: string; name: string; tournamentId: string; createdAt: string; updatedAt: string };
 export type TeamMember = { id: string; teamId: string; userId: string; role: TeamMemberRole; joinedAt: string; user: PublicUser };
-export type TeamDetail = TeamSummary & { members: TeamMember[] };
+export type TeamDetail = TeamSummary & { members: TeamMember[]; tournament?: Tournament };
 export type TeamInvite = {
   id: string;
   teamId: string;
@@ -24,6 +24,7 @@ export type TeamInvite = {
 };
 export type CreateTeamRequest = { name: string; tournamentId: string };
 export type SendTeamInviteRequest = { invitedUserId: string };
+export type DisbandTeamResponse = { success: true; teamId: string; tournamentId: string };
 
 @Injectable({ providedIn: 'root' })
 export class TeamsApiService {
@@ -69,5 +70,9 @@ export class TeamsApiService {
 
   transferCaptain(teamId: string, memberId: string): Observable<TeamDetail> {
     return this.http.post<TeamDetail>(this.apiUrl.build(`/teams/${teamId}/members/${memberId}/transfer-captain`), {});
+  }
+
+  disbandTeam(teamId: string): Observable<DisbandTeamResponse> {
+    return this.http.delete<DisbandTeamResponse>(this.apiUrl.build(`/teams/${teamId}`));
   }
 }

@@ -248,6 +248,10 @@ export class TournamentDetail {
       return { ...state, teams: this.replaceTeam(state.teams, message.data.team) };
     }
 
+    if (message.type === 'tournament.team.removed') {
+      return { ...state, teams: state.teams.filter((team) => team.id !== message.data.teamId) };
+    }
+
     return state;
   }
 

@@ -106,6 +106,7 @@ export type TournamentMatch = {
 
 export type TournamentLiveMessage =
   | { type: 'tournament.team.created'; data: { team: TournamentTeamDetail } }
+  | { type: 'tournament.team.removed'; data: { teamId: string } }
   | { type: 'tournament.roster.updated'; data: { team: TournamentTeamDetail } }
   | { type: 'tournament.status.changed'; data: { tournament: Tournament } }
   | { type: 'tournament.bracket.generated'; data: { matches: TournamentMatch[] } }
