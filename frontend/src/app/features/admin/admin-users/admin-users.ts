@@ -1,4 +1,5 @@
 import { AsyncPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BehaviorSubject, catchError, finalize, map, of, switchMap } from 'rxjs';
@@ -14,6 +15,7 @@ const roleLabels: Record<AdminCreateUserRole | 'PLAYER' | 'ADMIN', string> = {
 };
 
 type UserStatKey = Exclude<keyof AdminUserStats, 'totalUsers'>;
+type CreateUserStatus = 'success' | 'error' | '';
 
 @Component({
   selector: 'app-admin-users',
@@ -44,6 +46,7 @@ export class AdminUsers {
     role: ['SCORER' as AdminCreateUserRole, Validators.required],
   });
   createUserMessage = '';
+  createUserStatus: CreateUserStatus = '';
   isCreatingUser = false;
 
   readonly statsState$ = this.refreshStats$.pipe(
@@ -62,6 +65,7 @@ export class AdminUsers {
     }
 
     this.createUserMessage = '';
+    this.createUserStatus = '';
     this.isCreatingUser = true;
     this.adminUsersApi.createUser(this.createUserForm.getRawValue()).pipe(
       finalize(() => {
@@ -70,12 +74,22 @@ export class AdminUsers {
     ).subscribe({
       next: () => {
         this.createUserMessage = 'Korisnik je kreiran.';
+        this.createUserStatus = 'success';
         this.createUserForm.reset({ role: 'SCORER' });
         this.refreshStats$.next();
       },
-      error: () => {
-        this.createUserMessage = 'Nije moguce kreirati korisnika.';
+      error: (error: unknown) => {
+        this.createUserMessage = this.getCreateUserError(error);
+        this.createUserStatus = 'error';
       },
     });
+  }
+
+  private getCreateUserError(error: unknown): string {
+    if (error instanceof HttpErrorResponse && error.status === 409) {
+      return 'Email ili korisničko ime je već zauzeto.';
+    }
+
+    return 'Nije moguće kreirati korisnika.';
   }
 }

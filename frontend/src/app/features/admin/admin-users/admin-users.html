@@ -46,7 +46,10 @@
       {{ isCreatingUser ? 'Kreiranje...' : 'Kreiraj korisnika' }}
     </button>
     @if (createUserMessage) {
-    <p>{{ createUserMessage }}</p>
+    <p class="form-message" [class.is-success]="createUserStatus === 'success'"
+      [class.is-error]="createUserStatus === 'error'">
+      {{ createUserMessage }}
+    </p>
     }
   </form>
 

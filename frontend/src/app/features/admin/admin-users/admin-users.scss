@@ -26,6 +26,19 @@ form {
 form h2, form button, form p {
   grid-column: 1 / -1;
 }
+.form-message {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+.form-message.is-success {
+  border-color: rgba(71, 207, 115, 0.45);
+  color: #8be6a4;
+}
+.form-message.is-error {
+  border-color: rgba(255, 92, 92, 0.45);
+  color: #ff9a9a;
+}
 label {
   display: grid;
   gap: 0.35rem;
