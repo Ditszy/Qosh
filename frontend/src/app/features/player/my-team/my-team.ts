@@ -1,9 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { catchError, EMPTY, finalize, forkJoin, map, Observable, of, Subscription, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { catchError, distinctUntilChanged, EMPTY, finalize, forkJoin, map, Observable, of, Subscription, switchMap } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth';
+import { NotificationsActions, selectAllNotifications } from '../../notifications';
 import { TeamsApiService, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
 import type { PublicUser, TournamentLiveMessage } from '../../public/tournaments/tournament.models';
 import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
@@ -21,10 +23,19 @@ type MyTeamState =
 })
 export class MyTeam {
   private readonly authService = inject(AuthService);
+  private readonly store = inject(Store);
   private readonly teamsApi = inject(TeamsApiService);
   private readonly tournamentsApi = inject(TournamentsApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly liveSubscriptions = new Map<string, Subscription>();
+  private readonly notificationSubscription = this.store.select(selectAllNotifications).pipe(
+    map((notifications) => notifications.find((notification) => notification.type === 'TEAM_INVITE')?.id ?? null),
+    distinctUntilChanged(),
+  ).subscribe((notificationId) => {
+    if (notificationId) {
+      this.reloadPendingInvites();
+    }
+  });
   protected readonly currentUser = this.authService.currentUser;
   protected readonly actionError = signal<string | null>(null);
   protected readonly invitePlayerIds = signal<Record<string, string>>({});
@@ -34,7 +45,11 @@ export class MyTeam {
   protected readonly state = signal<MyTeamState>({ status: 'loading' });
 
   constructor() {
-    this.destroyRef.onDestroy(() => this.clearLiveSubscriptions());
+    this.destroyRef.onDestroy(() => {
+      this.notificationSubscription.unsubscribe();
+      this.clearLiveSubscriptions();
+    });
+    this.store.dispatch(NotificationsActions.watchMine());
     this.loadPage();
   }
 
@@ -77,6 +92,18 @@ export class MyTeam {
 
   protected teamLabel(invite: TeamInvite): string {
     return invite.team ? `${invite.team.name} / ${invite.team.tournament.name}` : 'Poziv za tim';
+  }
+
+  private reloadPendingInvites(): void {
+    this.teamsApi.listMyPendingInvites().subscribe({
+      next: (invites) => {
+        const state = this.state();
+
+        if (state.status === 'loaded') {
+          this.state.set({ ...state, invites });
+        }
+      },
+    });
   }
 
   protected memberLabel(member: TeamMember): string {
