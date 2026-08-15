@@ -5,7 +5,7 @@ import { provideStore } from '@ngrx/store';
 
 import { App } from './app';
 import { provideApiBaseUrl } from './core/api';
-import { authFeatureKey, authReducer } from './core/auth/auth.state';
+import { authFeatureKey, authReducer } from './core/auth/store';
 
 describe('App', () => {
   beforeEach(async () => {

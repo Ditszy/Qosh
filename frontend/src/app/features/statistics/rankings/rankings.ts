@@ -1,9 +1,10 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
-import { PlayerRankingsService } from '../player-rankings.service';
+import { selectGlobalPlayerRankingsState, StatisticsActions } from '../store';
 import type {
   PlayerRankingsState,
   PlayerStatistic,
@@ -28,9 +29,8 @@ type RankingCategory = {
   templateUrl: './rankings.html',
   styleUrl: './rankings.scss',
 })
-export class Rankings {
-  private readonly playerRankings = inject(PlayerRankingsService);
-  private readonly filtersSubject = new BehaviorSubject<PlayerStatisticsFilters>({ sortBy: 'points' });
+export class Rankings implements OnInit {
+  private readonly store = inject(Store);
 
   protected currentSortBy: RankingCategorySort = 'points';
   protected currentSearch = '';
@@ -45,26 +45,28 @@ export class Rankings {
     { label: 'FT%', sortBy: 'freeThrowPercentage' },
   ];
 
-  protected readonly state$: Observable<PlayerRankingsState> = this.playerRankings.watchGlobalRankings(
-    this.filtersSubject.asObservable(),
-  );
+  protected readonly state$: Observable<PlayerRankingsState> = this.store.select(selectGlobalPlayerRankingsState);
+
+  ngOnInit(): void {
+    this.dispatchFilters();
+  }
 
   protected selectCategory(category: RankingCategory): void {
     this.currentSortBy = category.sortBy;
-    this.updateFilters({ sortBy: category.sortBy });
+    this.dispatchFilters();
   }
 
   protected searchPlayers(event: Event): void {
     const search = (event.target as HTMLInputElement).value;
     this.currentSearch = search;
-    this.updateFilters({ search });
+    this.dispatchFilters();
   }
 
   protected setMinimumGames(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     const minGamesPlayed = value === '' ? undefined : Number(value);
     this.currentMinGamesPlayed = minGamesPlayed;
-    this.updateFilters({ minGamesPlayed });
+    this.dispatchFilters();
   }
 
   protected metricValue(player: PlayerStatistic, sortBy: RankingCategorySort): string {
@@ -81,10 +83,13 @@ export class Rankings {
     return leaders.find((leader) => leader.category === sortBy) ?? null;
   }
 
-  private updateFilters(filters: PlayerStatisticsFilters): void {
-    this.filtersSubject.next({
-      ...this.filtersSubject.value,
-      ...filters,
-    });
+  private dispatchFilters(): void {
+    const filters: PlayerStatisticsFilters = {
+      search: this.currentSearch,
+      minGamesPlayed: this.currentMinGamesPlayed,
+      sortBy: this.currentSortBy,
+    };
+
+    this.store.dispatch(StatisticsActions.globalRankingFiltersChanged({ filters }));
   }
 }

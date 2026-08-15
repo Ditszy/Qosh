@@ -3,6 +3,14 @@ export { PlayerProfileSearchService } from './player-profile-search.service';
 export { PlayerProfile as PlayerProfileComponent } from './player-profile/player-profile';
 export { Rankings } from './rankings/rankings';
 export { StatisticsApiService } from './statistics-api.service';
+export {
+  selectGlobalPlayerRankingsState,
+  selectStatisticsState,
+  StatisticsActions,
+  statisticsFeatureKey,
+  statisticsReducer,
+} from './store';
+export type { StatisticsState } from './store';
 export type {
   LeaderCategory,
   MatchStatistics,

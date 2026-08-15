@@ -9,9 +9,11 @@ import { routes } from './app.routes';
 import { provideApiBaseUrl } from './core/api';
 import { AuthService } from './core/auth/auth';
 import { authTokenInterceptor } from './core/auth/auth-token.interceptor';
-import { authFeatureKey, authReducer } from './core/auth/auth.state';
-import * as notificationEffects from './features/notifications/notification.effects';
-import { notificationsFeatureKey, notificationsReducer } from './features/notifications/notification.state';
+import { authFeatureKey, authReducer } from './core/auth/store';
+import * as notificationEffects from './features/notifications/store/notification.effects';
+import { notificationsFeatureKey, notificationsReducer } from './features/notifications/store';
+import * as statisticsEffects from './features/statistics/store/statistics.effects';
+import { statisticsFeatureKey, statisticsReducer } from './features/statistics/store';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,8 +24,10 @@ export const appConfig: ApplicationConfig = {
     provideStore({
       [authFeatureKey]: authReducer,
       [notificationsFeatureKey]: notificationsReducer,
+      [statisticsFeatureKey]: statisticsReducer,
     }),
     provideEffects(notificationEffects),
+    provideEffects(statisticsEffects),
     provideAppInitializer(() => {
       const authService = inject(AuthService);
 
