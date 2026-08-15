@@ -1,11 +1,19 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { finalize, switchMap } from 'rxjs';
 
 import { ScorerMatchApiService } from '../scorer-match-api.service';
 import { MatchesApiService } from '../../public/live-match/matches-api.service';
-import type { MatchDetail, MatchEvent, MatchEventType, MatchReadBundle } from '../../public/live-match/match.models';
+import type { MatchEventType } from '../../public/live-match/match.models';
+import {
+  ScorerActions,
+  selectAssignedMatches,
+  selectAssignedMatchesLoading,
+  selectScorerError,
+  selectSelectedMatchBundle,
+} from '../store';
 
 type ClockAction = 'start' | 'pause' | 'resume' | 'end';
 type EventButton = { label: string; title: string; type: MatchEventType };
@@ -29,21 +37,6 @@ const PLAYER_EVENT_BUTTONS: EventButton[] = [
   { label: 'Faul', title: 'Lična greška', type: 'FOUL' },
 ];
 
-const STAT_INCREMENTS: Partial<Record<MatchEventType, Record<string, number>>> = {
-  ONE_POINT_MADE: { points: 1, onePointMade: 1, onePointAttempted: 1 },
-  ONE_POINT_MISSED: { onePointAttempted: 1 },
-  TWO_POINT_MADE: { points: 2, twoPointMade: 1, twoPointAttempted: 1 },
-  TWO_POINT_MISSED: { twoPointAttempted: 1 },
-  FREE_THROW_MADE: { points: 1, freeThrowMade: 1, freeThrowAttempted: 1 },
-  FREE_THROW_MISSED: { freeThrowAttempted: 1 },
-  REBOUND: { rebounds: 1 },
-  ASSIST: { assists: 1 },
-  STEAL: { steals: 1 },
-  BLOCK: { blocks: 1 },
-  TURNOVER: { turnovers: 1 },
-  FOUL: { fouls: 1 },
-};
-
 @Component({
   selector: 'app-scorer-console',
   imports: [FormsModule, RouterLink],
@@ -54,17 +47,20 @@ export class ScorerConsole implements OnInit, OnDestroy {
   private readonly scorerApi = inject(ScorerMatchApiService);
   private readonly matchesApi = inject(MatchesApiService);
   private readonly route = inject(ActivatedRoute);
+  private readonly store = inject(Store);
   private clockIntervalId: number | null = null;
 
   protected readonly playerEventButtons = PLAYER_EVENT_BUTTONS;
-  protected readonly assignedMatches = signal<MatchDetail[]>([]);
-  protected readonly assignedMatchesLoading = signal(false);
+  protected readonly assignedMatches = this.store.selectSignal(selectAssignedMatches);
+  protected readonly assignedMatchesLoading = this.store.selectSignal(selectAssignedMatchesLoading);
   protected readonly isConsoleRoute = signal(false);
   protected readonly matchId = signal('');
-  protected readonly matchBundle = signal<MatchReadBundle | null>(null);
+  protected readonly matchBundle = this.store.selectSignal(selectSelectedMatchBundle);
   protected readonly clockAdjustmentSeconds = signal(1);
   protected readonly pendingAction = signal('');
-  protected readonly errorMessage = signal('');
+  protected readonly commandError = signal('');
+  protected readonly storeError = this.store.selectSignal(selectScorerError);
+  protected readonly errorMessage = computed(() => this.commandError() || this.storeError());
   protected readonly successMessage = signal('');
   protected readonly clockTick = signal(Date.now());
   protected readonly canAdjustClock = computed(() => !!this.matchId().trim() && this.clockAdjustmentSeconds() > 0 && !this.pendingAction());
@@ -159,14 +155,8 @@ export class ScorerConsole implements OnInit, OnDestroy {
       return;
     }
 
-    this.assignedMatchesLoading.set(true);
-    this.scorerApi
-      .listAssignedMatches()
-      .pipe(finalize(() => this.assignedMatchesLoading.set(false)))
-      .subscribe({
-        next: (matches) => this.assignedMatches.set(matches),
-        error: () => this.errorMessage.set('Dodeljeni mečevi trenutno nisu dostupni.'),
-      });
+    this.commandError.set('');
+    this.store.dispatch(ScorerActions.loadAssignedMatches());
   }
 
   protected updateClockAdjustmentSeconds(value: string | number): void {
@@ -182,16 +172,9 @@ export class ScorerConsole implements OnInit, OnDestroy {
       return;
     }
 
-    this.errorMessage.set('');
+    this.commandError.set('');
     this.successMessage.set('');
-    this.pendingAction.set('load');
-    this.matchesApi
-      .getMatchReadBundle(id)
-      .pipe(finalize(() => this.pendingAction.set('')))
-      .subscribe({
-        next: (bundle) => this.matchBundle.set(bundle),
-        error: () => this.errorMessage.set('Učitavanje meča nije uspelo. Proveri ID meča.'),
-      });
+    this.store.dispatch(ScorerActions.loadMatch({ matchId: id }));
   }
 
   protected controlClock(action: ClockAction): void {
@@ -210,14 +193,14 @@ export class ScorerConsole implements OnInit, OnDestroy {
             ? this.scorerApi.resumeClock(id)
             : this.scorerApi.endClock(id);
 
-    this.errorMessage.set('');
+    this.commandError.set('');
     this.successMessage.set('');
     this.pendingAction.set(action);
     request$.pipe(finalize(() => this.pendingAction.set(''))).subscribe({
       next: (match) => {
-        this.replaceLoadedMatch(match);
+        this.store.dispatch(ScorerActions.matchUpdated({ match }));
       },
-      error: () => this.errorMessage.set('Kontrola sata nije uspela. Proveri ID meča i dodelu zapisničara.'),
+      error: () => this.commandError.set('Kontrola sata nije uspela. Proveri ID meča i dodelu zapisničara.'),
     });
   }
 
@@ -229,7 +212,7 @@ export class ScorerConsole implements OnInit, OnDestroy {
       return;
     }
 
-    this.errorMessage.set('');
+    this.commandError.set('');
     this.successMessage.set('');
     this.pendingAction.set('adjust');
     this.scorerApi
@@ -238,10 +221,10 @@ export class ScorerConsole implements OnInit, OnDestroy {
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
         next: (bundle) => {
-          this.matchBundle.set(bundle);
+          this.store.dispatch(ScorerActions.loadMatchSucceeded({ matchId, bundle }));
           this.successMessage.set(`Sat pomeren za ${secondsDelta}s`);
         },
-        error: () => this.errorMessage.set('Pomeranje sata nije uspelo. Proveri ID meča i status sata.'),
+        error: () => this.commandError.set('Pomeranje sata nije uspelo. Proveri ID meča i status sata.'),
       });
   }
 
@@ -256,7 +239,7 @@ export class ScorerConsole implements OnInit, OnDestroy {
       return;
     }
 
-    this.errorMessage.set('');
+    this.commandError.set('');
     this.successMessage.set('');
     this.pendingAction.set('finalize');
     this.scorerApi
@@ -267,10 +250,10 @@ export class ScorerConsole implements OnInit, OnDestroy {
         next: (bundle) => {
           const winner = bundle.match.winnerTeam?.name ?? 'Pobednik';
 
-          this.matchBundle.set(bundle);
+          this.store.dispatch(ScorerActions.loadMatchSucceeded({ matchId, bundle }));
           this.successMessage.set(`Meč završen. ${winner} ide dalje.`);
         },
-        error: () => this.errorMessage.set('Zatvaranje meča nije uspelo. Proveri rezultat, timove i status meča.'),
+        error: () => this.commandError.set('Zatvaranje meča nije uspelo. Proveri rezultat, timove i status meča.'),
       });
   }
 
@@ -285,7 +268,7 @@ export class ScorerConsole implements OnInit, OnDestroy {
       return;
     }
 
-    this.errorMessage.set('');
+    this.commandError.set('');
     this.successMessage.set('');
     this.pendingAction.set('event');
     this.scorerApi
@@ -297,64 +280,10 @@ export class ScorerConsole implements OnInit, OnDestroy {
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
         next: (event) => {
-          this.applyRecordedEvent(event);
+          this.store.dispatch(ScorerActions.eventRecorded({ event }));
           this.successMessage.set(`Događaj sačuvan: ${type}`);
         },
-        error: () => this.errorMessage.set('Unos događaja nije uspeo. Proveri ID meča, tim, igrača i status meča.'),
+        error: () => this.commandError.set('Unos događaja nije uspeo. Proveri ID meča, tim, igrača i status meča.'),
       });
-  }
-
-  private replaceLoadedMatch(match: MatchDetail): void {
-    const bundle = this.matchBundle();
-
-    if (bundle) {
-      this.matchBundle.set({ ...bundle, match });
-    }
-  }
-
-  private applyRecordedEvent(event: MatchEvent): void {
-    const bundle = this.matchBundle();
-
-    if (!bundle) {
-      return;
-    }
-
-    this.matchBundle.set({
-      ...bundle,
-      match: this.applyScore(bundle.match, event),
-      events: [event, ...bundle.events],
-      statistics: {
-        ...bundle.statistics,
-        teams: bundle.statistics.teams.map((team) => ({
-          ...team,
-          players: team.players.map((playerStat) =>
-            playerStat.player.id === event.playerId ? this.incrementPlayerStat(playerStat, event.type) : playerStat,
-          ),
-          totals: team.team.id === event.teamId ? this.incrementPlayerStat(team.totals, event.type) : team.totals,
-        })),
-      },
-    });
-  }
-
-  private applyScore(match: MatchDetail, event: MatchEvent): MatchDetail {
-    const points = STAT_INCREMENTS[event.type]?.['points'] ?? 0;
-
-    if (!points) {
-      return match;
-    }
-
-    return event.teamId === match.teamAId
-      ? { ...match, teamAScore: match.teamAScore + points }
-      : { ...match, teamBScore: match.teamBScore + points };
-  }
-
-  private incrementPlayerStat<T extends Record<string, unknown>>(stat: T, type: MatchEventType): T {
-    return Object.entries(STAT_INCREMENTS[type] ?? {}).reduce(
-      (updatedStat, [key, value]) => ({
-        ...updatedStat,
-        [key]: Number(updatedStat[key] ?? 0) + value,
-      }),
-      stat,
-    );
   }
 }
