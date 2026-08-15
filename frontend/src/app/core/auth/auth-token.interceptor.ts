@@ -5,7 +5,7 @@ import { Observable, catchError, finalize, shareReplay, switchMap, throwError } 
 
 import { API_BASE_URL } from '../api';
 import { AuthService, AuthSession } from './auth';
-import { selectAccessToken } from './auth.state';
+import { selectAccessToken } from './store';
 
 let refreshSessionRequest$: Observable<AuthSession> | null = null;
 

@@ -4,7 +4,7 @@ import { Store } from '@ngrx/store';
 import { EMPTY, catchError, tap } from 'rxjs';
 
 import { ApiUrlService } from '../api';
-import { AuthActions, selectAccessToken, selectAuthSession, selectCurrentUser } from './auth.state';
+import { AuthActions, selectAccessToken, selectAuthSession, selectCurrentUser } from './store';
 
 export type UserRole = 'PLAYER' | 'ORGANIZER' | 'REFEREE' | 'SCORER' | 'ADMIN';
 
