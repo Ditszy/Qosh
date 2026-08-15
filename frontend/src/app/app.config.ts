@@ -12,6 +12,8 @@ import { authTokenInterceptor } from './core/auth/auth-token.interceptor';
 import { authFeatureKey, authReducer } from './core/auth/store';
 import * as notificationEffects from './features/notifications/store/notification.effects';
 import { notificationsFeatureKey, notificationsReducer } from './features/notifications/store';
+import * as playerTeamsEffects from './features/player/store/player-teams.effects';
+import { playerTeamsFeatureKey, playerTeamsReducer } from './features/player/store';
 import * as liveMatchEffects from './features/public/live-match/store/live-match.effects';
 import { liveMatchFeatureKey, liveMatchReducer } from './features/public/live-match/store';
 import * as scorerEffects from './features/scorer/store/scorer.effects';
@@ -29,11 +31,13 @@ export const appConfig: ApplicationConfig = {
       [authFeatureKey]: authReducer,
       [liveMatchFeatureKey]: liveMatchReducer,
       [notificationsFeatureKey]: notificationsReducer,
+      [playerTeamsFeatureKey]: playerTeamsReducer,
       [scorerFeatureKey]: scorerReducer,
       [statisticsFeatureKey]: statisticsReducer,
     }),
     provideEffects(liveMatchEffects),
     provideEffects(notificationEffects),
+    provideEffects(playerTeamsEffects),
     provideEffects(scorerEffects),
     provideEffects(statisticsEffects),
     provideAppInitializer(() => {
