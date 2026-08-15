@@ -2,8 +2,8 @@ import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, concatMap, EMPTY, exhaustMap, map, of, switchMap } from 'rxjs';
 
-import { NotificationsApiService } from './notifications-api.service';
-import { NotificationsActions } from './notification.state';
+import { NotificationsApiService } from '../notifications-api.service';
+import { NotificationsActions } from './notification.actions';
 
 export const loadMineNotifications = createEffect(
   (actions$ = inject(Actions), notificationsApi = inject(NotificationsApiService)) =>

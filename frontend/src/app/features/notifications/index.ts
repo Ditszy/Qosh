@@ -1,10 +1,11 @@
 export { NotificationBell } from './notification-bell/notification-bell';
 export { NotificationStreamService } from './notification-stream.service';
 export {
+  deleteNotification,
   loadMineNotifications,
   markNotificationRead,
   watchMineNotifications,
-} from './notification.effects';
+} from './store';
 export {
   NotificationsActions,
   notificationsFeatureKey,
@@ -14,9 +15,9 @@ export {
   selectNotificationsError,
   selectNotificationsLoading,
   selectUnreadNotificationCount,
-} from './notification.state';
+} from './store';
 export { NotificationsApiService } from './notifications-api.service';
-export type { NotificationsState } from './notification.state';
+export type { NotificationsState } from './store';
 export type { NotificationStreamState } from './notification-stream.service';
 export type {
   NotificationItem,

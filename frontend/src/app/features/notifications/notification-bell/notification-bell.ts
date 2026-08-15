@@ -9,7 +9,7 @@ import {
   selectNotificationsError,
   selectNotificationsLoading,
   selectUnreadNotificationCount,
-} from '../notification.state';
+} from '../store';
 import type { NotificationType } from '../notification.models';
 
 const notificationTypeLabels: Record<NotificationType, string> = {
