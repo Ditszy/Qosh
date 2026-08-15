@@ -2,15 +2,11 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, map, Observable, of, startWith, Subject, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 
-import type { PaginatedTournaments, TournamentStatus } from '../tournament.models';
-import { TournamentsApiService } from '../tournaments-api.service';
-
-type TournamentListState =
-  | { status: 'loading' }
-  | { status: 'loaded'; page: PaginatedTournaments }
-  | { status: 'error' };
+import type { TournamentStatus } from '../tournament.models';
+import { selectTournamentListView, TournamentListViewState, TournamentsActions } from '../store';
 
 type TournamentSort = 'startsAt:asc' | 'startsAt:desc' | 'name:asc';
 
@@ -36,8 +32,7 @@ const sortLabels: Record<TournamentSort, string> = {
   styleUrl: './tournament-list.scss',
 })
 export class TournamentList {
-  private readonly tournamentsApi = inject(TournamentsApiService);
-  private readonly reload$ = new Subject<void>();
+  private readonly store = inject(Store);
   protected readonly page = signal(1);
   protected readonly pageSize = 9;
   protected statusFilter: TournamentStatus | '' = '';
@@ -46,25 +41,11 @@ export class TournamentList {
   protected readonly sortMode = signal<TournamentSort>('startsAt:asc');
   protected readonly statusOptions = Object.entries(statusLabels).map(([value, label]) => ({ value, label }));
 
-  protected readonly state$: Observable<TournamentListState> = this.reload$.pipe(
-    startWith(void 0),
-    switchMap(() => {
-      const [sortBy, sortDirection] = this.sortMode().split(':') as ['startsAt' | 'name', 'asc' | 'desc'];
+  protected readonly state$: Observable<TournamentListViewState> = this.store.select(selectTournamentListView);
 
-      return this.tournamentsApi.listTournaments({
-        page: this.page(),
-        pageSize: this.pageSize,
-        status: this.selectedStatus() || undefined,
-        sortBy,
-        sortDirection,
-      }).pipe(
-        map((page) => ({ status: 'loaded', page }) satisfies TournamentListState),
-        startWith({ status: 'loading' } satisfies TournamentListState),
-        catchError(() => of({ status: 'error' } satisfies TournamentListState)),
-      );
-    }),
-    catchError(() => of({ status: 'error' } satisfies TournamentListState)),
-  );
+  constructor() {
+    this.loadList();
+  }
 
   protected statusLabel(status: TournamentStatus): string {
     return statusLabels[status];
@@ -81,17 +62,31 @@ export class TournamentList {
   protected applySort(): void {
     this.sortMode.set(this.sortSelection);
     this.page.set(1);
-    this.reload$.next();
+    this.loadList();
   }
 
   protected applyStatus(): void {
     this.selectedStatus.set(this.statusFilter);
     this.page.set(1);
-    this.reload$.next();
+    this.loadList();
   }
 
   protected goToPage(page: number): void {
     this.page.set(page);
-    this.reload$.next();
+    this.loadList();
+  }
+
+  private loadList(): void {
+    const [sortBy, sortDirection] = this.sortMode().split(':') as ['startsAt' | 'name', 'asc' | 'desc'];
+
+    this.store.dispatch(TournamentsActions.loadList({
+      query: {
+        page: this.page(),
+        pageSize: this.pageSize,
+        status: this.selectedStatus() || undefined,
+        sortBy,
+        sortDirection,
+      },
+    }));
   }
 }

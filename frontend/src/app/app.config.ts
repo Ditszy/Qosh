@@ -16,6 +16,8 @@ import * as playerTeamsEffects from './features/player/store/player-teams.effect
 import { playerTeamsFeatureKey, playerTeamsReducer } from './features/player/store';
 import * as liveMatchEffects from './features/public/live-match/store/live-match.effects';
 import { liveMatchFeatureKey, liveMatchReducer } from './features/public/live-match/store';
+import * as tournamentEffects from './features/public/tournaments/store/tournaments.effects';
+import { tournamentsFeatureKey, tournamentsReducer } from './features/public/tournaments/store';
 import * as scorerEffects from './features/scorer/store/scorer.effects';
 import { scorerFeatureKey, scorerReducer } from './features/scorer/store';
 import * as statisticsEffects from './features/statistics/store/statistics.effects';
@@ -34,12 +36,14 @@ export const appConfig: ApplicationConfig = {
       [playerTeamsFeatureKey]: playerTeamsReducer,
       [scorerFeatureKey]: scorerReducer,
       [statisticsFeatureKey]: statisticsReducer,
+      [tournamentsFeatureKey]: tournamentsReducer,
     }),
     provideEffects(liveMatchEffects),
     provideEffects(notificationEffects),
     provideEffects(playerTeamsEffects),
     provideEffects(scorerEffects),
     provideEffects(statisticsEffects),
+    provideEffects(tournamentEffects),
     provideAppInitializer(() => {
       const authService = inject(AuthService);
 
