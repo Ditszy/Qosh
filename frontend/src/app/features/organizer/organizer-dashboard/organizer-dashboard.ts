@@ -2,12 +2,12 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule, NgForm, NgModel } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { catchError, finalize, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { finalize } from 'rxjs';
 
-import { AuthService } from '../../../core/auth/auth';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
-import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
+import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
 
 type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'username'>;
 
@@ -18,11 +18,9 @@ type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'userna
   styleUrl: './organizer-dashboard.scss',
 })
 export class OrganizerDashboard {
-  private readonly auth = inject(AuthService);
+  private readonly store = inject(Store);
   private readonly organizerApi = inject(OrganizerTournamentsApiService);
   private readonly officialsApi = inject(OfficialsApiService);
-  private readonly tournamentsApi = inject(TournamentsApiService);
-  private readonly reload$ = new Subject<void>();
 
   protected readonly isSubmitting = signal(false);
   protected readonly pendingAction = signal('');
@@ -33,27 +31,11 @@ export class OrganizerDashboard {
   protected readonly scorers = signal<OfficialUser[]>([]);
   protected readonly referees = signal<OfficialUser[]>([]);
 
-  protected readonly state$ = this.reload$.pipe(
-    startWith(void 0),
-    switchMap(() => this.tournamentsApi.listTournaments({ pageSize: 50 })),
-    switchMap((page) => {
-      const tournaments = page.items;
-      const user = this.auth.currentUser();
-      const owned = user?.role === 'ADMIN' ? tournaments : tournaments.filter((item) => item.organizerId === user?.id);
+  protected readonly state$ = this.store.select(selectOrganizerDashboardView);
 
-      if (owned.length === 0) {
-        return of({ status: 'loaded' as const, tournaments: [] });
-      }
-
-      return forkJoin(
-        owned.map((tournament) =>
-          this.tournamentsApi.listTournamentMatches(tournament.id).pipe(map((matches) => ({ ...tournament, matches }))),
-        ),
-      ).pipe(map((tournamentsWithMatches) => ({ status: 'loaded' as const, tournaments: tournamentsWithMatches })));
-    }),
-    startWith({ status: 'loading' as const }),
-    catchError(() => of({ status: 'error' as const })),
-  );
+  constructor() {
+    this.reloadDashboard();
+  }
 
   protected submitTournament(form: NgForm): void {
     if (form.invalid || this.isSubmitting()) {
@@ -70,7 +52,7 @@ export class OrganizerDashboard {
       .subscribe({
         next: () => {
           form.resetForm({ maxTeams: 8 });
-          this.reload$.next();
+          this.reloadDashboard();
         },
         error: () => this.errorMessage.set('Turnir nije kreiran. Proveri podatke.'),
       });
@@ -85,7 +67,7 @@ export class OrganizerDashboard {
     this.errorMessage.set('');
     this.pendingAction.set(`${action}:${id}`);
     request$.pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: () => this.reload$.next(),
+      next: () => this.reloadDashboard(),
       error: () => this.errorMessage.set('Promena statusa nije uspela.'),
     });
   }
@@ -98,7 +80,7 @@ export class OrganizerDashboard {
     this.errorMessage.set('');
     this.pendingAction.set(`bracket:${id}`);
     this.organizerApi.generateBracket(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: () => this.reload$.next(),
+      next: () => this.reloadDashboard(),
       error: () => this.errorMessage.set('Zreb nije generisan. Proveri broj timova.'),
     });
   }
@@ -111,7 +93,7 @@ export class OrganizerDashboard {
     this.errorMessage.set('');
     this.pendingAction.set(`start:${id}`);
     this.organizerApi.startTournament(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: () => this.reload$.next(),
+      next: () => this.reloadDashboard(),
       error: () => this.errorMessage.set('Turnir nije pokrenut. Prvo generisi zreb.'),
     });
   }
@@ -136,7 +118,7 @@ export class OrganizerDashboard {
       .subscribe({
         next: () => {
           this.editingMatchId.set('');
-          this.reload$.next();
+          this.reloadDashboard();
         },
         error: () => this.errorMessage.set('Termin nije sačuvan.'),
       });
@@ -226,5 +208,9 @@ export class OrganizerDashboard {
 
   private officialName(official: OfficialDisplayUser): string {
     return `${official.firstName} ${official.lastName} (${official.username})`;
+  }
+
+  private reloadDashboard(): void {
+    this.store.dispatch(OrganizerDashboardActions.load());
   }
 }

@@ -12,6 +12,8 @@ import { authTokenInterceptor } from './core/auth/auth-token.interceptor';
 import { authFeatureKey, authReducer } from './core/auth/store';
 import * as notificationEffects from './features/notifications/store/notification.effects';
 import { notificationsFeatureKey, notificationsReducer } from './features/notifications/store';
+import * as organizerDashboardEffects from './features/organizer/store/organizer-dashboard.effects';
+import { organizerDashboardFeatureKey, organizerDashboardReducer } from './features/organizer/store';
 import * as playerTeamsEffects from './features/player/store/player-teams.effects';
 import { playerTeamsFeatureKey, playerTeamsReducer } from './features/player/store';
 import * as liveMatchEffects from './features/public/live-match/store/live-match.effects';
@@ -33,6 +35,7 @@ export const appConfig: ApplicationConfig = {
       [authFeatureKey]: authReducer,
       [liveMatchFeatureKey]: liveMatchReducer,
       [notificationsFeatureKey]: notificationsReducer,
+      [organizerDashboardFeatureKey]: organizerDashboardReducer,
       [playerTeamsFeatureKey]: playerTeamsReducer,
       [scorerFeatureKey]: scorerReducer,
       [statisticsFeatureKey]: statisticsReducer,
@@ -40,6 +43,7 @@ export const appConfig: ApplicationConfig = {
     }),
     provideEffects(liveMatchEffects),
     provideEffects(notificationEffects),
+    provideEffects(organizerDashboardEffects),
     provideEffects(playerTeamsEffects),
     provideEffects(scorerEffects),
     provideEffects(statisticsEffects),
