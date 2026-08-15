@@ -1,5 +1,5 @@
 export { TournamentsActions } from './tournaments.actions';
-export { loadTournamentList } from './tournaments.effects';
+export { loadTournamentDetail, loadTournamentList } from './tournaments.effects';
 export { tournamentsFeatureKey, tournamentsReducer } from './tournaments.reducer';
-export type { TournamentListViewState, TournamentsState } from './tournaments.reducer';
-export { selectTournamentListView, selectTournamentsState } from './tournaments.selectors';
+export type { TournamentDetailViewState, TournamentListViewState, TournamentsState } from './tournaments.reducer';
+export { selectTournamentDetailView, selectTournamentListView, selectTournamentsState } from './tournaments.selectors';

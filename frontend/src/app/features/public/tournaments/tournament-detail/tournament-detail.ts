@@ -1,26 +1,21 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, distinctUntilChanged, filter, finalize, forkJoin, map, merge, Observable, of, scan, startWith, Subject, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { distinctUntilChanged, filter, finalize, map } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
 import { TeamsApiService } from '../../../player/teams-api.service';
 import type {
   Tournament,
-  TournamentLiveMessage,
   TournamentMatch,
   TournamentStatus,
   TournamentTeamDetail,
 } from '../tournament.models';
-import { TournamentsApiService } from '../tournaments-api.service';
+import { selectTournamentDetailView, TournamentsActions } from '../store';
 
-type TournamentDetailState =
-  | { status: 'loading' }
-  | { status: 'loaded'; tournament: Tournament; teams: TournamentTeamDetail[]; matches: TournamentMatch[] }
-  | { status: 'error' };
-
-type TournamentDetailLoadedState = Extract<TournamentDetailState, { status: 'loaded' }>;
 type BracketRound = { round: number; matches: TournamentMatch[] };
 type BracketLayout = {
   rounds: Array<{ round: number; x: number; matches: Array<{ match: TournamentMatch; y: number }> }>;
@@ -53,43 +48,38 @@ const bracketSlotStep = bracketCardHeight + bracketFirstRoundGap;
 export class TournamentDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
-  private readonly tournamentsApi = inject(TournamentsApiService);
   private readonly teamsApi = inject(TeamsApiService);
+  private readonly store = inject(Store);
+  private readonly destroyRef = inject(DestroyRef);
+
   protected readonly currentUser = this.authService.currentUser;
   protected readonly signupOpen = signal(false);
   protected readonly teamNameInput = signal('');
   protected readonly signupSubmitting = signal(false);
   protected readonly signupFeedback = signal<string | null>(null);
-  protected readonly selectedTeam = signal<TournamentTeamDetail | null>(null);
-  private readonly localLiveMessages$ = new Subject<TournamentLiveMessage>();
+  protected readonly selectedTeamId = signal<string | null>(null);
+  protected readonly detailView = this.store.selectSignal(selectTournamentDetailView);
+  protected readonly selectedTeam = computed(() => {
+    const state = this.detailView();
+    const selectedTeamId = this.selectedTeamId();
 
-  private readonly tournamentId$ = this.route.paramMap.pipe(
-    map((params) => params.get('id')),
-    filter((id): id is string => Boolean(id)),
-    distinctUntilChanged(),
-  );
+    return state.status === 'loaded' && selectedTeamId
+      ? state.teams.find((team) => team.id === selectedTeamId) ?? null
+      : null;
+  });
+  protected readonly state$ = this.store.select(selectTournamentDetailView);
 
-  protected readonly state$: Observable<TournamentDetailState> = this.tournamentId$.pipe(
-    switchMap((id) =>
-      forkJoin({
-        tournament: this.tournamentsApi.getTournament(id),
-        teams: this.teamsApi.listTournamentTeams(id),
-        matches: this.tournamentsApi.listTournamentMatches(id),
-      }).pipe(
-        switchMap(({ tournament, teams, matches }) => {
-          const loadedState = { status: 'loaded', tournament, teams, matches } satisfies TournamentDetailState;
-
-          return merge(this.tournamentsApi.watchTournamentLive(id), this.localLiveMessages$).pipe(
-            scan((state, message) => this.applyLiveMessage(state, message), loadedState),
-            startWith(loadedState),
-            catchError(() => of(loadedState)),
-          );
-        }),
-        startWith({ status: 'loading' } satisfies TournamentDetailState),
-        catchError(() => of({ status: 'error' } satisfies TournamentDetailState)),
-      ),
-    ),
-  );
+  constructor() {
+    this.route.paramMap.pipe(
+      map((params) => params.get('id')),
+      filter((id): id is string => Boolean(id)),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((tournamentId) => {
+      this.selectedTeamId.set(null);
+      this.store.dispatch(TournamentsActions.loadDetail({ tournamentId }));
+    });
+  }
 
   protected statusLabel(status: TournamentStatus): string {
     return statusLabels[status];
@@ -127,7 +117,10 @@ export class TournamentDetail {
           this.teamNameInput.set('');
           this.signupOpen.set(false);
           this.signupFeedback.set('Tim je prijavljen.');
-          this.localLiveMessages$.next({ type: 'tournament.team.created', data: { team } });
+          this.store.dispatch(TournamentsActions.detailLiveMessageReceived({
+            tournamentId: tournament.id,
+            message: { type: 'tournament.team.created', data: { team } },
+          }));
         },
         error: () => this.signupFeedback.set('Prijava tima nije uspela.'),
       });
@@ -203,6 +196,14 @@ export class TournamentDetail {
     return { rounds, connectors, width, height };
   }
 
+  protected openTeam(team: TournamentTeamDetail): void {
+    this.selectedTeamId.set(team.id);
+  }
+
+  protected closeTeam(): void {
+    this.selectedTeamId.set(null);
+  }
+
   private bracketMatchY(round: number, bracketPosition: number): number {
     const roundSpan = 2 ** (round - 1);
     const slotIndex = (bracketPosition - 1) * roundSpan + ((roundSpan - 1) / 2);
@@ -212,73 +213,6 @@ export class TournamentDetail {
 
   private bracketBranchOffset(round: number): number {
     return (2 ** (round - 1) * bracketSlotStep) / 2;
-  }
-
-  protected openTeam(team: TournamentTeamDetail): void {
-    this.selectedTeam.set(team);
-  }
-
-  protected closeTeam(): void {
-    this.selectedTeam.set(null);
-  }
-
-  private applyLiveMessage(
-    state: TournamentDetailLoadedState,
-    message: TournamentLiveMessage,
-  ): TournamentDetailLoadedState {
-    if (message.type === 'tournament.status.changed') {
-      return {
-        ...state,
-        tournament: {
-          ...message.data.tournament,
-          organizer: message.data.tournament.organizer ?? state.tournament.organizer,
-        },
-      };
-    }
-
-    if (message.type === 'tournament.bracket.generated') {
-      return { ...state, matches: message.data.matches };
-    }
-
-    if (message.type === 'tournament.match.scheduled') {
-      return { ...state, matches: this.replaceMatch(state.matches, message.data.match) };
-    }
-
-    if (message.type === 'tournament.team.created' || message.type === 'tournament.roster.updated') {
-      return { ...state, teams: this.replaceTeam(state.teams, message.data.team) };
-    }
-
-    if (message.type === 'tournament.team.removed') {
-      return { ...state, teams: state.teams.filter((team) => team.id !== message.data.teamId) };
-    }
-
-    return state;
-  }
-
-  private replaceTeam(
-    teams: TournamentTeamDetail[],
-    updatedTeam: TournamentTeamDetail,
-  ): TournamentTeamDetail[] {
-    if (this.selectedTeam()?.id === updatedTeam.id) {
-      this.selectedTeam.set(updatedTeam);
-    }
-
-    const hasTeam = teams.some((team) => team.id === updatedTeam.id);
-    const nextTeams = hasTeam
-      ? teams.map((team) => (team.id === updatedTeam.id ? updatedTeam : team))
-      : [...teams, updatedTeam];
-
-    return nextTeams.sort((first, second) => first.name.localeCompare(second.name));
-  }
-
-  private replaceMatch(matches: TournamentMatch[], updatedMatch: TournamentMatch): TournamentMatch[] {
-    const hasMatch = matches.some((match) => match.id === updatedMatch.id);
-    const nextMatches = hasMatch
-      ? matches.map((match) => (match.id === updatedMatch.id ? updatedMatch : match))
-      : [...matches, updatedMatch];
-
-    return nextMatches
-      .sort((first, second) => first.round - second.round || first.bracketPosition - second.bracketPosition);
   }
 
   private bracketConnector(match: TournamentMatch, cards: Map<string, { x: number; y: number }>): string | null {

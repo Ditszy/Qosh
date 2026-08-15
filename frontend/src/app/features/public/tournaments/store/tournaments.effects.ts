@@ -1,7 +1,8 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, of, startWith, switchMap } from 'rxjs';
 
+import { TeamsApiService } from '../../../player/teams-api.service';
 import { TournamentsApiService } from '../tournaments-api.service';
 import { TournamentsActions } from './tournaments.actions';
 
@@ -13,6 +14,30 @@ export const loadTournamentList = createEffect(
         tournamentsApi.listTournaments(query).pipe(
           map((page) => TournamentsActions.loadListSucceeded({ query, page })),
           catchError(() => of(TournamentsActions.loadListFailed({ query }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadTournamentDetail = createEffect(
+  (actions$ = inject(Actions), tournamentsApi = inject(TournamentsApiService), teamsApi = inject(TeamsApiService)) =>
+    actions$.pipe(
+      ofType(TournamentsActions.loadDetail),
+      switchMap(({ tournamentId }) =>
+        forkJoin({
+          tournament: tournamentsApi.getTournament(tournamentId),
+          teams: teamsApi.listTournamentTeams(tournamentId),
+          matches: tournamentsApi.listTournamentMatches(tournamentId),
+        }).pipe(
+          switchMap(({ tournament, teams, matches }) =>
+            tournamentsApi.watchTournamentLive(tournamentId).pipe(
+              map((message) => TournamentsActions.detailLiveMessageReceived({ tournamentId, message })),
+              startWith(TournamentsActions.loadDetailSucceeded({ tournamentId, tournament, teams, matches })),
+              catchError(() => EMPTY),
+            ),
+          ),
+          catchError(() => of(TournamentsActions.loadDetailFailed({ tournamentId }))),
         ),
       ),
     ),

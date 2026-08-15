@@ -8,3 +8,8 @@ export const selectTournamentListView = createSelector(
   selectTournamentsState,
   (state) => state.listView,
 );
+
+export const selectTournamentDetailView = createSelector(
+  selectTournamentsState,
+  (state) => state.detailView,
+);
