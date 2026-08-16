@@ -1,6 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { finalize } from 'rxjs';
 
@@ -14,7 +15,7 @@ type MyTeamSection = 'teams' | 'invites';
 
 @Component({
   selector: 'app-my-team',
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, RouterLink],
   templateUrl: './my-team.html',
   styleUrl: './my-team.scss',
 })

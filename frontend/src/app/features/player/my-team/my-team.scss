@@ -141,6 +141,17 @@
   text-align: right;
 }
 
+.detail-link {
+  color: #ffffff;
+  font-weight: 900;
+  text-align: right;
+  text-decoration: none;
+}
+
+.detail-link:hover {
+  color: #ff8a2a;
+}
+
 .detail-actions,
 .roster-actions,
 .invite-search,

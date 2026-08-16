@@ -54,7 +54,11 @@
         <div class="team-details">
           <div class="detail-line">
             <span>Turnir</span>
+            @if (team.tournament) {
+            <a class="detail-link" [routerLink]="['/tournaments', team.tournament.id]">{{ team.tournament.name }}</a>
+            } @else {
             <strong>{{ tournamentLabel(team) }}</strong>
+            }
           </div>
 
           @if (team.tournament) {
