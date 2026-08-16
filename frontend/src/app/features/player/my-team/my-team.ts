@@ -10,6 +10,8 @@ import type { PublicUser } from '../../public/tournaments/tournament.models';
 import { PlayerTeamsActions, selectMyTeamView } from '../store';
 import { TeamsApiService, type TeamDetail, type TeamInvite, type TeamMember } from '../teams-api.service';
 
+type MyTeamSection = 'teams' | 'invites';
+
 @Component({
   selector: 'app-my-team',
   imports: [DatePipe, FormsModule],
@@ -28,6 +30,8 @@ export class MyTeam {
   protected readonly inviteSearchResults = signal<Record<string, PublicUser[]>>({});
   protected readonly disbandingTeamIds = signal<Record<string, boolean>>({});
   protected readonly leavingTeamIds = signal<Record<string, boolean>>({});
+  protected readonly selectedSection = signal<MyTeamSection>('teams');
+  protected readonly selectedTeamId = signal<string | null>(null);
   protected readonly state = this.store.selectSignal(selectMyTeamView);
 
   constructor() {
@@ -42,6 +46,22 @@ export class MyTeam {
 
   protected memberLabel(member: TeamMember): string {
     return `${member.user.firstName} ${member.user.lastName} (${member.role})`;
+  }
+
+  protected tournamentLabel(team: TeamDetail): string {
+    return team.tournament?.name ?? 'Turnir nije učitan';
+  }
+
+  protected isSelectedTeam(teamId: string): boolean {
+    return this.selectedTeamId() === teamId;
+  }
+
+  protected toggleTeam(teamId: string): void {
+    this.selectedTeamId.update((selectedTeamId) => selectedTeamId === teamId ? null : teamId);
+  }
+
+  protected showSection(section: MyTeamSection): void {
+    this.selectedSection.set(section);
   }
 
   protected isCaptain(team: TeamDetail): boolean {

@@ -1,27 +1,160 @@
+.section-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.section-card {
+  display: grid;
+  gap: 8px;
+  min-height: 118px;
+  border: 1px solid #2b303a;
+  border-radius: 8px;
+  background: #101216;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  padding: 18px;
+  text-align: left;
+}
+
+.section-card:hover,
+.section-card.is-active {
+  border-color: #ff6a00;
+}
+
+.section-card strong {
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.section-card span:last-child {
+  color: #a9b0bd;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.section-panel {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  min-width: 0;
+  border: 1px solid #2b303a;
+  border-radius: 8px;
+  background: #101216;
+  padding: 18px;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel-header h3 {
+  margin: 0;
+}
+
+.count-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  min-height: 30px;
+  border: 1px solid #3a4050;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.action-error {
+  color: #fecaca;
+}
+
+.team-list,
 .invite-list,
 .roster-list {
   display: grid;
   gap: 10px;
-  margin-top: 14px;
 }
 
-.invite-list article,
-.roster-row {
+.team-item {
+  min-width: 0;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
   border: 1px solid #2b303a;
   background: #090a0d;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  padding: 0 14px;
+  text-align: left;
 }
 
-.invite-list article {
+.team-row:hover,
+.team-row.is-open {
+  border-color: #ff6a00;
+}
+
+.team-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 900;
+}
+
+.team-meta {
+  flex: 0 0 auto;
+  color: #a9b0bd;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.team-details {
   display: grid;
-  gap: 12px;
+  gap: 14px;
+  border: 1px solid #252a34;
+  border-top: 0;
+  background: #0c0e12;
   padding: 14px;
 }
 
-.team-heading {
+.detail-line {
   display: flex;
-  gap: 10px;
-  align-items: center;
   justify-content: space-between;
+  gap: 14px;
+  color: #a9b0bd;
+  font-size: 0.88rem;
+}
+
+.detail-line strong {
+  color: #ffffff;
+  text-align: right;
+}
+
+.detail-actions,
+.roster-actions,
+.invite-search,
+.search-results,
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.roster-row,
+.invite-row {
+  border: 1px solid #2b303a;
+  background: #090a0d;
 }
 
 .roster-row {
@@ -32,25 +165,29 @@
   padding: 10px 12px;
 }
 
-.roster-actions,
-.invite-search,
-.search-results {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.invite-row {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.invite-row div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.invite-row span {
+  color: #a9b0bd;
+  font-size: 0.88rem;
 }
 
 .invite-search input {
   min-height: 38px;
-  min-width: 220px;
+  min-width: min(100%, 240px);
   border: 1px solid #30343d;
   background: #090a0d;
   color: #ffffff;
   padding: 0 10px;
-}
-
-.search-results {
-  margin-top: -4px;
 }
 
 .danger-action {
@@ -69,4 +206,20 @@
 .danger-action:disabled {
   cursor: wait;
   opacity: 0.65;
+}
+
+@media (max-width: 700px) {
+  .section-picker {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-line,
+  .roster-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .detail-line strong {
+    text-align: left;
+  }
 }

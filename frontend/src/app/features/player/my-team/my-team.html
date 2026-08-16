@@ -1,90 +1,147 @@
 <section class="route-placeholder" aria-label="Moj tim">
   <p class="eyebrow">Igrač</p>
   <h2>Moj tim</h2>
+
   @if (actionError()) {
-  <p>{{ actionError() }}</p>
+  <p class="action-error">{{ actionError() }}</p>
   }
 
   @if (state(); as state) {
   @switch (state.status) {
   @case ('loading') {
-  <p>Učitavanje poziva...</p>
+  <p>Učitavanje timova i poziva...</p>
   }
 
   @case ('error') {
-  <p>Trenutno nije moguce ucitati timove.</p>
+  <p>Trenutno nije moguće učitati timove.</p>
   }
 
   @case ('loaded') {
-  <h3>Moji timovi</h3>
-  @if (state.teams.length > 0) {
-  <div class="invite-list">
-    @for (team of state.teams; track team.id) {
-    <article>
-      <div class="team-heading">
-        <strong>{{ team.name }}</strong>
-        @if (canDisbandTeam(team)) {
-        <button type="button" class="danger-action" [disabled]="isDisbanding(team.id)" (click)="disbandTeam(team)">
-          {{ isDisbanding(team.id) ? 'Raspuštanje...' : 'Raspusti tim' }}
+  <div class="section-picker" aria-label="Izbor prikaza">
+    <button type="button" class="section-card" [class.is-active]="selectedSection() === 'teams'"
+      (click)="showSection('teams')">
+      <span class="eyebrow">Aktivni turniri</span>
+      <strong>Timovi</strong>
+      <span>{{ state.teams.length }} aktivno</span>
+    </button>
+
+    <button type="button" class="section-card" [class.is-active]="selectedSection() === 'invites'"
+      (click)="showSection('invites')">
+      <span class="eyebrow">Na čekanju</span>
+      <strong>Pozivnice</strong>
+      <span>{{ state.invites.length }} novih</span>
+    </button>
+  </div>
+
+  @if (selectedSection() === 'teams') {
+  <article class="section-panel">
+    <header class="panel-header">
+      <h3>Moji timovi</h3>
+      <span class="count-pill">{{ state.teams.length }}</span>
+    </header>
+
+    @if (state.teams.length > 0) {
+    <div class="team-list">
+      @for (team of state.teams; track team.id) {
+      <div class="team-item">
+        <button type="button" class="team-row" [class.is-open]="isSelectedTeam(team.id)"
+          [attr.aria-expanded]="isSelectedTeam(team.id)" (click)="toggleTeam(team.id)">
+          <span class="team-name">{{ team.name }}</span>
+          <span class="team-meta">{{ team.members.length }}/4 igrača</span>
         </button>
-        }
-        @if (canLeaveTeam(team)) {
-        <button type="button" class="danger-action" [disabled]="isLeaving(team.id)" (click)="leaveTeam(team)">
-          {{ isLeaving(team.id) ? 'Napuštanje...' : 'Napusti tim' }}
-        </button>
-        }
-      </div>
-      <div class="roster-list">
-        @for (member of team.members; track member.id) {
-        <div class="roster-row">
-          <span>{{ memberLabel(member) }}</span>
-          @if (canRemoveMember(team, member)) {
-          <div class="roster-actions">
-            <button type="button" class="text-action" (click)="transferCaptain(team.id, member.id)">Kapiten</button>
-            <button type="button" class="text-action" (click)="removeMember(team.id, member.id)">Ukloni</button>
+
+        @if (isSelectedTeam(team.id)) {
+        <div class="team-details">
+          <div class="detail-line">
+            <span>Turnir</span>
+            <strong>{{ tournamentLabel(team) }}</strong>
+          </div>
+
+          @if (team.tournament) {
+          <div class="detail-line">
+            <span>Početak</span>
+            <strong>{{ team.tournament.startsAt | date: 'short' }}</strong>
+          </div>
+          }
+
+          <div class="detail-actions">
+            @if (canDisbandTeam(team)) {
+            <button type="button" class="danger-action" [disabled]="isDisbanding(team.id)" (click)="disbandTeam(team)">
+              {{ isDisbanding(team.id) ? 'Raspuštanje...' : 'Raspusti tim' }}
+            </button>
+            }
+            @if (canLeaveTeam(team)) {
+            <button type="button" class="danger-action" [disabled]="isLeaving(team.id)" (click)="leaveTeam(team)">
+              {{ isLeaving(team.id) ? 'Napuštanje...' : 'Napusti tim' }}
+            </button>
+            }
+          </div>
+
+          <h4>Igrači</h4>
+          <div class="roster-list">
+            @for (member of team.members; track member.id) {
+            <div class="roster-row">
+              <span>{{ memberLabel(member) }}</span>
+              @if (canRemoveMember(team, member)) {
+              <div class="roster-actions">
+                <button type="button" class="text-action" (click)="transferCaptain(team.id, member.id)">Kapiten</button>
+                <button type="button" class="text-action" (click)="removeMember(team.id, member.id)">Ukloni</button>
+              </div>
+              }
+            </div>
+            }
+          </div>
+
+          @if (isCaptain(team)) {
+          <div class="invite-search">
+            <input type="text" [ngModel]="inviteSearch(team.id)" (ngModelChange)="setInviteSearch(team.id, $event)"
+              placeholder="Pretraži igrača" />
+            <button type="button" class="solid-action" (click)="sendInvite(team.id)">Pozovi</button>
+          </div>
+          <div class="search-results">
+            @for (player of searchResults(team.id); track player.id) {
+            <button type="button" class="text-action" (click)="selectInvitePlayer(team.id, player)">
+              {{ player.username }} / {{ player.firstName }} {{ player.lastName }}
+            </button>
+            }
           </div>
           }
         </div>
         }
       </div>
-      @if (isCaptain(team)) {
-      <div class="invite-search">
-        <input type="text" [ngModel]="inviteSearch(team.id)" (ngModelChange)="setInviteSearch(team.id, $event)"
-          placeholder="Pretraži igraca" />
-        <button type="button" class="solid-action" (click)="sendInvite(team.id)">Pozovi</button>
-      </div>
-      <div class="search-results">
-        @for (player of searchResults(team.id); track player.id) {
-        <button type="button" class="text-action" (click)="selectInvitePlayer(team.id, player)">
-          {{ player.username }} / {{ player.firstName }} {{ player.lastName }}
-        </button>
-        }
+      }
+    </div>
+    } @else {
+    <p>Nisi član nijednog tima.</p>
+    }
+  </article>
+  } @else {
+  <article class="section-panel">
+    <header class="panel-header">
+      <h3>Pozivnice</h3>
+      <span class="count-pill">{{ state.invites.length }}</span>
+    </header>
+
+    @if (state.invites.length > 0) {
+    <div class="invite-list">
+      @for (invite of state.invites; track invite.id) {
+      <div class="invite-row">
+        <div>
+          <strong>{{ teamLabel(invite) }}</strong>
+          <span>Poslao {{ invite.inviter.username }}</span>
+          <span>{{ invite.createdAt | date: 'short' }}</span>
+        </div>
+        <div class="account-actions">
+          <button type="button" class="solid-action" (click)="acceptInvite(invite.id)">Prihvati</button>
+          <button type="button" class="text-action" (click)="declineInvite(invite.id)">Odbij</button>
+        </div>
       </div>
       }
-    </article>
+    </div>
+    } @else {
+    <p>Nemaš pozive na čekanju.</p>
     }
-  </div>
-  } @else {
-  <p>Nisi član nijednog tima.</p>
-  }
-
-  <h3>Pozivi</h3>
-  @if (state.invites.length > 0) {
-  <div class="invite-list">
-    @for (invite of state.invites; track invite.id) {
-    <article>
-      <strong>{{ teamLabel(invite) }}</strong>
-      <span>Poslao {{ invite.inviter.username }}</span>
-      <span>{{ invite.createdAt | date: 'short' }}</span>
-      <div class="account-actions">
-        <button type="button" class="solid-action" (click)="acceptInvite(invite.id)">Prihvati</button>
-        <button type="button" class="text-action" (click)="declineInvite(invite.id)">Odbij</button>
-      </div>
-    </article>
-    }
-  </div>
-  } @else {
-  <p>Nemaš pozive na čekanju.</p>
+  </article>
   }
   }
   }
