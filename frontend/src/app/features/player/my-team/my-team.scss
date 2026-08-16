@@ -152,6 +152,17 @@
   color: #ff8a2a;
 }
 
+.profile-link {
+  color: #ffffff;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.profile-link:hover {
+  color: #ff8a2a;
+}
+
 .detail-actions,
 .roster-actions,
 .invite-search,

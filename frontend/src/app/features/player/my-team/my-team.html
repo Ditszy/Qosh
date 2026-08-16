@@ -85,7 +85,7 @@
           <div class="roster-list">
             @for (member of team.members; track member.id) {
             <div class="roster-row">
-              <span>{{ memberLabel(member) }}</span>
+              <a class="profile-link" [routerLink]="['/profiles', member.userId]">{{ memberLabel(member) }}</a>
               @if (canRemoveMember(team, member)) {
               <div class="roster-actions">
                 <button type="button" class="text-action" (click)="transferCaptain(team.id, member.id)">Kapiten</button>
