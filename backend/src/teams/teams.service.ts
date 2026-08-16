@@ -22,6 +22,7 @@ import { TeamInviteStatus } from './team-invite-status.enum';
 import { TeamMemberRole } from './team-member-role.enum';
 
 const MAX_ROSTER_SIZE = 4;
+const inactiveTournamentStatuses = [TournamentStatus.COMPLETED, TournamentStatus.CANCELLED];
 
 type TeamActor = {
     id: string;
@@ -456,6 +457,13 @@ export class TeamsService {
             where: {
                 invitedUserId: userId,
                 status: TeamInviteStatus.PENDING,
+                team: {
+                    tournament: {
+                        status: {
+                            notIn: inactiveTournamentStatuses,
+                        },
+                    },
+                },
             },
             include: this.teamInviteWithTeamInclude(),
             orderBy: {
@@ -469,6 +477,11 @@ export class TeamsService {
             where: {
                 members: {
                     some: { userId },
+                },
+                tournament: {
+                    status: {
+                        notIn: inactiveTournamentStatuses,
+                    },
                 },
             },
             include: {

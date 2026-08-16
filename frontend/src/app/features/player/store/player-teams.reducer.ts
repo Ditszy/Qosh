@@ -4,6 +4,7 @@ import type { TeamDetail, TeamInvite } from '../teams-api.service';
 import { PlayerTeamsActions } from './player-teams.actions';
 
 export const playerTeamsFeatureKey = 'playerTeams';
+const inactiveTournamentStatuses = new Set(['COMPLETED', 'CANCELLED']);
 
 export type MyTeamViewState =
   | { status: 'loading' }
@@ -62,6 +63,11 @@ function upsertTeam(state: PlayerTeamsState, team: TeamDetail): PlayerTeamsState
 
   const existingTeam = state.view.teams.find((currentTeam) => currentTeam.id === team.id);
   const nextTeam = { ...team, tournament: team.tournament ?? existingTeam?.tournament };
+
+  if (nextTeam.tournament && inactiveTournamentStatuses.has(nextTeam.tournament.status)) {
+    return removeTeam(state, nextTeam.id);
+  }
+
   const teams = existingTeam
     ? state.view.teams.map((currentTeam) => currentTeam.id === team.id ? nextTeam : currentTeam)
     : [...state.view.teams, nextTeam];
