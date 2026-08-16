@@ -156,7 +156,7 @@ export class TeamsController {
     @Delete(':teamId')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PLAYER, UserRole.ADMIN)
+    @Roles(UserRole.PLAYER, UserRole.ORGANIZER, UserRole.ADMIN)
     disband(@Param('teamId') teamId: string, @Request() req: AuthenticatedRequest) {
         return this.teamsService.disband(teamId, {
             id: req.user.id,

@@ -57,6 +57,8 @@ export class TournamentDetail {
   protected readonly teamNameInput = signal('');
   protected readonly signupSubmitting = signal(false);
   protected readonly signupFeedback = signal<string | null>(null);
+  protected readonly teamRemovalFeedback = signal<string | null>(null);
+  protected readonly removingTeamIds = signal<Record<string, boolean>>({});
   protected readonly selectedTeamId = signal<string | null>(null);
   protected readonly detailView = this.store.selectSignal(selectTournamentDetailView);
   protected readonly selectedTeam = computed(() => {
@@ -87,6 +89,19 @@ export class TournamentDetail {
 
   protected canRegisterTeam(tournament: Tournament): boolean {
     return tournament.status === 'SIGNUPS_OPEN' && this.currentUser()?.role === 'PLAYER';
+  }
+
+  protected canRemoveTeams(tournament: Tournament, matches: TournamentMatch[]): boolean {
+    const currentUser = this.currentUser();
+    const canManageTournament = currentUser?.role === 'ADMIN'
+      || (currentUser?.role === 'ORGANIZER' && currentUser.id === tournament.organizerId);
+    const beforeStart = ['DRAFT', 'SIGNUPS_OPEN', 'SIGNUPS_LOCKED'].includes(tournament.status);
+
+    return Boolean(canManageTournament && beforeStart && matches.length === 0);
+  }
+
+  protected isRemovingTeam(teamId: string): boolean {
+    return Boolean(this.removingTeamIds()[teamId]);
   }
 
   protected openSignupForm(): void {
@@ -124,6 +139,30 @@ export class TournamentDetail {
         },
         error: () => this.signupFeedback.set('Prijava tima nije uspela.'),
       });
+  }
+
+  protected removeTeamFromTournament(team: TournamentTeamDetail, tournament: Tournament): void {
+    if (!confirm(`Ukloniti tim "${team.name}" sa turnira?`)) {
+      return;
+    }
+
+    this.teamRemovalFeedback.set(null);
+    this.removingTeamIds.update((ids) => ({ ...ids, [team.id]: true }));
+    this.teamsApi.disbandTeam(team.id).pipe(
+      finalize(() => this.removingTeamIds.update((ids) => ({ ...ids, [team.id]: false }))),
+    ).subscribe({
+      next: () => {
+        this.teamRemovalFeedback.set('Tim je uklonjen sa turnira.');
+        if (this.selectedTeamId() === team.id) {
+          this.closeTeam();
+        }
+        this.store.dispatch(TournamentsActions.detailLiveMessageReceived({
+          tournamentId: tournament.id,
+          message: { type: 'tournament.team.removed', data: { teamId: team.id } },
+        }));
+      },
+      error: () => this.teamRemovalFeedback.set('Uklanjanje tima nije uspelo.'),
+    });
   }
 
   protected teamName(team: TournamentMatch['teamA']): string {

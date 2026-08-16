@@ -23,6 +23,11 @@ import { TeamMemberRole } from './team-member-role.enum';
 
 const MAX_ROSTER_SIZE = 4;
 const inactiveTournamentStatuses = [TournamentStatus.COMPLETED, TournamentStatus.CANCELLED];
+const preStartTournamentStatuses: TournamentStatus[] = [
+    TournamentStatus.DRAFT,
+    TournamentStatus.SIGNUPS_OPEN,
+    TournamentStatus.SIGNUPS_LOCKED,
+];
 
 type TeamActor = {
     id: string;
@@ -516,8 +521,15 @@ export class TeamsService {
             throw new NotFoundException('Team not found');
         }
 
-        this.ensureSignupsOpen(team.tournament.status);
-        this.ensureCanManageTeam(team, actor);
+        this.ensureCanDisbandTeam(team, actor);
+
+        const generatedMatchCount = await this.prisma.match.count({
+            where: { tournamentId: team.tournamentId },
+        });
+
+        if (generatedMatchCount > 0) {
+            throw new BadRequestException('Teams cannot be removed after bracket generation');
+        }
 
         await this.prisma.$transaction(async (tx) => {
             await tx.teamInvite.deleteMany({ where: { teamId } });
@@ -716,6 +728,36 @@ export class TeamsService {
         if (status !== TournamentStatus.SIGNUPS_OPEN) {
             throw new BadRequestException('Team roster changes are only available while signups are open');
         }
+    }
+
+    private ensureTournamentBeforeStart(status: TournamentStatus): void {
+        if (!preStartTournamentStatuses.includes(status)) {
+            throw new BadRequestException('Teams can only be removed before tournament start');
+        }
+    }
+
+    private ensureCanDisbandTeam(
+        team: {
+            tournament: { organizerId: string; status: TournamentStatus };
+            members: Array<{ userId: string; role: TeamMemberRole }>;
+        },
+        actor: TeamActor,
+    ): void {
+        this.ensureTournamentBeforeStart(team.tournament.status);
+
+        if (actor.role === UserRole.ADMIN) {
+            return;
+        }
+
+        if (actor.role === UserRole.ORGANIZER && team.tournament.organizerId === actor.id) {
+            return;
+        }
+
+        if (team.tournament.status !== TournamentStatus.SIGNUPS_OPEN) {
+            throw new BadRequestException('Team captains can only disband teams while signups are open');
+        }
+
+        this.ensureCanManageTeam(team, actor);
     }
 
     private ensureCanManageTeam(

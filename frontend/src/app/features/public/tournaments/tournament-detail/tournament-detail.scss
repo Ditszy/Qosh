@@ -171,26 +171,39 @@ dd {
   gap: 12px;
   border: 1px solid #2b303a;
   background: #101218;
-  cursor: pointer;
   padding: 16px;
-  text-align: left;
   flex-wrap: wrap;
 }
 
-.team-card strong,
-.team-card span {
+.team-card-main {
+  display: flex;
+  flex: 1 1 220px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
   color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-align: left;
 }
 
-.team-card strong {
+.team-card-main strong {
   overflow-wrap: anywhere;
 }
 
-.team-card span {
+.team-card-main span {
   flex: 0 0 auto;
   color: #9ca3af;
-  font-size: 0.78rem;
   font-weight: 900;
+}
+
+.danger-action {
+  background: #2a0d0d;
+  padding: 8px 12px;
 }
 
 .team-modal-backdrop {

@@ -70,14 +70,25 @@
 
   <section class="team-section" aria-label="Timovi">
     <h3>Timovi</h3>
+    @if (teamRemovalFeedback()) {
+    <p class="surface-message">{{ teamRemovalFeedback() }}</p>
+    }
 
     @if (state.teams.length > 0) {
     <div class="team-list">
       @for (team of state.teams; track team.id) {
-      <button class="team-card" type="button" (click)="openTeam(team)">
-        <strong>{{ team.name }}</strong>
-        <span>{{ team.members.length }} / 4 igrača</span>
-      </button>
+      <div class="team-card">
+        <button class="team-card-main" type="button" (click)="openTeam(team)">
+          <strong>{{ team.name }}</strong>
+          <span>{{ team.members.length }} / 4 igrača</span>
+        </button>
+        @if (canRemoveTeams(state.tournament, state.matches)) {
+        <button type="button" class="danger-action" [disabled]="isRemovingTeam(team.id)"
+          (click)="removeTeamFromTournament(team, state.tournament)">
+          {{ isRemovingTeam(team.id) ? 'Uklanjanje...' : 'Ukloni' }}
+        </button>
+        }
+      </div>
       }
     </div>
     } @else {
