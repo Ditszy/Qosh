@@ -117,7 +117,7 @@
   display: grid;
   gap: 16px;
   align-content: start;
-  min-height: 280px;
+  min-height: 220px;
   border: 1px solid #2b303a;
   background: #101218;
   color: inherit;
@@ -145,12 +145,6 @@
   font-size: 1.35rem;
   line-height: 1.15;
   text-transform: uppercase;
-}
-
-.tournament-card p {
-  color: #b8bdc7;
-  line-height: 1.55;
-  margin: 0;
 }
 
 dl {

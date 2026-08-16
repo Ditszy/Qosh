@@ -48,9 +48,6 @@
     <a class="tournament-card" [routerLink]="['/tournaments', tournament.id]">
       <span class="status">{{ statusLabel(tournament.status) }}</span>
       <h3>{{ tournament.name }}</h3>
-      @if (tournament.description) {
-      <p>{{ tournament.description }}</p>
-      }
       <dl>
         <div>
           <dt>Lokacija</dt>
