@@ -68,6 +68,7 @@ label {
 
 input,
 select,
+textarea,
 button {
   box-sizing: border-box;
   min-height: 2.45rem;
@@ -76,6 +77,14 @@ button {
   background: #10151f;
   color: #f7f8fa;
   padding: 0.5rem 0.75rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.description-field {
+  grid-column: 1 / -1;
 }
 
 button {

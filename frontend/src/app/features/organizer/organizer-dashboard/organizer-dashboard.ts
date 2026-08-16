@@ -43,11 +43,22 @@ export class OrganizerDashboard {
       return;
     }
 
-    const value = form.value as { name: string; location: string; startsAt: string; maxTeams: number };
+    const value = form.value as {
+      name: string;
+      description?: string;
+      location: string;
+      startsAt: string;
+      maxTeams: number;
+    };
     this.errorMessage.set('');
     this.isSubmitting.set(true);
     this.organizerApi
-      .createTournament({ ...value, startsAt: new Date(value.startsAt).toISOString(), maxTeams: Number(value.maxTeams) || 8 })
+      .createTournament({
+        ...value,
+        description: value.description?.trim() || undefined,
+        startsAt: new Date(value.startsAt).toISOString(),
+        maxTeams: Number(value.maxTeams) || 8,
+      })
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
