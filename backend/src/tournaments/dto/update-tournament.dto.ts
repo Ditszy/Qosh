@@ -32,4 +32,11 @@ export class UpdateTournamentDto {
     @Min(2)
     @Max(32)
     maxTeams?: number;
+
+    @ApiPropertyOptional({ example: 1500, minimum: 0 })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(0)
+    entryFee?: number;
 }

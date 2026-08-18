@@ -23,6 +23,7 @@ type TournamentRecord = {
     location: string;
     startsAt: Date;
     maxTeams: number;
+    entryFee: number;
     status: TournamentStatus;
     organizerId: string;
     createdAt: Date;
@@ -117,6 +118,7 @@ export class TournamentsService {
             location?: string;
             startsAt?: Date;
             maxTeams?: number;
+            entryFee?: number;
         } = {};
 
         if (updateTournamentDto.name !== undefined) {
@@ -139,10 +141,18 @@ export class TournamentsService {
             data.maxTeams = updateTournamentDto.maxTeams;
         }
 
-        return this.prisma.tournament.update({
+        if (updateTournamentDto.entryFee !== undefined) {
+            data.entryFee = updateTournamentDto.entryFee;
+        }
+
+        const updatedTournament = await this.prisma.tournament.update({
             where: { id },
             data,
         });
+
+        this.publishStatusChanged(updatedTournament);
+
+        return updatedTournament;
     }
 
     async openSignups(id: string, actor: TournamentActor): Promise<TournamentRecord> {
