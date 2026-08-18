@@ -109,7 +109,9 @@
           }
         </svg>
         @for (round of bracket.rounds; track round.round) {
-        <h4 class="round-title" [style.left.px]="round.x">Runda {{ round.round }}</h4>
+        <h4 class="round-title" [style.left.px]="round.x" style="width: 240px; text-align: center;">
+          Runda {{ round.round }}
+        </h4>
         @for (card of round.matches; track card.match.id) {
         <article class="bracket-match" [style.left.px]="round.x" [style.top.px]="card.y">
           <div class="match-label">{{ card.match.scheduledAt ? (card.match.scheduledAt | date: 'shortTime') :
