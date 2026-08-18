@@ -8,8 +8,13 @@ import { finalize } from 'rxjs';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
+import type { TournamentMatch } from '../../public/tournaments/tournament.models';
 
 type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'username'>;
+type MatchRoundGroup = {
+  round: number;
+  matches: TournamentMatch[];
+};
 
 @Component({
   selector: 'app-organizer-dashboard',
@@ -27,6 +32,8 @@ export class OrganizerDashboard {
   protected readonly errorMessage = signal('');
   protected readonly officialSearchError = signal('');
   protected readonly editingMatchId = signal('');
+  protected readonly expandedTournamentMatches = signal<Record<string, boolean>>({});
+  protected readonly expandedRounds = signal<Record<string, boolean>>({});
   protected readonly selectedOfficialNames = signal<Record<string, string | null>>({});
   protected readonly scorers = signal<OfficialUser[]>([]);
   protected readonly referees = signal<OfficialUser[]>([]);
@@ -143,6 +150,44 @@ export class OrganizerDashboard {
     this.editingMatchId.set('');
   }
 
+  protected toggleTournamentMatches(tournamentId: string): void {
+    this.expandedTournamentMatches.update((expanded) => ({
+      ...expanded,
+      [tournamentId]: !expanded[tournamentId],
+    }));
+  }
+
+  protected isTournamentMatchesExpanded(tournamentId: string): boolean {
+    return Boolean(this.expandedTournamentMatches()[tournamentId]);
+  }
+
+  protected toggleRound(tournamentId: string, round: number): void {
+    const key = this.roundKey(tournamentId, round);
+
+    this.expandedRounds.update((expanded) => ({
+      ...expanded,
+      [key]: !expanded[key],
+    }));
+  }
+
+  protected isRoundExpanded(tournamentId: string, round: number): boolean {
+    return Boolean(this.expandedRounds()[this.roundKey(tournamentId, round)]);
+  }
+
+  protected matchRoundGroups(matches: TournamentMatch[]): MatchRoundGroup[] {
+    const grouped = matches.reduce<Record<number, TournamentMatch[]>>((rounds, match) => {
+      rounds[match.round] = [...(rounds[match.round] ?? []), match];
+      return rounds;
+    }, {});
+
+    return Object.entries(grouped)
+      .map(([round, roundMatches]) => ({
+        round: Number(round),
+        matches: roundMatches.sort((a, b) => a.bracketPosition - b.bracketPosition),
+      }))
+      .sort((a, b) => a.round - b.round);
+  }
+
   protected matchScheduleInput(scheduledAt: string | null): string {
     if (!scheduledAt) {
       return '';
@@ -215,6 +260,10 @@ export class OrganizerDashboard {
 
   private officialKey(matchId: string, role: OfficialRole): string {
     return `${matchId}:${role}`;
+  }
+
+  private roundKey(tournamentId: string, round: number): string {
+    return `${tournamentId}:${round}`;
   }
 
   private officialName(official: OfficialDisplayUser): string {
