@@ -8,12 +8,21 @@ import { finalize } from 'rxjs';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
-import type { Tournament, TournamentMatch } from '../../public/tournaments/tournament.models';
+import type { Tournament, TournamentMatch, TournamentStatus } from '../../public/tournaments/tournament.models';
 
 type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'username'>;
 type MatchRoundGroup = {
   round: number;
   matches: TournamentMatch[];
+};
+
+const tournamentStatusLabels: Record<TournamentStatus, string> = {
+  DRAFT: 'U pripremi',
+  SIGNUPS_OPEN: 'Prijave otvorene',
+  SIGNUPS_LOCKED: 'Prijave zaključane',
+  IN_PROGRESS: 'U toku',
+  COMPLETED: 'Završen',
+  CANCELLED: 'Otkazan',
 };
 
 @Component({
@@ -138,7 +147,7 @@ export class OrganizerDashboard {
     this.pendingAction.set(`bracket:${id}`);
     this.organizerApi.generateBracket(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
       next: () => this.reloadDashboard(),
-      error: () => this.errorMessage.set('Zreb nije generisan. Proveri broj timova.'),
+      error: () => this.errorMessage.set('Žreb nije generisan. Proveri broj timova.'),
     });
   }
 
@@ -151,7 +160,7 @@ export class OrganizerDashboard {
     this.pendingAction.set(`start:${id}`);
     this.organizerApi.startTournament(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
       next: () => this.reloadDashboard(),
-      error: () => this.errorMessage.set('Turnir nije pokrenut. Prvo generisi zreb.'),
+      error: () => this.errorMessage.set('Turnir nije pokrenut. Prvo generiši žreb.'),
     });
   }
 
@@ -191,6 +200,10 @@ export class OrganizerDashboard {
 
   protected canEditTournament(tournament: Tournament): boolean {
     return tournament.status === 'DRAFT' || tournament.status === 'SIGNUPS_OPEN';
+  }
+
+  protected statusLabel(status: TournamentStatus): string {
+    return tournamentStatusLabels[status];
   }
 
   protected editTournament(id: string): void {
