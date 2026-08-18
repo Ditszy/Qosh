@@ -81,6 +81,10 @@ export class MatchLiveService {
         this.publish(match.id, 'match.finalized', match);
     }
 
+    publishReportCreated(matchId: string, report: object): void {
+        this.publish(matchId, 'match.report.created', { report });
+    }
+
     private publish(matchId: string, type: string, data: string | object): void {
         this.matchUpdates$.next({
             matchId,

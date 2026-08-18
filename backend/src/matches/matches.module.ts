@@ -26,6 +26,6 @@ import { MatchesService } from './matches.service';
         MatchesReadService,
         MatchesService,
     ],
-    exports: [MatchesService],
+    exports: [MatchLiveService, MatchesService],
 })
 export class MatchesModule { }

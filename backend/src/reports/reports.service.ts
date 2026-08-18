@@ -7,10 +7,11 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '../common/user-role.enum';
 import { MatchStatus } from '../matches/enums/match-status.enum';
+import { MatchLiveService } from '../matches/services/match-live.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { publicUserSelect } from '../users/users.service';
 import { CreateRefereeReportDto } from './dto/create-referee-report.dto';
-import { RefereeReportRecord, RefereeReportWithRelations } from './types/report.types';
+import { RefereeReportWithRelations } from './types/report.types';
 
 type ReportActor = {
     id: string;
@@ -19,7 +20,10 @@ type ReportActor = {
 
 @Injectable()
 export class ReportsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly matchLiveService: MatchLiveService,
+    ) { }
 
     async findByMatchId(matchId: string): Promise<RefereeReportWithRelations> {
         const report = await this.prisma.refereeReport.findUnique({
@@ -38,7 +42,7 @@ export class ReportsService {
         matchId: string,
         createRefereeReportDto: CreateRefereeReportDto,
         actor: ReportActor,
-    ): Promise<RefereeReportRecord> {
+    ): Promise<RefereeReportWithRelations> {
         const match = await this.prisma.match.findUnique({
             where: { id: matchId },
         });
@@ -63,13 +67,18 @@ export class ReportsService {
             throw new ConflictException('Referee report already exists for this match');
         }
 
-        return this.prisma.refereeReport.create({
+        await this.prisma.refereeReport.create({
             data: {
                 matchId,
                 refereeId: actor.id,
                 notes: createRefereeReportDto.notes,
             },
         });
+
+        const report = await this.findByMatchId(matchId);
+        this.matchLiveService.publishReportCreated(matchId, report);
+
+        return report;
     }
 
     private reportInclude() {
