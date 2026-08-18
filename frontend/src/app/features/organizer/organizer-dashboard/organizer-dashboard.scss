@@ -157,6 +157,44 @@ button:disabled {
   gap: 0.55rem;
 }
 
+.matches-toggle,
+.round-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #10151f;
+  color: #f7f8fa;
+}
+
+.matches-toggle {
+  border-color: #ff6b1a;
+}
+
+.matches-toggle span,
+.round-toggle span {
+  display: inline-grid;
+  min-width: 2rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #293241;
+  color: #d7dce5;
+  font-size: 0.78rem;
+}
+
+.rounds-panel {
+  display: grid;
+  gap: 0.65rem;
+  border-top: 1px solid #293241;
+  padding-top: 0.85rem;
+}
+
+.round-group {
+  display: grid;
+  gap: 0.65rem;
+}
+
 .schedule-form {
   grid-column: 1 / -1;
   display: grid;
@@ -213,8 +251,8 @@ button:disabled {
 }
 
 .match-list {
-  border-top: 1px solid #293241;
-  padding-top: 0.85rem;
+  gap: 0.55rem;
+  padding-left: 0.75rem;
 }
 
 .match-row {
