@@ -325,8 +325,8 @@ export class TeamsService {
                 {
                     recipientId: invite.invitedUserId,
                     type: NotificationType.TEAM_INVITE,
-                    title: 'Team invite received',
-                    body: `${invite.inviter.firstName} ${invite.inviter.lastName} invited you to join ${team.name} in ${team.tournament.name}.`,
+                    title: 'Poziv za tim',
+                    body: `Stigao ti je poziv za tim ${team.name} na turniru ${team.tournament.name}.`,
                     tournamentId: team.tournamentId,
                     teamId: team.id,
                     inviteId: invite.id,

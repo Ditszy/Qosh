@@ -95,8 +95,8 @@ export class MatchSchedulingService {
                     {
                         recipientId: updatedMatch.scorerId,
                         type: NotificationType.MATCH_ASSIGNMENT,
-                        title: 'Scorer assignment received',
-                        body: `You were assigned as scorer for ${updatedMatch.tournament.name}.`,
+                        title: 'Dodeljen ti je zapisnik',
+                        body: `Dodeljena ti je uloga zapisničara za turnir ${updatedMatch.tournament.name}.`,
                         tournamentId: updatedMatch.tournamentId,
                         matchId: updatedMatch.id,
                     },
@@ -110,8 +110,8 @@ export class MatchSchedulingService {
                     {
                         recipientId: updatedMatch.refereeId,
                         type: NotificationType.MATCH_ASSIGNMENT,
-                        title: 'Referee assignment received',
-                        body: `You were assigned as referee for ${updatedMatch.tournament.name}.`,
+                        title: 'Dodeljena ti je uloga sudije',
+                        body: `Dodeljena ti je uloga sudije za turnir ${updatedMatch.tournament.name}.`,
                         tournamentId: updatedMatch.tournamentId,
                         matchId: updatedMatch.id,
                     },
@@ -155,8 +155,8 @@ export class MatchSchedulingService {
                         {
                             recipientId,
                             type: NotificationType.MATCH_SCHEDULE_CHANGED,
-                            title: 'Match schedule changed',
-                            body: `The schedule for ${updatedMatch.tournament.name} was updated.`,
+                            title: 'Termin meča je promenjen',
+                            body: `Ažuriran je termin ili lokacija meča na turniru ${updatedMatch.tournament.name}.`,
                             tournamentId: updatedMatch.tournamentId,
                             matchId: updatedMatch.id,
                         },

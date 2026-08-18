@@ -235,8 +235,8 @@ export class TournamentsService {
                     {
                         recipientId,
                         type: NotificationType.TOURNAMENT_STARTED,
-                        title: 'Tournament started',
-                        body: `${updatedTournament.name} has started.`,
+                        title: 'Turnir je počeo',
+                        body: `Turnir ${updatedTournament.name} je počeo.`,
                         tournamentId: updatedTournament.id,
                     },
                     tx,

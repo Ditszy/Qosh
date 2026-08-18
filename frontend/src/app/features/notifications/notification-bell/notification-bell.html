@@ -20,7 +20,7 @@
     } @else if (state.notifications.length > 0) {
     @for (notification of state.notifications; track notification.id) {
     <article [class.unread]="!notification.readAt">
-      <span>{{ notificationTypeLabel(notification.type) }}</span>
+      <span>{{ notificationTypeLabel(notification.type) }}</span> |
       <strong>{{ notification.title }}</strong>
       <p>{{ notification.body }}</p>
       <footer>
