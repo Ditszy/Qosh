@@ -55,18 +55,19 @@ on conflict ("email") do update set
   "lastName" = excluded."lastName",
   "role" = excluded."role";
 
-insert into "tournaments" ("id", "name", "description", "location", "startsAt", "maxTeams", "status", "organizerId", "createdAt", "updatedAt")
+insert into "tournaments" ("id", "name", "description", "location", "startsAt", "maxTeams", "entryFee", "status", "organizerId", "createdAt", "updatedAt")
 values
-  ('11111111-1111-4111-8111-111111111111', 'Qosh Open Dorcol', 'Open signup tournament with five complete 3-player teams.', 'Belgrade Sports Hall', '2026-08-15T18:00:00.000Z', 8, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
-  ('11111111-1111-4111-8111-111111111112', 'Qosh Open Novi Sad', 'Open signup tournament with thirteen complete 3-player teams.', 'Novi Sad Outdoor Court', '2026-08-22T17:30:00.000Z', 16, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
-  ('11111111-1111-4111-8111-111111111113', 'Qosh Open Zemun', 'Open signup tournament with five complete 3-player teams.', 'Zemun Arena', '2026-08-29T19:00:00.000Z', 8, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
-  ('11111111-1111-4111-8111-111111111114', 'Qosh Open Night', 'Open signup tournament with five complete 3-player teams.', 'Ada Night Court', '2026-09-05T20:00:00.000Z', 8, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now())
+  ('11111111-1111-4111-8111-111111111111', 'Qosh Open Dorcol', 'Open signup tournament with five complete 3-player teams.', 'Belgrade Sports Hall', '2026-08-15T18:00:00.000Z', 8, 1500, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111112', 'Qosh Open Novi Sad', 'Open signup tournament with thirteen complete 3-player teams.', 'Novi Sad Outdoor Court', '2026-08-22T17:30:00.000Z', 16, 2000, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111113', 'Qosh Open Zemun', 'Open signup tournament with five complete 3-player teams.', 'Zemun Arena', '2026-08-29T19:00:00.000Z', 8, 1200, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111114', 'Qosh Open Night', 'Open signup tournament with five complete 3-player teams.', 'Ada Night Court', '2026-09-05T20:00:00.000Z', 8, 1800, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now())
 on conflict ("id") do update set
   "name" = excluded."name",
   "description" = excluded."description",
   "location" = excluded."location",
   "startsAt" = excluded."startsAt",
   "maxTeams" = excluded."maxTeams",
+  "entryFee" = excluded."entryFee",
   "status" = excluded."status",
   "organizerId" = excluded."organizerId",
   "updatedAt" = now();

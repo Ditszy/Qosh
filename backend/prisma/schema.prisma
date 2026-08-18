@@ -106,6 +106,7 @@ model Tournament {
   location    String
   startsAt    DateTime         @db.Timestamptz
   maxTeams    Int              @default(8)
+  entryFee    Int              @default(0)
   status      TournamentStatus @default(DRAFT)
   organizerId String           @db.Uuid
   organizer   User             @relation(fields: [organizerId], references: [id])
