@@ -39,6 +39,7 @@ h2 {
 }
 
 .create-form,
+.tournament-edit-form,
 .tournament-card,
 .surface-message {
   border: 1px solid #293241;
@@ -47,7 +48,8 @@ h2 {
   padding: 1rem;
 }
 
-.create-form {
+.create-form,
+.tournament-edit-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.85rem;
@@ -55,7 +57,9 @@ h2 {
 
 .create-form h2,
 .create-form button,
-.create-form p {
+.create-form p,
+.tournament-edit-form button,
+.tournament-edit-form p {
   grid-column: 1 / -1;
 }
 

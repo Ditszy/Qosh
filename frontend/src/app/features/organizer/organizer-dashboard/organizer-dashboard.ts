@@ -8,7 +8,7 @@ import { finalize } from 'rxjs';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
-import type { TournamentMatch } from '../../public/tournaments/tournament.models';
+import type { Tournament, TournamentMatch } from '../../public/tournaments/tournament.models';
 
 type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'username'>;
 type MatchRoundGroup = {
@@ -31,6 +31,7 @@ export class OrganizerDashboard {
   protected readonly pendingAction = signal('');
   protected readonly errorMessage = signal('');
   protected readonly officialSearchError = signal('');
+  protected readonly editingTournamentId = signal('');
   protected readonly editingMatchId = signal('');
   protected readonly expandedTournamentMatches = signal<Record<string, boolean>>({});
   protected readonly expandedRounds = signal<Record<string, boolean>>({});
@@ -56,6 +57,7 @@ export class OrganizerDashboard {
       location: string;
       startsAt: string;
       maxTeams: number;
+      entryFee?: number;
     };
     this.errorMessage.set('');
     this.isSubmitting.set(true);
@@ -65,14 +67,51 @@ export class OrganizerDashboard {
         description: value.description?.trim() || undefined,
         startsAt: new Date(value.startsAt).toISOString(),
         maxTeams: Number(value.maxTeams) || 8,
+        entryFee: Number(value.entryFee) || 0,
       })
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
-          form.resetForm({ maxTeams: 8 });
+          form.resetForm({ maxTeams: 8, entryFee: 0 });
           this.reloadDashboard();
         },
         error: () => this.errorMessage.set('Turnir nije kreiran. Proveri podatke.'),
+      });
+  }
+
+  protected updateTournamentDetails(id: string, form: NgForm): void {
+    if (form.invalid || this.pendingAction()) {
+      form.control.markAllAsTouched();
+      return;
+    }
+
+    const value = form.value as {
+      name: string;
+      description?: string;
+      location: string;
+      startsAt: string;
+      maxTeams: number;
+      entryFee?: number;
+    };
+
+    this.errorMessage.set('');
+    this.pendingAction.set(`update:${id}`);
+    this.organizerApi
+      .updateTournament(id, {
+        name: value.name,
+        description: value.description?.trim() || undefined,
+        location: value.location,
+        startsAt: new Date(value.startsAt).toISOString(),
+        maxTeams: Number(value.maxTeams) || 8,
+        entryFee: Number(value.entryFee) || 0,
+      })
+      .pipe(finalize(() => this.pendingAction.set('')))
+      .subscribe({
+        next: () => {
+          this.editingTournamentId.set('');
+          this.reloadDashboard();
+        },
+        error: () => this.errorMessage.set('Izmena turnira nije sačuvana.'),
       });
   }
 
@@ -150,6 +189,18 @@ export class OrganizerDashboard {
     this.editingMatchId.set('');
   }
 
+  protected canEditTournament(tournament: Tournament): boolean {
+    return tournament.status === 'DRAFT' || tournament.status === 'SIGNUPS_OPEN';
+  }
+
+  protected editTournament(id: string): void {
+    this.editingTournamentId.set(id);
+  }
+
+  protected cancelTournamentEdit(): void {
+    this.editingTournamentId.set('');
+  }
+
   protected toggleTournamentMatches(tournamentId: string): void {
     this.expandedTournamentMatches.update((expanded) => ({
       ...expanded,
@@ -197,6 +248,10 @@ export class OrganizerDashboard {
     const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
 
     return localDate.toISOString().slice(0, 16);
+  }
+
+  protected tournamentDateInput(startsAt: string): string {
+    return this.matchScheduleInput(startsAt);
   }
 
   protected officialInputValue(matchId: string, role: OfficialRole, official: OfficialDisplayUser | null): string {

@@ -11,6 +11,7 @@ export type OrganizerTournamentRequest = {
   location: string;
   startsAt: string;
   maxTeams?: number;
+  entryFee?: number;
 };
 
 export type UpdateOrganizerTournamentRequest = Partial<OrganizerTournamentRequest>;

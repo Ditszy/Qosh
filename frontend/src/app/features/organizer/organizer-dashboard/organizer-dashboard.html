@@ -26,6 +26,10 @@
       Maksimalno timova
       <input type="number" name="maxTeams" ngModel="8" min="2" max="32" required />
     </label>
+    <label>
+      Kotizacija
+      <input type="number" name="entryFee" ngModel="0" min="0" required />
+    </label>
     @if (errorMessage()) {
     <p class="error-message">{{ errorMessage() }}</p>
     }
@@ -56,6 +60,11 @@
       </div>
 
       <div class="tournament-actions">
+        @if (canEditTournament(tournament)) {
+        <button type="button" (click)="editTournament(tournament.id)">
+          Izmeni turnir
+        </button>
+        }
         @if (tournament.status === 'DRAFT') {
         <button type="button" [disabled]="pendingAction() === 'open:' + tournament.id"
           (click)="updateSignupStatus(tournament.id, 'open')">
@@ -79,6 +88,42 @@
         </button>
         }
       </div>
+
+      @if (editingTournamentId() === tournament.id) {
+      <form class="tournament-edit-form" #editTournamentForm="ngForm"
+        (ngSubmit)="updateTournamentDetails(tournament.id, editTournamentForm)">
+        <label>
+          Naziv
+          <input type="text" name="name" [ngModel]="tournament.name" required />
+        </label>
+        <label class="description-field">
+          Opis
+          <textarea name="description" [ngModel]="tournament.description || ''" rows="3"></textarea>
+        </label>
+        <label>
+          Lokacija
+          <input type="text" name="location" [ngModel]="tournament.location" required />
+        </label>
+        <label>
+          PoÄetak
+          <input type="datetime-local" name="startsAt" [ngModel]="tournamentDateInput(tournament.startsAt)" required />
+        </label>
+        <label>
+          Maksimalno timova
+          <input type="number" name="maxTeams" [ngModel]="tournament.maxTeams" min="2" max="32" required />
+        </label>
+        <label>
+          Kotizacija
+          <input type="number" name="entryFee" [ngModel]="tournament.entryFee" min="0" required />
+        </label>
+        <button type="submit" [disabled]="editTournamentForm.invalid || pendingAction() === 'update:' + tournament.id">
+          SaÄuvaj turnir
+        </button>
+        <button class="secondary-button" type="button" (click)="cancelTournamentEdit()">
+          OtkaÅ¾i
+        </button>
+      </form>
+      }
 
       @if (tournament.matches.length > 0) {
       <button class="matches-toggle" type="button" [attr.aria-expanded]="isTournamentMatchesExpanded(tournament.id)"
