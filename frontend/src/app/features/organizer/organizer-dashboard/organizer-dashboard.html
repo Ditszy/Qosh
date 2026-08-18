@@ -71,7 +71,7 @@
         @if (tournament.status === 'SIGNUPS_LOCKED') {
         <button type="button" [disabled]="pendingAction() === 'bracket:' + tournament.id"
           (click)="generateBracket(tournament.id)">
-          Generiši zreb
+          Generiši žreb
         </button>
         <button type="button" [disabled]="pendingAction() === 'start:' + tournament.id"
           (click)="startTournament(tournament.id)">
@@ -81,83 +81,110 @@
       </div>
 
       @if (tournament.matches.length > 0) {
-      <ol class="match-list">
-        @for (match of tournament.matches; track match.id) {
-        <li class="match-row">
-          <div class="match-summary">
-            <a [routerLink]="['/matches', match.id, 'live']">
-              R{{ match.round }}.{{ match.bracketPosition }}
-              {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
-            </a>
-            <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
-            <small>{{ match.location || tournament.location }}</small>
-            <small>
-              Zapisničar: {{ match.scorer ? (match.scorer.firstName + ' ' + match.scorer.lastName) : 'nije dodeljen' }}
-              · Sudija: {{ match.referee ? (match.referee.firstName + ' ' + match.referee.lastName) : 'nije dodeljen' }}
-            </small>
-          </div>
-          <button class="match-edit-button" type="button" (click)="editMatch(match.id)">
-            Izmeni
+      <button class="matches-toggle" type="button" [attr.aria-expanded]="isTournamentMatchesExpanded(tournament.id)"
+        (click)="toggleTournamentMatches(tournament.id)">
+        {{ isTournamentMatchesExpanded(tournament.id) ? 'Sakrij mečeve' : 'Prikaži mečeve' }}
+        <span>{{ tournament.matches.length }}</span>
+      </button>
+
+      @if (isTournamentMatchesExpanded(tournament.id)) {
+      <div class="rounds-panel">
+        @for (roundGroup of matchRoundGroups(tournament.matches); track roundGroup.round) {
+        <section class="round-group">
+          <button class="round-toggle" type="button"
+            [attr.aria-expanded]="isRoundExpanded(tournament.id, roundGroup.round)"
+            (click)="toggleRound(tournament.id, roundGroup.round)">
+            Runda {{ roundGroup.round }}
+            <span>{{ roundGroup.matches.length }}</span>
           </button>
-          @if (editingMatchId() === match.id) {
-          <form class="schedule-form" #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
-            <input type="datetime-local" name="scheduledAt" [ngModel]="matchScheduleInput(match.scheduledAt)"
-              required />
-            <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
-            <label class="official-picker">
-              <input type="search" placeholder="Traži zapisničara"
-                [ngModel]="officialInputValue(match.id, 'SCORER', match.scorer)" [ngModelOptions]="{ standalone: true }"
-                (ngModelChange)="searchScorers($event)" />
-              @if (scorers().length > 0) {
-              <ul class="autocomplete-list">
-                @for (scorer of scorers(); track scorer.id) {
-                <li>
-                  <button type="button" (click)="selectOfficial(match.id, 'SCORER', scorer, scorerIdModel)">
-                    {{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})
-                  </button>
-                </li>
+
+          @if (isRoundExpanded(tournament.id, roundGroup.round)) {
+          <ol class="match-list">
+            @for (match of roundGroup.matches; track match.id) {
+            <li class="match-row">
+              <div class="match-summary">
+                <a [routerLink]="['/matches', match.id, 'live']">
+                  R{{ match.round }}.{{ match.bracketPosition }}
+                  {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
+                </a>
+                <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
+                <small>{{ match.location || tournament.location }}</small>
+                <small>
+                  Zapisničar: {{ match.scorer ? (match.scorer.firstName + ' ' + match.scorer.lastName) : 'nije dodeljen'
+                  }}
+                  · Sudija: {{ match.referee ? (match.referee.firstName + ' ' + match.referee.lastName) : 'nije
+                  dodeljen' }}
+                </small>
+              </div>
+              <button class="match-edit-button" type="button" (click)="editMatch(match.id)">
+                Izmeni
+              </button>
+              @if (editingMatchId() === match.id) {
+              <form class="schedule-form" #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
+                <input type="datetime-local" name="scheduledAt" [ngModel]="matchScheduleInput(match.scheduledAt)"
+                  required />
+                <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
+                <label class="official-picker">
+                  <input type="search" placeholder="Traži zapisničara"
+                    [ngModel]="officialInputValue(match.id, 'SCORER', match.scorer)"
+                    [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchScorers($event)" />
+                  @if (scorers().length > 0) {
+                  <ul class="autocomplete-list">
+                    @for (scorer of scorers(); track scorer.id) {
+                    <li>
+                      <button type="button" (click)="selectOfficial(match.id, 'SCORER', scorer, scorerIdModel)">
+                        {{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})
+                      </button>
+                    </li>
+                    }
+                  </ul>
+                  }
+                </label>
+                <input type="hidden" name="scorerId" [ngModel]="match.scorerId || ''" #scorerIdModel="ngModel" />
+                <button class="secondary-button" type="button"
+                  (click)="clearOfficial(match.id, 'SCORER', scorerIdModel)">
+                  Bez zapisničara
+                </button>
+                <label class="official-picker">
+                  <input type="search" placeholder="Traži sudiju"
+                    [ngModel]="officialInputValue(match.id, 'REFEREE', match.referee)"
+                    [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchReferees($event)" />
+                  @if (referees().length > 0) {
+                  <ul class="autocomplete-list">
+                    @for (referee of referees(); track referee.id) {
+                    <li>
+                      <button type="button" (click)="selectOfficial(match.id, 'REFEREE', referee, refereeIdModel)">
+                        {{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
+                      </button>
+                    </li>
+                    }
+                  </ul>
+                  }
+                </label>
+                <input type="hidden" name="refereeId" [ngModel]="match.refereeId || ''" #refereeIdModel="ngModel" />
+                <button class="secondary-button" type="button"
+                  (click)="clearOfficial(match.id, 'REFEREE', refereeIdModel)">
+                  Bez sudije
+                </button>
+                @if (officialSearchError()) {
+                <p class="error-message">{{ officialSearchError() }}</p>
                 }
-              </ul>
+                <button type="submit" [disabled]="scheduleForm.invalid || pendingAction() === 'schedule:' + match.id">
+                  Sačuvaj termin
+                </button>
+                <button class="secondary-button" type="button" (click)="cancelMatchEdit()">
+                  Otkaži
+                </button>
+              </form>
               }
-            </label>
-            <input type="hidden" name="scorerId" [ngModel]="match.scorerId || ''" #scorerIdModel="ngModel" />
-            <button class="secondary-button" type="button" (click)="clearOfficial(match.id, 'SCORER', scorerIdModel)">
-              Bez zapisničara
-            </button>
-            <label class="official-picker">
-              <input type="search" placeholder="Traži sudiju"
-                [ngModel]="officialInputValue(match.id, 'REFEREE', match.referee)"
-                [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchReferees($event)" />
-              @if (referees().length > 0) {
-              <ul class="autocomplete-list">
-                @for (referee of referees(); track referee.id) {
-                <li>
-                  <button type="button" (click)="selectOfficial(match.id, 'REFEREE', referee, refereeIdModel)">
-                    {{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
-                  </button>
-                </li>
-                }
-              </ul>
-              }
-            </label>
-            <input type="hidden" name="refereeId" [ngModel]="match.refereeId || ''" #refereeIdModel="ngModel" />
-            <button class="secondary-button" type="button" (click)="clearOfficial(match.id, 'REFEREE', refereeIdModel)">
-              Bez sudije
-            </button>
-            @if (officialSearchError()) {
-            <p class="error-message">{{ officialSearchError() }}</p>
+            </li>
             }
-            <button type="submit" [disabled]="scheduleForm.invalid || pendingAction() === 'schedule:' + match.id">
-              Sačuvaj termin
-            </button>
-            <button class="secondary-button" type="button" (click)="cancelMatchEdit()">
-              Otkaži
-            </button>
-          </form>
+          </ol>
           }
-        </li>
+        </section>
         }
-      </ol>
+      </div>
+      }
       }
     </li>
     }
