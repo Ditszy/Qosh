@@ -24,6 +24,7 @@ export type Tournament = {
   location: string;
   startsAt: string;
   maxTeams: number;
+  entryFee: number;
   status: TournamentStatus;
   organizerId: string;
   organizer?: Pick<PublicUser, 'id' | 'username' | 'firstName' | 'lastName'>;

@@ -65,6 +65,10 @@
         <dt>Kapacitet</dt>
         <dd>{{ state.tournament.maxTeams }} timova</dd>
       </div>
+      <div>
+        <dt>Kotizacija</dt>
+        <dd>{{ state.tournament.entryFee > 0 ? (state.tournament.entryFee + ' RSD') : 'Besplatno' }}</dd>
+      </div>
     </dl>
   </section>
 
