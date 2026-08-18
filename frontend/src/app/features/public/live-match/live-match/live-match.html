@@ -11,14 +11,14 @@
   <section class="match-card" aria-label="Rezultat i vreme">
     <header class="match-card-header">
       <span>Live meč</span>
-      <strong>{{ state.bundle.match.status }}</strong>
+      <strong>{{ matchStatusLabel(state.bundle.match.status) }}</strong>
     </header>
     <div class="score-row active">
       <span>{{ teamName(state.bundle.match.teamA) }}</span>
       <strong>{{ state.bundle.match.teamAScore }}</strong>
     </div>
     <div class="clock-row">
-      <strong>{{ state.bundle.match.clockStatus }}</strong>
+      <strong>{{ clockStatusLabel(state.bundle.match.clockStatus) }}</strong>
       <span>{{ clockTime(state.bundle.match.clockRemainingSeconds) }}</span>
     </div>
     <div class="score-row">

@@ -6,9 +6,21 @@ import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
 
 import type { MatchEvent, MatchEventType, MatchReadBundle } from '../match.models';
+import type { MatchClockStatus, MatchStatus } from '../../tournaments/tournament.models';
 import { LiveMatchActions, selectLiveMatchView } from '../store';
 
 type MatchPanel = 'events' | 'boxScore' | 'report';
+const matchStatusLabels: Record<MatchStatus, string> = {
+  SCHEDULED: 'Zakazan',
+  LIVE: 'U toku',
+  FINAL: 'Završen',
+};
+const matchClockStatusLabels: Record<MatchClockStatus, string> = {
+  NOT_STARTED: 'Nije počeo',
+  RUNNING: 'U toku',
+  PAUSED: 'Pauza',
+  ENDED: 'Završeno',
+};
 const matchEventTypeLabels: Record<MatchEventType, string> = {
   ONE_POINT_MADE: 'Pogođen jedan poen',
   ONE_POINT_MISSED: 'Promašen jedan poen',
@@ -64,6 +76,14 @@ export class LiveMatch {
 
   protected eventTypeLabel(type: MatchEventType): string {
     return matchEventTypeLabels[type];
+  }
+
+  protected matchStatusLabel(status: MatchStatus): string {
+    return matchStatusLabels[status];
+  }
+
+  protected clockStatusLabel(status: MatchClockStatus): string {
+    return matchClockStatusLabels[status];
   }
 
   protected orderedEvents(events: MatchEvent[]): MatchEvent[] {

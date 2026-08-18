@@ -121,6 +121,11 @@ function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessag
         events: [message.data.event, ...bundle.events],
         statistics: applyEventToStatistics(bundle.statistics, message.data.event),
       };
+    case 'match.report.created':
+      return {
+        ...bundle,
+        refereeReport: message.data.report,
+      };
     case 'match.finalized':
       return {
         ...mergeLiveBundle(bundle, { ...message, type: 'match.score' }),

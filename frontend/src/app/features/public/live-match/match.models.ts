@@ -75,6 +75,10 @@ export type MatchEventCreatedPayload = {
   event: MatchEvent;
 };
 
+export type MatchReportCreatedPayload = {
+  report: MatchRefereeReport;
+};
+
 export type MatchFinalizedPayload = MatchScorePayload & {
   status: MatchStatus;
   winnerTeamId: string | null;
@@ -87,6 +91,7 @@ export type MatchLivePayload =
   | MatchLiveSnapshot
   | MatchClockPayload
   | MatchEventCreatedPayload
+  | MatchReportCreatedPayload
   | MatchScorePayload
   | MatchFinalizedPayload;
 
@@ -94,6 +99,7 @@ export type MatchLiveStreamMessage =
   | (LiveStreamMessage<MatchLiveSnapshot> & { type: 'match.snapshot' })
   | (LiveStreamMessage<MatchClockPayload> & { type: 'match.clock' })
   | (LiveStreamMessage<MatchEventCreatedPayload> & { type: 'match.event.created' })
+  | (LiveStreamMessage<MatchReportCreatedPayload> & { type: 'match.report.created' })
   | (LiveStreamMessage<MatchScorePayload> & { type: 'match.score' })
   | (LiveStreamMessage<MatchFinalizedPayload> & { type: 'match.finalized' });
 
