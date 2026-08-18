@@ -47,7 +47,7 @@
       @for (event of orderedEvents(state.bundle.events); track event.id) {
       <article>
         <span>{{ eventClockTime(event.clockRemainingSeconds) }}</span>
-        <strong>{{ event.type }}</strong>
+        <strong>{{ eventTypeLabel(event.type) }}</strong>
         <p>{{ event.team.name }} @if (event.player) { / {{ event.player.firstName }} {{ event.player.lastName }} }</p>
       </article>
       }

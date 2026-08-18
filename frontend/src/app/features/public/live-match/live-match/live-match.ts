@@ -5,10 +5,24 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
 
-import type { MatchEvent, MatchReadBundle } from '../match.models';
+import type { MatchEvent, MatchEventType, MatchReadBundle } from '../match.models';
 import { LiveMatchActions, selectLiveMatchView } from '../store';
 
 type MatchPanel = 'events' | 'boxScore' | 'report';
+const matchEventTypeLabels: Record<MatchEventType, string> = {
+  ONE_POINT_MADE: 'Pogođen jedan poen',
+  ONE_POINT_MISSED: 'Promašen jedan poen',
+  TWO_POINT_MADE: 'Pogođena dvojka',
+  TWO_POINT_MISSED: 'Promašena dvojka',
+  FREE_THROW_MADE: 'Pogođeno slobodno bacanje',
+  FREE_THROW_MISSED: 'Promašeno slobodno bacanje',
+  REBOUND: 'Skok',
+  ASSIST: 'Asistencija',
+  STEAL: 'Ukradena lopta',
+  BLOCK: 'Blokada',
+  TURNOVER: 'Izgubljena lopta',
+  FOUL: 'Faul',
+};
 
 @Component({
   selector: 'app-live-match',
@@ -46,6 +60,10 @@ export class LiveMatch {
 
   protected eventClockTime(seconds: number | null): string {
     return seconds === null ? '--:--' : this.clockTime(seconds);
+  }
+
+  protected eventTypeLabel(type: MatchEventType): string {
+    return matchEventTypeLabels[type];
   }
 
   protected orderedEvents(events: MatchEvent[]): MatchEvent[] {
