@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, EMPTY, exhaustMap, forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, forkJoin, map, of, switchMap, zip } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth';
 import { NotificationsActions } from '../../notifications';
@@ -17,13 +17,13 @@ export const loadMyTeamPage = createEffect(
     actions$.pipe(
       ofType(PlayerTeamsActions.loadPage),
       switchMap(() =>
-        forkJoin({
-          teams: teamsApi.listMyTeams().pipe(
+        zip(
+          teamsApi.listMyTeams().pipe(
             switchMap((teams) => hydrateTeams(teams, tournamentsApi)),
           ),
-          invites: teamsApi.listMyPendingInvites(),
-        }).pipe(
-          map(({ teams, invites }) => PlayerTeamsActions.loadPageSucceeded({ teams, invites })),
+          teamsApi.listMyPendingInvites(),
+        ).pipe(
+          map(([teams, invites]) => PlayerTeamsActions.loadPageSucceeded({ teams, invites })),
           catchError(() => of(PlayerTeamsActions.loadPageFailed())),
         ),
       ),
