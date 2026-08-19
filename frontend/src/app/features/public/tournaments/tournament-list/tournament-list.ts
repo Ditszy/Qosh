@@ -1,12 +1,13 @@
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 import type { TournamentStatus } from '../tournament.models';
 import { selectTournamentListView, TournamentListViewState, TournamentsActions } from '../store';
+import { TournamentCard } from '../tournament-card/tournament-card';
 
 type TournamentSort = 'startsAt:asc' | 'startsAt:desc' | 'name:asc';
 
@@ -27,12 +28,13 @@ const sortLabels: Record<TournamentSort, string> = {
 
 @Component({
   selector: 'app-tournament-list',
-  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink],
+  imports: [AsyncPipe, FormsModule, TournamentCard],
   templateUrl: './tournament-list.html',
   styleUrl: './tournament-list.scss',
 })
 export class TournamentList {
   private readonly store = inject(Store);
+  private readonly router = inject(Router);
   protected readonly page = signal(1);
   protected readonly pageSize = 9;
   protected statusFilter: TournamentStatus | '' = '';
@@ -45,10 +47,6 @@ export class TournamentList {
 
   constructor() {
     this.loadList();
-  }
-
-  protected statusLabel(status: TournamentStatus): string {
-    return statusLabels[status];
   }
 
   protected selectedStatusLabel(): string {
@@ -74,6 +72,10 @@ export class TournamentList {
   protected goToPage(page: number): void {
     this.page.set(page);
     this.loadList();
+  }
+
+  protected openTournament(tournamentId: string): void {
+    void this.router.navigate(['/tournaments', tournamentId]);
   }
 
   private loadList(): void {
