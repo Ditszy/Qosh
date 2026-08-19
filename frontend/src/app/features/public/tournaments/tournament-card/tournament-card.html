@@ -1,0 +1,18 @@
+<a class="tournament-card" [attr.href]="'/tournaments/' + tournament().id" (click)="openTournament($event)">
+  <span class="status">{{ statusLabel() }}</span>
+  <h3>{{ tournament().name }}</h3>
+  <dl>
+    <div>
+      <dt>Lokacija</dt>
+      <dd>{{ tournament().location }}</dd>
+    </div>
+    <div>
+      <dt>Start</dt>
+      <dd>{{ tournament().startsAt | date: 'medium' }}</dd>
+    </div>
+    <div>
+      <dt>Kapacitet</dt>
+      <dd>{{ tournament().maxTeams }} timova</dd>
+    </div>
+  </dl>
+</a>
