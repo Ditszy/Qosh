@@ -53,78 +53,16 @@ section h2 {
   text-transform: uppercase;
 }
 
-article,
 section > p {
   border-top: 1px solid #242832;
   margin: 0;
   padding: 14px;
 }
 
-article.unread {
-  border-left: 3px solid #ff5a1f;
-}
-
-article span,
-time,
 section > p,
 section > header span {
   color: #9ca3af;
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
-}
-
-article strong,
-article p {
-  color: #ffffff;
-  margin: 4px 0;
-}
-
-article footer {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.notification-actions {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-footer span {
-  color: #6b7280;
-  font-size: 0.72rem;
-  font-weight: 900;
-}
-
-article button {
-  border: 1px solid #ff5a1f;
-  background: transparent;
-  color: #ffb199;
-  cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 900;
-  padding: 6px 8px;
-  white-space: nowrap;
-}
-
-article button:hover,
-article button:focus-visible {
-  background: #ff5a1f;
-  color: #ffffff;
-}
-
-article button.muted-action {
-  border-color: #3a404c;
-  color: #d1d5db;
-}
-
-article button.muted-action:hover,
-article button.muted-action:focus-visible {
-  background: #2b303a;
 }

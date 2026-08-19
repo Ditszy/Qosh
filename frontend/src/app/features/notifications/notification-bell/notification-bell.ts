@@ -1,8 +1,9 @@
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { combineLatest } from 'rxjs';
 
+import { NotificationItem } from '../notification-item/notification-item';
 import {
   NotificationsActions,
   selectLatestNotifications,
@@ -10,18 +11,10 @@ import {
   selectNotificationsLoading,
   selectUnreadNotificationCount,
 } from '../store';
-import type { NotificationType } from '../notification.models';
-
-const notificationTypeLabels: Record<NotificationType, string> = {
-  TEAM_INVITE: 'Poziv u tim',
-  MATCH_ASSIGNMENT: 'Zaduženje za utakmicu',
-  TOURNAMENT_STARTED: 'Turnir je počeo',
-  MATCH_SCHEDULE_CHANGED: 'Promena rasporeda',
-};
 
 @Component({
   selector: 'app-notification-bell',
-  imports: [AsyncPipe, DatePipe],
+  imports: [AsyncPipe, NotificationItem],
   templateUrl: './notification-bell.html',
   styleUrl: './notification-bell.scss',
 })
@@ -46,9 +39,5 @@ export class NotificationBell implements OnInit {
 
   protected deleteNotification(notificationId: string): void {
     this.store.dispatch(NotificationsActions.delete({ notificationId }));
-  }
-
-  protected notificationTypeLabel(type: NotificationType): string {
-    return notificationTypeLabels[type];
   }
 }
