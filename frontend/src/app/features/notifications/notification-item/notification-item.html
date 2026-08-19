@@ -1,0 +1,16 @@
+<article [class.unread]="!notification().readAt">
+  <span>{{ notificationTypeLabel(notification().type) }}</span> |
+  <strong>{{ notification().title }}</strong>
+  <p>{{ notification().body }}</p>
+  <footer>
+    <time>{{ notification().createdAt | date: 'short' }}</time>
+    <div class="notification-actions">
+      @if (!notification().readAt) {
+      <button type="button" (click)="markRead()">Označi kao pročitano</button>
+      } @else {
+      <span>Pročitano</span>
+      }
+      <button type="button" class="muted-action" (click)="deleteNotification()">Obriši</button>
+    </div>
+  </footer>
+</article>
