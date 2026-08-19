@@ -61,6 +61,30 @@
   @if (selectedPanel === 'boxScore') {
   <section class="box-score" aria-label="Statistika meča">
     <h3>Box score</h3>
+    @if (boxScoreSummary(state.bundle.statistics); as summary) {
+    <div class="box-score-summary" aria-label="Ukupna statistika meča">
+      <div>
+        <span>Poeni</span>
+        <strong>{{ summary.points }}</strong>
+      </div>
+      <div>
+        <span>Skokovi</span>
+        <strong>{{ summary.rebounds }}</strong>
+      </div>
+      <div>
+        <span>Asistencije</span>
+        <strong>{{ summary.assists }}</strong>
+      </div>
+      <div>
+        <span>Ukradene</span>
+        <strong>{{ summary.steals }}</strong>
+      </div>
+      <div>
+        <span>Faulovi</span>
+        <strong>{{ summary.fouls }}</strong>
+      </div>
+    </div>
+    }
     @for (team of state.bundle.statistics.teams; track team.team.id) {
     <article>
       <h4>{{ team.team.name }}</h4>

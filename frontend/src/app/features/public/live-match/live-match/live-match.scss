@@ -61,6 +61,7 @@
 .event-feed h3,
 .event-feed article,
 .box-score h3,
+.box-score-summary,
 .box-score article,
 .report-panel h3,
 .report-panel article {
@@ -94,6 +95,32 @@
   margin: 0 0 12px;
   color: #ff5a1f;
   text-transform: uppercase;
+}
+
+.box-score-summary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  background: #242832;
+}
+
+.box-score-summary div {
+  display: grid;
+  gap: 6px;
+  background: #090a0d;
+  padding: 12px;
+}
+
+.box-score-summary span {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.box-score-summary strong {
+  color: #ffffff;
+  font-size: 1.25rem;
 }
 
 .stat-table {
@@ -160,6 +187,10 @@
 
 @media (max-width: 720px) {
   .match-panels { grid-template-columns: 1fr; }
+
+  .box-score-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   .event-list {
     max-height: 420px;

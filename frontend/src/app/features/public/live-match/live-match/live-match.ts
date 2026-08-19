@@ -10,6 +10,14 @@ import type { MatchClockStatus, MatchStatus } from '../../tournaments/tournament
 import { LiveMatchActions, selectLiveMatchView } from '../store';
 
 type MatchPanel = 'events' | 'boxScore' | 'report';
+type BoxScoreSummary = {
+  points: number;
+  rebounds: number;
+  assists: number;
+  steals: number;
+  fouls: number;
+};
+
 const matchStatusLabels: Record<MatchStatus, string> = {
   SCHEDULED: 'Zakazan',
   LIVE: 'U toku',
@@ -92,6 +100,19 @@ export class LiveMatch {
 
       return occurredDiff || Date.parse(b.createdAt) - Date.parse(a.createdAt);
     });
+  }
+
+  protected boxScoreSummary(statistics: MatchReadBundle['statistics']): BoxScoreSummary {
+    return statistics.teams.reduce<BoxScoreSummary>(
+      (summary, team) => ({
+        points: summary.points + team.totals.points,
+        rebounds: summary.rebounds + team.totals.rebounds,
+        assists: summary.assists + team.totals.assists,
+        steals: summary.steals + team.totals.steals,
+        fouls: summary.fouls + team.totals.fouls,
+      }),
+      { points: 0, rebounds: 0, assists: 0, steals: 0, fouls: 0 },
+    );
   }
 
   protected selectPanel(panel: MatchPanel): void {
