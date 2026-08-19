@@ -1,0 +1,101 @@
+<section class="box-score" aria-label="Statistika meča">
+  <h3>Box score</h3>
+  @if (boxScoreSummary(); as summary) {
+  <div class="box-score-summary" aria-label="Ukupna statistika meča">
+    <div>
+      <span>Poeni</span>
+      <strong>{{ summary.points }}</strong>
+    </div>
+    <div>
+      <span>Skokovi</span>
+      <strong>{{ summary.rebounds }}</strong>
+    </div>
+    <div>
+      <span>Asistencije</span>
+      <strong>{{ summary.assists }}</strong>
+    </div>
+    <div>
+      <span>Ukradene</span>
+      <strong>{{ summary.steals }}</strong>
+    </div>
+    <div>
+      <span>Faulovi</span>
+      <strong>{{ summary.fouls }}</strong>
+    </div>
+  </div>
+  }
+  @for (team of statistics().teams; track team.team.id) {
+  <article>
+    <h4>{{ team.team.name }}</h4>
+    <table class="stat-table">
+      <thead>
+        <tr>
+          <th>Igrac</th>
+          <th>PTS</th>
+          <th>1PM</th>
+          <th>1PA</th>
+          <th>1P%</th>
+          <th>2PM</th>
+          <th>2PA</th>
+          <th>2P%</th>
+          <th>FTM</th>
+          <th>FTA</th>
+          <th>FT%</th>
+          <th>REB</th>
+          <th>AST</th>
+          <th>STL</th>
+          <th>BLK</th>
+          <th>TOV</th>
+          <th>FOUL</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (stat of team.players; track stat.player.id) {
+        <tr>
+          <th>
+            <a [routerLink]="['/profiles', stat.player.id]">
+              {{ stat.player.firstName }} ({{ stat.player.username }}) {{ stat.player.lastName }}
+            </a>
+          </th>
+          <td>{{ stat.points }}</td>
+          <td>{{ stat.onePointMade }}</td>
+          <td>{{ stat.onePointAttempted }}</td>
+          <td>{{ stat.onePointPercentage === null ? '-' : stat.onePointPercentage + '%' }}</td>
+          <td>{{ stat.twoPointMade }}</td>
+          <td>{{ stat.twoPointAttempted }}</td>
+          <td>{{ stat.twoPointPercentage === null ? '-' : stat.twoPointPercentage + '%' }}</td>
+          <td>{{ stat.freeThrowMade }}</td>
+          <td>{{ stat.freeThrowAttempted }}</td>
+          <td>{{ stat.freeThrowPercentage === null ? '-' : stat.freeThrowPercentage + '%' }}</td>
+          <td>{{ stat.rebounds }}</td>
+          <td>{{ stat.assists }}</td>
+          <td>{{ stat.steals }}</td>
+          <td>{{ stat.blocks }}</td>
+          <td>{{ stat.turnovers }}</td>
+          <td>{{ stat.fouls }}</td>
+        </tr>
+        }
+        <tr>
+          <th>Ukupno</th>
+          <td>{{ team.totals.points }}</td>
+          <td>{{ team.totals.onePointMade }}</td>
+          <td>{{ team.totals.onePointAttempted }}</td>
+          <td>{{ team.totals.onePointPercentage === null ? '-' : team.totals.onePointPercentage + '%' }}</td>
+          <td>{{ team.totals.twoPointMade }}</td>
+          <td>{{ team.totals.twoPointAttempted }}</td>
+          <td>{{ team.totals.twoPointPercentage === null ? '-' : team.totals.twoPointPercentage + '%' }}</td>
+          <td>{{ team.totals.freeThrowMade }}</td>
+          <td>{{ team.totals.freeThrowAttempted }}</td>
+          <td>{{ team.totals.freeThrowPercentage === null ? '-' : team.totals.freeThrowPercentage + '%' }}</td>
+          <td>{{ team.totals.rebounds }}</td>
+          <td>{{ team.totals.assists }}</td>
+          <td>{{ team.totals.steals }}</td>
+          <td>{{ team.totals.blocks }}</td>
+          <td>{{ team.totals.turnovers }}</td>
+          <td>{{ team.totals.fouls }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+  }
+</section>
