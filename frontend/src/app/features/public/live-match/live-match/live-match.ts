@@ -5,11 +5,11 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
 
+import { LiveMatchScoreboard } from '../live-match-scoreboard/live-match-scoreboard';
+import { LiveMatchTabs, type LiveMatchPanel } from '../live-match-tabs/live-match-tabs';
 import type { MatchEvent, MatchEventType, MatchReadBundle } from '../match.models';
-import type { MatchClockStatus, MatchStatus } from '../../tournaments/tournament.models';
 import { LiveMatchActions, selectLiveMatchView } from '../store';
 
-type MatchPanel = 'events' | 'boxScore' | 'report';
 type BoxScoreSummary = {
   points: number;
   rebounds: number;
@@ -18,17 +18,6 @@ type BoxScoreSummary = {
   fouls: number;
 };
 
-const matchStatusLabels: Record<MatchStatus, string> = {
-  SCHEDULED: 'Zakazan',
-  LIVE: 'U toku',
-  FINAL: 'Završen',
-};
-const matchClockStatusLabels: Record<MatchClockStatus, string> = {
-  NOT_STARTED: 'Nije počeo',
-  RUNNING: 'U toku',
-  PAUSED: 'Pauza',
-  ENDED: 'Završeno',
-};
 const matchEventTypeLabels: Record<MatchEventType, string> = {
   ONE_POINT_MADE: 'Pogođen jedan poen',
   ONE_POINT_MISSED: 'Promašen jedan poen',
@@ -46,7 +35,7 @@ const matchEventTypeLabels: Record<MatchEventType, string> = {
 
 @Component({
   selector: 'app-live-match',
-  imports: [AsyncPipe, DatePipe, RouterLink],
+  imports: [AsyncPipe, DatePipe, RouterLink, LiveMatchScoreboard, LiveMatchTabs],
   templateUrl: './live-match.html',
   styleUrl: './live-match.scss',
 })
@@ -55,8 +44,8 @@ export class LiveMatch {
   private readonly store = inject(Store);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly activePanel = 'events' as MatchPanel;
-  protected selectedPanel: MatchPanel = this.activePanel;
+  protected readonly activePanel = 'events' as LiveMatchPanel;
+  protected selectedPanel: LiveMatchPanel = this.activePanel;
   protected readonly state$ = this.store.select(selectLiveMatchView);
 
   constructor() {
@@ -65,10 +54,6 @@ export class LiveMatch {
       filter((id): id is string => Boolean(id)),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((matchId) => this.store.dispatch(LiveMatchActions.load({ matchId })));
-  }
-
-  protected teamName(team: MatchReadBundle['match']['teamA']): string {
-    return team?.name ?? 'TBD';
   }
 
   protected clockTime(seconds: number): string {
@@ -84,14 +69,6 @@ export class LiveMatch {
 
   protected eventTypeLabel(type: MatchEventType): string {
     return matchEventTypeLabels[type];
-  }
-
-  protected matchStatusLabel(status: MatchStatus): string {
-    return matchStatusLabels[status];
-  }
-
-  protected clockStatusLabel(status: MatchClockStatus): string {
-    return matchClockStatusLabels[status];
   }
 
   protected orderedEvents(events: MatchEvent[]): MatchEvent[] {
@@ -115,7 +92,7 @@ export class LiveMatch {
     );
   }
 
-  protected selectPanel(panel: MatchPanel): void {
+  protected selectPanel(panel: LiveMatchPanel): void {
     this.selectedPanel = panel;
   }
 }

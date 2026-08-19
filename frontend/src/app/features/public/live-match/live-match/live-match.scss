@@ -35,29 +35,6 @@
   background: #242832;
 }
 
-.match-panels {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.match-panels button {
-  min-height: 44px;
-  border: 1px solid #2b303a;
-  background: #101218;
-  color: #b8bdc7;
-  cursor: pointer;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
-.match-panels button.active,
-.match-panels button:hover,
-.match-panels button:focus-visible {
-  border-color: #ff5a1f;
-  color: #ffffff;
-}
-
 .event-feed h3,
 .event-feed article,
 .box-score h3,
@@ -186,8 +163,6 @@
 }
 
 @media (max-width: 720px) {
-  .match-panels { grid-template-columns: 1fr; }
-
   .box-score-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

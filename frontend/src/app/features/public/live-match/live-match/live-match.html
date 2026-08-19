@@ -8,36 +8,9 @@
   <p class="surface-message error">Meč trenutno nije dostupan.</p>
   }
   @case ('loaded') {
-  <section class="match-card" aria-label="Rezultat i vreme">
-    <header class="match-card-header">
-      <span>Live meč</span>
-      <strong>{{ matchStatusLabel(state.bundle.match.status) }}</strong>
-    </header>
-    <div class="score-row active">
-      <span>{{ teamName(state.bundle.match.teamA) }}</span>
-      <strong>{{ state.bundle.match.teamAScore }}</strong>
-    </div>
-    <div class="clock-row">
-      <strong>{{ clockStatusLabel(state.bundle.match.clockStatus) }}</strong>
-      <span>{{ clockTime(state.bundle.match.clockRemainingSeconds) }}</span>
-    </div>
-    <div class="score-row">
-      <span>{{ teamName(state.bundle.match.teamB) }}</span>
-      <strong>{{ state.bundle.match.teamBScore }}</strong>
-    </div>
-  </section>
+  <app-live-match-scoreboard [match]="state.bundle.match" />
 
-  <nav class="match-panels" aria-label="Detalji meča">
-    <button type="button" [class.active]="selectedPanel === 'events'" (click)="selectPanel('events')">
-      Tok meča
-    </button>
-    <button type="button" [class.active]="selectedPanel === 'boxScore'" (click)="selectPanel('boxScore')">
-      Box score
-    </button>
-    <button type="button" [class.active]="selectedPanel === 'report'" (click)="selectPanel('report')">
-      Izveštaj sudije
-    </button>
-  </nav>
+  <app-live-match-tabs [selectedPanel]="selectedPanel" (panelSelected)="selectPanel($event)" />
 
   @if (selectedPanel === 'events') {
   <section class="event-feed" aria-label="Tok meča">
