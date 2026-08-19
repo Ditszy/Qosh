@@ -1,8 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, EMPTY, exhaustMap, forkJoin, map, of, switchMap, zip } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { catchError, EMPTY, exhaustMap, forkJoin, map, of, switchMap, take, zip } from 'rxjs';
 
-import { AuthService } from '../../../core/auth/auth';
+import { selectCurrentUser } from '../../../core/auth/store';
 import { NotificationsActions } from '../../notifications';
 import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
 import { TeamsApiService, type TeamDetail } from '../teams-api.service';
@@ -55,15 +56,20 @@ export const reloadInvitesOnNotification = createEffect(
 );
 
 export const watchMyTeams = createEffect(
-  (actions$ = inject(Actions), teamsApi = inject(TeamsApiService), authService = inject(AuthService)) =>
+  (actions$ = inject(Actions), teamsApi = inject(TeamsApiService), store = inject(Store)) =>
     actions$.pipe(
       ofType(PlayerTeamsActions.watchMyTeams),
       exhaustMap(() =>
-        teamsApi.watchMyTeams().pipe(
-          map((message) =>
-            PlayerTeamsActions.liveMessageReceived({ message, currentUserId: authService.currentUser()?.id ?? null }),
+        store.select(selectCurrentUser).pipe(
+          take(1),
+          switchMap((currentUser) =>
+            teamsApi.watchMyTeams().pipe(
+              map((message) =>
+                PlayerTeamsActions.liveMessageReceived({ message, currentUserId: currentUser?.id ?? null }),
+              ),
+              catchError(() => EMPTY),
+            ),
           ),
-          catchError(() => EMPTY),
         ),
       ),
     ),
