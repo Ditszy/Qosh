@@ -1,0 +1,11 @@
+<nav class="match-panels" aria-label="Detalji meca">
+  <button type="button" [class.active]="selectedPanel() === 'events'" (click)="selectPanel('events')">
+    Tok meča
+  </button>
+  <button type="button" [class.active]="selectedPanel() === 'boxScore'" (click)="selectPanel('boxScore')">
+    Box score
+  </button>
+  <button type="button" [class.active]="selectedPanel() === 'report'" (click)="selectPanel('report')">
+    Izveštaj sudije
+  </button>
+</nav>
