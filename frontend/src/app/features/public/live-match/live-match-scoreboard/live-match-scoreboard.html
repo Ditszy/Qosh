@@ -1,0 +1,18 @@
+<section class="match-card" aria-label="Rezultat i vreme">
+  <header class="match-card-header">
+    <span>Live meč</span>
+    <strong>{{ matchStatusLabel() }}</strong>
+  </header>
+  <div class="score-row active">
+    <span>{{ teamAName() }}</span>
+    <strong>{{ match().teamAScore }}</strong>
+  </div>
+  <div class="clock-row">
+    <strong>{{ clockStatusLabel() }}</strong>
+    <span>{{ clockTime() }}</span>
+  </div>
+  <div class="score-row">
+    <span>{{ teamBName() }}</span>
+    <strong>{{ match().teamBScore }}</strong>
+  </div>
+</section>
