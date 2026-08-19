@@ -1,0 +1,27 @@
+<a class="match-card" [class.live]="isLive()" [attr.href]="'/matches/' + match().id + '/live'"
+  (click)="openMatch($event)">
+  <span class="status" [class.scheduled]="!isLive()">{{ statusLabel() }}</span>
+  <strong>{{ match().tournament.name }}</strong>
+
+  @if (isLive()) {
+  <div class="score-line">
+    <span>{{ teamAName() }}</span>
+    <b>{{ match().teamAScore }}</b>
+  </div>
+  <div class="score-line">
+    <span>{{ teamBName() }}</span>
+    <b>{{ match().teamBScore }}</b>
+  </div>
+  } @else {
+  <div class="versus">
+    <span>{{ teamAName() }}</span>
+    <b>vs</b>
+    <span>{{ teamBName() }}</span>
+  </div>
+  }
+
+  <footer>
+    <span>Runda {{ match().round }}</span>
+    <span>{{ isLive() ? clockLabel() : (match().scheduledAt | date: 'short') }}</span>
+  </footer>
+</a>
