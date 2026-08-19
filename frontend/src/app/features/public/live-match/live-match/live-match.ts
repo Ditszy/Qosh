@@ -1,22 +1,15 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
 
+import { LiveMatchBoxScore } from '../live-match-box-score/live-match-box-score';
 import { LiveMatchScoreboard } from '../live-match-scoreboard/live-match-scoreboard';
 import { LiveMatchTabs, type LiveMatchPanel } from '../live-match-tabs/live-match-tabs';
-import type { MatchEvent, MatchEventType, MatchReadBundle } from '../match.models';
+import type { MatchEvent, MatchEventType } from '../match.models';
 import { LiveMatchActions, selectLiveMatchView } from '../store';
-
-type BoxScoreSummary = {
-  points: number;
-  rebounds: number;
-  assists: number;
-  steals: number;
-  fouls: number;
-};
 
 const matchEventTypeLabels: Record<MatchEventType, string> = {
   ONE_POINT_MADE: 'Pogođen jedan poen',
@@ -35,7 +28,7 @@ const matchEventTypeLabels: Record<MatchEventType, string> = {
 
 @Component({
   selector: 'app-live-match',
-  imports: [AsyncPipe, DatePipe, RouterLink, LiveMatchScoreboard, LiveMatchTabs],
+  imports: [AsyncPipe, DatePipe, LiveMatchBoxScore, LiveMatchScoreboard, LiveMatchTabs],
   templateUrl: './live-match.html',
   styleUrl: './live-match.scss',
 })
@@ -77,19 +70,6 @@ export class LiveMatch {
 
       return occurredDiff || Date.parse(b.createdAt) - Date.parse(a.createdAt);
     });
-  }
-
-  protected boxScoreSummary(statistics: MatchReadBundle['statistics']): BoxScoreSummary {
-    return statistics.teams.reduce<BoxScoreSummary>(
-      (summary, team) => ({
-        points: summary.points + team.totals.points,
-        rebounds: summary.rebounds + team.totals.rebounds,
-        assists: summary.assists + team.totals.assists,
-        steals: summary.steals + team.totals.steals,
-        fouls: summary.fouls + team.totals.fouls,
-      }),
-      { points: 0, rebounds: 0, assists: 0, steals: 0, fouls: 0 },
-    );
   }
 
   protected selectPanel(panel: LiveMatchPanel): void {
