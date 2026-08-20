@@ -42,16 +42,62 @@
       </select>
     </label>
 
-    <button type="submit" [disabled]="createUserForm.invalid || isCreatingUser">
-      {{ isCreatingUser ? 'Kreiranje...' : 'Kreiraj korisnika' }}
+    <button type="submit" [disabled]="createUserForm.invalid || createUserState().loading">
+      {{ createUserState().loading ? 'Kreiranje...' : 'Kreiraj korisnika' }}
     </button>
-    @if (createUserMessage) {
-    <p class="form-message" [class.is-success]="createUserStatus === 'success'"
-      [class.is-error]="createUserStatus === 'error'">
-      {{ createUserMessage }}
+    @if (createUserState().message) {
+    <p class="form-message" [class.is-success]="createUserState().status === 'success'"
+      [class.is-error]="createUserState().status === 'error'">
+      {{ createUserState().message }}
     </p>
     }
   </form>
+
+  <section class="user-search">
+    <header>
+      <h2>Pretraga korisnika</h2>
+    </header>
+
+    <form class="search-form" [formGroup]="userSearchForm">
+      <label>
+        Ime, korisničko ime ili email
+        <input type="search" formControlName="query" (input)="updateUserSearch()" />
+      </label>
+
+      <label>
+        Uloga
+        <select formControlName="role" (change)="updateUserSearch()">
+          @for (role of searchRoleOptions; track role) {
+          <option [value]="role">{{ searchRoleLabels[role] }}</option>
+          }
+        </select>
+      </label>
+    </form>
+
+    @if (userSearchState$ | async; as state) {
+    @if (state.error) {
+    <p>{{ state.error }}</p>
+    } @else if (state.needsQuery) {
+    <p>Unesi najmanje 2 karaktera za pretragu.</p>
+    } @else if (state.loading) {
+    <p>Pretraga korisnika...</p>
+    } @else if (state.users.length) {
+    <div class="user-results" aria-label="Rezultati pretrage korisnika">
+      @for (user of state.users; track user.id) {
+      <article>
+        <div>
+          <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+          <span>{{ user.username }} | {{ user.email }}</span>
+        </div>
+        <span class="role-badge">{{ roleLabels[user.role] }}</span>
+      </article>
+      }
+    </div>
+    } @else {
+    <p>Nema korisnika za izabranu pretragu.</p>
+    }
+    }
+  </section>
 
   @if (statsState$ | async; as state) {
   @if (state.error) {

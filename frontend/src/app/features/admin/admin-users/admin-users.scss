@@ -12,7 +12,7 @@ h1, h2, p {
 .page-header span, header p, form p, .stats-panel p, li span {
   color: #a7adba;
 }
-form, .stats-panel, li {
+form, .stats-panel, li, .user-results article {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   background: rgba(18, 21, 28, 0.9);
@@ -66,6 +66,46 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   gap: 1rem;
   padding: 1rem;
 }
+.user-search {
+  display: grid;
+  gap: 1rem;
+}
+.user-search header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.search-form {
+  grid-template-columns: minmax(220px, 1fr) minmax(160px, 220px);
+}
+.user-results {
+  display: grid;
+  gap: 0.75rem;
+}
+.user-results article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+}
+.user-results article div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.user-results article span {
+  color: #a7adba;
+  overflow-wrap: anywhere;
+}
+.role-badge {
+  border: 1px solid rgba(255, 139, 61, 0.35);
+  border-radius: 999px;
+  color: #ffb37a;
+  flex: 0 0 auto;
+  padding: 0.25rem 0.65rem;
+}
 .stats-panel > div {
   display: flex;
   align-items: baseline;
@@ -88,4 +128,14 @@ li {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.875rem 1rem;
+}
+@media (max-width: 640px) {
+  .search-form, .user-results article {
+    grid-template-columns: 1fr;
+  }
+
+  .user-results article {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
