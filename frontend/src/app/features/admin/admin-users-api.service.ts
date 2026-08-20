@@ -25,6 +25,11 @@ export type AdminUserStats = {
   admins: number;
 };
 
+export type AdminUserSearchParams = {
+  q?: string;
+  role?: UserRole;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -34,6 +39,10 @@ export class AdminUsersApiService {
 
   getUserStats(): Observable<AdminUserStats> {
     return this.http.get<AdminUserStats>(this.apiUrl.build('/users/stats'));
+  }
+
+  searchUsers(params: AdminUserSearchParams = {}): Observable<AuthUser[]> {
+    return this.http.get<AuthUser[]>(this.apiUrl.build('/users'), { params });
   }
 
   createUser(payload: AdminCreateUserRequest): Observable<AuthUser> {

@@ -1,12 +1,19 @@
 import { AsyncPipe } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BehaviorSubject, catchError, finalize, map, of, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
 
-import { AdminCreateUserRole, AdminUserStats, AdminUsersApiService } from '../admin-users-api.service';
+import { AdminCreateUserRole, AdminUserStats } from '../admin-users-api.service';
+import type { AdminUserSearchRole } from '../admin-users.models';
+import {
+  AdminUsersActions,
+  selectAdminCreateUserState,
+  selectAdminUserSearchState,
+  selectAdminUserStatsState,
+} from '../store';
+import type { UserRole } from '../../../core/auth/auth';
 
-const roleLabels: Record<AdminCreateUserRole | 'PLAYER' | 'ADMIN', string> = {
+const roleLabels: Record<UserRole, string> = {
   PLAYER: 'Igrači',
   ORGANIZER: 'Organizatori',
   REFEREE: 'Sudije',
@@ -15,7 +22,6 @@ const roleLabels: Record<AdminCreateUserRole | 'PLAYER' | 'ADMIN', string> = {
 };
 
 type UserStatKey = Exclude<keyof AdminUserStats, 'totalUsers'>;
-type CreateUserStatus = 'success' | 'error' | '';
 
 @Component({
   selector: 'app-admin-users',
@@ -23,13 +29,17 @@ type CreateUserStatus = 'success' | 'error' | '';
   templateUrl: './admin-users.html',
   styleUrl: './admin-users.scss',
 })
-export class AdminUsers {
-  private readonly adminUsersApi = inject(AdminUsersApiService);
+export class AdminUsers implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
-  private readonly refreshStats$ = new BehaviorSubject<void>(undefined);
+  private readonly store = inject(Store);
 
   readonly roleOptions: AdminCreateUserRole[] = ['ORGANIZER', 'REFEREE', 'SCORER'];
   readonly roleLabels = roleLabels;
+  readonly searchRoleOptions: AdminUserSearchRole[] = ['ALL', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'];
+  readonly searchRoleLabels: Record<AdminUserSearchRole, string> = {
+    ALL: 'Sve uloge',
+    ...roleLabels,
+  };
   readonly roleStats: { label: string; key: UserStatKey }[] = [
     { label: roleLabels.PLAYER, key: 'players' },
     { label: roleLabels.ORGANIZER, key: 'organizers' },
@@ -45,51 +55,44 @@ export class AdminUsers {
     password: ['', [Validators.required, Validators.minLength(6)]],
     role: ['SCORER' as AdminCreateUserRole, Validators.required],
   });
-  createUserMessage = '';
-  createUserStatus: CreateUserStatus = '';
-  isCreatingUser = false;
+  readonly userSearchForm = this.formBuilder.nonNullable.group({
+    query: [''],
+    role: ['ALL' as AdminUserSearchRole],
+  });
 
-  readonly statsState$ = this.refreshStats$.pipe(
-    switchMap(() =>
-      this.adminUsersApi.getUserStats().pipe(
-        map((stats) => ({ stats, error: null })),
-        catchError(() => of({ stats: null, error: 'Nije moguce ucitati statistiku korisnika.' })),
-      ),
-    ),
-  );
+  readonly statsState$ = this.store.select(selectAdminUserStatsState);
+  readonly userSearchState$ = this.store.select(selectAdminUserSearchState);
+  readonly createUserState = this.store.selectSignal(selectAdminCreateUserState);
+
+  constructor() {
+    effect(() => {
+      if (this.createUserState().status === 'success') {
+        this.createUserForm.reset({ role: 'SCORER' });
+      }
+    });
+  }
+
+  ngOnInit(): void {
+    this.store.dispatch(AdminUsersActions.loadStats());
+  }
 
   createUser(): void {
-    if (this.createUserForm.invalid) {
+    if (this.createUserForm.invalid || this.createUserState().loading) {
       this.createUserForm.markAllAsTouched();
       return;
     }
 
-    this.createUserMessage = '';
-    this.createUserStatus = '';
-    this.isCreatingUser = true;
-    this.adminUsersApi.createUser(this.createUserForm.getRawValue()).pipe(
-      finalize(() => {
-        this.isCreatingUser = false;
-      }),
-    ).subscribe({
-      next: () => {
-        this.createUserMessage = 'Korisnik je kreiran.';
-        this.createUserStatus = 'success';
-        this.createUserForm.reset({ role: 'SCORER' });
-        this.refreshStats$.next();
-      },
-      error: (error: unknown) => {
-        this.createUserMessage = this.getCreateUserError(error);
-        this.createUserStatus = 'error';
-      },
-    });
+    this.store.dispatch(AdminUsersActions.createUser({ payload: this.createUserForm.getRawValue() }));
   }
 
-  private getCreateUserError(error: unknown): string {
-    if (error instanceof HttpErrorResponse && error.status === 409) {
-      return 'Email ili korisničko ime je već zauzeto.';
-    }
+  updateUserSearch(): void {
+    const value = this.userSearchForm.getRawValue();
 
-    return 'Nije moguće kreirati korisnika.';
+    this.store.dispatch(AdminUsersActions.searchFiltersChanged({
+      filters: {
+        query: value.query,
+        role: value.role,
+      },
+    }));
   }
 }
