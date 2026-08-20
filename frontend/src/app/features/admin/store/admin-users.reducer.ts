@@ -1,8 +1,8 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { AuthUser, UserRole } from '../../../core/auth/auth';
+import type { UserRole } from '../../../core/auth/auth';
 import type { AdminUserStats } from '../admin-users-api.service';
-import type { AdminUserSearchFilters } from '../admin-users.models';
+import type { AdminUser, AdminUserSearchFilters } from '../admin-users.models';
 import { AdminUsersActions } from './admin-users.actions';
 
 export const adminUsersFeatureKey = 'adminUsers';
@@ -12,7 +12,8 @@ export type AdminUsersState = {
   statsLoading: boolean;
   statsError: string;
   searchFilters: AdminUserSearchFilters;
-  users: AuthUser[];
+  users: AdminUser[];
+  selectedUserId: string | null;
   usersLoading: boolean;
   usersError: string;
   needsQuery: boolean;
@@ -30,6 +31,7 @@ export const initialAdminUsersState: AdminUsersState = {
     role: 'ALL',
   },
   users: [],
+  selectedUserId: null,
   usersLoading: false,
   usersError: '',
   needsQuery: true,
@@ -64,6 +66,7 @@ export const adminUsersReducer = createReducer(
       ...state,
       searchFilters: normalizedFilters,
       users: canSearch ? state.users : [],
+      selectedUserId: canSearch ? state.selectedUserId : null,
       usersLoading: canSearch,
       usersError: '',
       needsQuery: !canSearch,
@@ -72,23 +75,38 @@ export const adminUsersReducer = createReducer(
   on(AdminUsersActions.searchUsersSkipped, (state) => ({
     ...state,
     users: [],
+    selectedUserId: null,
     usersLoading: false,
     usersError: '',
     needsQuery: true,
   })),
-  on(AdminUsersActions.searchUsersSucceeded, (state, { users }) => ({
-    ...state,
-    users,
-    usersLoading: false,
-    usersError: '',
-    needsQuery: false,
-  })),
+  on(AdminUsersActions.searchUsersSucceeded, (state, { users }) => {
+    const selectedUserId = users.some((user) => user.id === state.selectedUserId) ? state.selectedUserId : null;
+
+    return {
+      ...state,
+      users,
+      selectedUserId,
+      usersLoading: false,
+      usersError: '',
+      needsQuery: false,
+    };
+  }),
   on(AdminUsersActions.searchUsersFailed, (state, { error }) => ({
     ...state,
     users: [],
+    selectedUserId: null,
     usersLoading: false,
     usersError: error,
     needsQuery: false,
+  })),
+  on(AdminUsersActions.selectUser, (state, { userId }) => ({
+    ...state,
+    selectedUserId: userId,
+  })),
+  on(AdminUsersActions.clearSelectedUser, (state) => ({
+    ...state,
+    selectedUserId: null,
   })),
   on(AdminUsersActions.createUser, (state) => ({
     ...state,
@@ -100,6 +118,7 @@ export const adminUsersReducer = createReducer(
     ...state,
     stats: incrementStats(state.stats, user.role),
     users: userMatchesSearch(user, state.searchFilters) ? [user, ...state.users].slice(0, 8) : state.users,
+    selectedUserId: userMatchesSearch(user, state.searchFilters) ? user.id : state.selectedUserId,
     createUserLoading: false,
     createUserStatus: 'success',
     createUserMessage: 'Korisnik je kreiran.',
@@ -144,7 +163,7 @@ function incrementStats(stats: AdminUserStats | null, role: UserRole): AdminUser
   };
 }
 
-function userMatchesSearch(user: AuthUser, filters: AdminUserSearchFilters): boolean {
+function userMatchesSearch(user: AdminUser, filters: AdminUserSearchFilters): boolean {
   const query = filters.query.toLocaleLowerCase();
 
   if (query.length < 2 || (filters.role !== 'ALL' && user.role !== filters.role)) {

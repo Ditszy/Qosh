@@ -15,7 +15,13 @@ export const selectAdminUserSearchState = createSelector(selectAdminUsersState, 
   loading: state.usersLoading,
   error: state.usersError,
   needsQuery: state.needsQuery,
+  selectedUserId: state.selectedUserId,
 }));
+
+export const selectSelectedAdminUser = createSelector(
+  selectAdminUsersState,
+  (state) => state.users.find((user) => user.id === state.selectedUserId) ?? null,
+);
 
 export const selectAdminCreateUserState = createSelector(selectAdminUsersState, (state) => ({
   loading: state.createUserLoading,
