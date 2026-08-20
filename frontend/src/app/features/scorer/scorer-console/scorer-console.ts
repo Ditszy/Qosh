@@ -124,6 +124,7 @@ export class ScorerConsole implements OnInit, OnDestroy {
     );
   });
   protected readonly teamStats = computed(() => this.matchBundle()?.statistics.teams ?? []);
+  protected readonly canRecordPlayerEvents = computed(() => this.match()?.status !== 'FINAL' && !this.pendingAction());
   protected readonly liveMatchLink = computed(() => {
     const id = this.matchId().trim();
 
@@ -264,7 +265,7 @@ export class ScorerConsole implements OnInit, OnDestroy {
   private saveEvent(teamId: string, playerId: string | null, type: MatchEventType): void {
     const matchId = this.matchId().trim();
 
-    if (!matchId || !teamId || this.pendingAction()) {
+    if (!matchId || !teamId || !this.canRecordPlayerEvents()) {
       return;
     }
 

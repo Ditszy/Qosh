@@ -97,7 +97,7 @@
         <span>{{ stat.points }} PTS | {{ stat.rebounds }} REB | {{ stat.assists }} AST | {{ stat.fouls }} PF</span>
         <div>
           @for (action of playerEventButtons; track action.type) {
-          <button type="button" [title]="action.title" [disabled]="!!pendingAction()"
+          <button type="button" [title]="action.title" [disabled]="!canRecordPlayerEvents()"
             (click)="recordPlayerEvent(team.team.id, stat.player.id, action.type)">
             {{ action.label }}
           </button>
