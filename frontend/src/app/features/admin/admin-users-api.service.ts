@@ -3,7 +3,8 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../core/api';
-import type { AuthUser, UserRole } from '../../core/auth/auth';
+import type { UserRole } from '../../core/auth/auth';
+import type { AdminUser } from './admin-users.models';
 
 export type AdminCreateUserRole = Extract<UserRole, 'ORGANIZER' | 'REFEREE' | 'SCORER'>;
 
@@ -41,11 +42,11 @@ export class AdminUsersApiService {
     return this.http.get<AdminUserStats>(this.apiUrl.build('/users/stats'));
   }
 
-  searchUsers(params: AdminUserSearchParams = {}): Observable<AuthUser[]> {
-    return this.http.get<AuthUser[]>(this.apiUrl.build('/users'), { params });
+  searchUsers(params: AdminUserSearchParams = {}): Observable<AdminUser[]> {
+    return this.http.get<AdminUser[]>(this.apiUrl.build('/users'), { params });
   }
 
-  createUser(payload: AdminCreateUserRequest): Observable<AuthUser> {
-    return this.http.post<AuthUser>(this.apiUrl.build('/users/create'), payload);
+  createUser(payload: AdminCreateUserRequest): Observable<AdminUser> {
+    return this.http.post<AdminUser>(this.apiUrl.build('/users/create'), payload);
   }
 }

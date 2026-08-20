@@ -7,4 +7,5 @@ export {
   selectAdminUserSearchState,
   selectAdminUserStatsState,
   selectAdminUsersState,
+  selectSelectedAdminUser,
 } from './admin-users.selectors';

@@ -10,6 +10,7 @@ import {
   selectAdminCreateUserState,
   selectAdminUserSearchState,
   selectAdminUserStatsState,
+  selectSelectedAdminUser,
 } from '../store';
 import type { UserRole } from '../../../core/auth/auth';
 
@@ -62,6 +63,7 @@ export class AdminUsers implements OnInit {
 
   readonly statsState$ = this.store.select(selectAdminUserStatsState);
   readonly userSearchState$ = this.store.select(selectAdminUserSearchState);
+  readonly selectedUser$ = this.store.select(selectSelectedAdminUser);
   readonly createUserState = this.store.selectSignal(selectAdminCreateUserState);
 
   constructor() {
@@ -94,5 +96,13 @@ export class AdminUsers implements OnInit {
         role: value.role,
       },
     }));
+  }
+
+  selectUser(userId: string): void {
+    this.store.dispatch(AdminUsersActions.selectUser({ userId }));
+  }
+
+  closeUserDetails(): void {
+    this.store.dispatch(AdminUsersActions.clearSelectedUser());
   }
 }
