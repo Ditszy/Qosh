@@ -35,10 +35,55 @@ export const publicUserSelect = {
 export class UsersService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async findAll(): Promise<PublicUser[]> {
-        return this.prisma.user.findMany({
+    async findAll(query = '', role?: UserRole): Promise<PublicUser[]> {
+        const search = query.trim();
+        const take = 8;
+
+        if (role && !Object.values(UserRole).includes(role)) {
+            throw new BadRequestException('Invalid user role');
+        }
+
+        if (search.length < 2) {
+            return [];
+        }
+
+        const roleFilter = role ? { role } : {};
+        const startsWithMatches = await this.prisma.user.findMany({
+            where: {
+                ...roleFilter,
+                OR: [
+                    { username: { startsWith: search, mode: 'insensitive' } },
+                    { firstName: { startsWith: search, mode: 'insensitive' } },
+                    { lastName: { startsWith: search, mode: 'insensitive' } },
+                    { email: { startsWith: search, mode: 'insensitive' } },
+                ],
+            },
             select: publicUserSelect,
+            orderBy: [{ role: 'asc' }, { username: 'asc' }],
+            take,
         });
+
+        if (startsWithMatches.length >= take) {
+            return startsWithMatches;
+        }
+
+        const remainingMatches = await this.prisma.user.findMany({
+            where: {
+                ...roleFilter,
+                id: { notIn: startsWithMatches.map((user) => user.id) },
+                OR: [
+                    { username: { contains: search, mode: 'insensitive' } },
+                    { firstName: { contains: search, mode: 'insensitive' } },
+                    { lastName: { contains: search, mode: 'insensitive' } },
+                    { email: { contains: search, mode: 'insensitive' } },
+                ],
+            },
+            select: publicUserSelect,
+            orderBy: [{ role: 'asc' }, { username: 'asc' }],
+            take: take - startsWithMatches.length,
+        });
+
+        return [...startsWithMatches, ...remainingMatches];
     }
 
     async getStats(): Promise<UserStats> {
