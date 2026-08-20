@@ -10,6 +10,8 @@ import { provideApiBaseUrl } from './core/api';
 import { AuthService } from './core/auth/auth';
 import { authTokenInterceptor } from './core/auth/auth-token.interceptor';
 import { authFeatureKey, authReducer } from './core/auth/store';
+import * as adminUsersEffects from './features/admin/store/admin-users.effects';
+import { adminUsersFeatureKey, adminUsersReducer } from './features/admin/store';
 import * as notificationEffects from './features/notifications/store/notification.effects';
 import { notificationsFeatureKey, notificationsReducer } from './features/notifications/store';
 import * as organizerDashboardEffects from './features/organizer/store/organizer-dashboard.effects';
@@ -32,6 +34,7 @@ export const appConfig: ApplicationConfig = {
     provideApiBaseUrl(),
     provideRouter(routes),
     provideStore({
+      [adminUsersFeatureKey]: adminUsersReducer,
       [authFeatureKey]: authReducer,
       [liveMatchFeatureKey]: liveMatchReducer,
       [notificationsFeatureKey]: notificationsReducer,
@@ -41,6 +44,7 @@ export const appConfig: ApplicationConfig = {
       [statisticsFeatureKey]: statisticsReducer,
       [tournamentsFeatureKey]: tournamentsReducer,
     }),
+    provideEffects(adminUsersEffects),
     provideEffects(liveMatchEffects),
     provideEffects(notificationEffects),
     provideEffects(organizerDashboardEffects),
