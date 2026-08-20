@@ -9,10 +9,10 @@ h1, h2, p {
   display: grid;
   gap: 0.35rem;
 }
-.page-header span, header p, form p, .stats-panel p, li span {
+.page-header span, header p, form p, .stats-panel p, li span, dt {
   color: #a7adba;
 }
-form, .stats-panel, li, .user-results article {
+form, .stats-panel, li, .user-result, .user-detail {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   background: rgba(18, 21, 28, 0.9);
@@ -83,19 +83,31 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   display: grid;
   gap: 0.75rem;
 }
-.user-results article {
+.user-result {
+  background: rgba(18, 21, 28, 0.9);
+  color: #f5f6f8;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  min-height: auto;
   padding: 0.875rem 1rem;
+  text-align: left;
+  width: 100%;
 }
-.user-results article div {
+.user-result:not(:disabled):hover {
+  border-color: rgba(255, 139, 61, 0.35);
+}
+.user-result.is-selected {
+  border-color: rgba(255, 139, 61, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(255, 139, 61, 0.18);
+}
+.user-result div {
   display: grid;
   gap: 0.25rem;
   min-width: 0;
 }
-.user-results article span {
+.user-result span {
   color: #a7adba;
   overflow-wrap: anywhere;
 }
@@ -105,6 +117,90 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   color: #ffb37a;
   flex: 0 0 auto;
   padding: 0.25rem 0.65rem;
+}
+.status-badge {
+  border: 1px solid rgba(71, 207, 115, 0.45);
+  border-radius: 999px;
+  color: #8be6a4;
+  flex: 0 0 auto;
+  padding: 0.25rem 0.65rem;
+}
+.status-badge.is-inactive {
+  border-color: rgba(255, 92, 92, 0.45);
+  color: #ff9a9a;
+}
+.modal-backdrop {
+  align-items: center;
+  background: rgba(5, 7, 10, 0.72);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 20;
+}
+.user-detail {
+  display: grid;
+  gap: 1rem;
+  max-height: min(86vh, 760px);
+  max-width: 680px;
+  overflow: auto;
+  padding: 1rem;
+  width: min(100%, 680px);
+}
+.user-detail header {
+  align-items: flex-start;
+}
+.user-detail header div {
+  display: grid;
+  gap: 0.25rem;
+}
+.user-detail h3 {
+  margin: 0;
+}
+.close-button {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f6f8;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 2.25rem;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0;
+  width: 2.25rem;
+}
+.close-button:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+dl {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin: 0;
+}
+dl div {
+  display: grid;
+  gap: 0.25rem;
+}
+dt {
+  font-size: 0.85rem;
+}
+dd {
+  color: #f5f6f8;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.account-actions button {
+  min-width: 9rem;
+}
+.danger-action {
+  background: #ff5c5c;
 }
 .stats-panel > div {
   display: flex;
@@ -130,11 +226,11 @@ li {
   padding: 0.875rem 1rem;
 }
 @media (max-width: 640px) {
-  .search-form, .user-results article {
+  .search-form, .user-result {
     grid-template-columns: 1fr;
   }
 
-  .user-results article {
+  .user-result {
     align-items: flex-start;
     flex-direction: column;
   }

@@ -84,13 +84,14 @@
     } @else if (state.users.length) {
     <div class="user-results" aria-label="Rezultati pretrage korisnika">
       @for (user of state.users; track user.id) {
-      <article>
+      <button type="button" class="user-result" [class.is-selected]="state.selectedUserId === user.id"
+        (click)="selectUser(user.id)">
         <div>
           <strong>{{ user.firstName }} {{ user.lastName }}</strong>
           <span>{{ user.username }} | {{ user.email }}</span>
         </div>
         <span class="role-badge">{{ roleLabels[user.role] }}</span>
-      </article>
+      </button>
       }
     </div>
     } @else {
@@ -98,6 +99,63 @@
     }
     }
   </section>
+
+  @if (selectedUser$ | async; as selectedUser) {
+  <div class="modal-backdrop" (click)="closeUserDetails()">
+    <section class="user-detail" role="dialog" aria-modal="true" aria-labelledby="selected-user-title"
+      (click)="$event.stopPropagation()">
+      <header>
+        <div>
+          <p>Izabrani korisnik</p>
+          <h3 id="selected-user-title">{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h3>
+        </div>
+        <button type="button" class="close-button" aria-label="Zatvori detalje korisnika"
+          (click)="closeUserDetails()">X</button>
+      </header>
+
+      <span class="status-badge" [class.is-inactive]="selectedUser.isActive === false">
+        {{ selectedUser.isActive === false ? 'Neaktivan' : 'Aktivan' }}
+      </span>
+
+      <dl>
+        <div>
+          <dt>Korisničko ime</dt>
+          <dd>{{ selectedUser.username }}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{{ selectedUser.email }}</dd>
+        </div>
+        <div>
+          <dt>Uloga</dt>
+          <dd>{{ roleLabels[selectedUser.role] }}</dd>
+        </div>
+        <div>
+          <dt>ID korisnika</dt>
+          <dd>{{ selectedUser.id }}</dd>
+        </div>
+        @if (selectedUser.createdAt) {
+        <div>
+          <dt>Kreiran</dt>
+          <dd>{{ selectedUser.createdAt }}</dd>
+        </div>
+        }
+        @if (selectedUser.updatedAt) {
+        <div>
+          <dt>Ažuriran</dt>
+          <dd>{{ selectedUser.updatedAt }}</dd>
+        </div>
+        }
+      </dl>
+
+      <div class="account-actions" aria-label="Akcije naloga">
+        <button type="button" disabled>Aktiviraj</button>
+        <button type="button" disabled>Deaktiviraj</button>
+        <button type="button" class="danger-action" disabled>Obriši nalog</button>
+      </div>
+    </section>
+  </div>
+  }
 
   @if (statsState$ | async; as state) {
   @if (state.error) {
