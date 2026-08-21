@@ -20,6 +20,9 @@ export type AdminUsersState = {
   createUserLoading: boolean;
   createUserStatus: 'success' | 'error' | '';
   createUserMessage: string;
+  accountActionLoading: boolean;
+  accountActionStatus: 'success' | 'error' | '';
+  accountActionMessage: string;
 };
 
 export const initialAdminUsersState: AdminUsersState = {
@@ -38,6 +41,9 @@ export const initialAdminUsersState: AdminUsersState = {
   createUserLoading: false,
   createUserStatus: '',
   createUserMessage: '',
+  accountActionLoading: false,
+  accountActionStatus: '',
+  accountActionMessage: '',
 };
 
 export const adminUsersReducer = createReducer(
@@ -129,6 +135,28 @@ export const adminUsersReducer = createReducer(
     createUserStatus: 'error',
     createUserMessage: error,
   })),
+  on(AdminUsersActions.accountAction, (state) => ({
+    ...state,
+    accountActionLoading: true,
+    accountActionStatus: '',
+    accountActionMessage: '',
+  })),
+  on(AdminUsersActions.accountActionSucceeded, (state, { user, action }) => ({
+    ...state,
+    users: action === 'delete'
+      ? state.users.filter((item) => item.id !== user.id)
+      : state.users.map((item) => item.id === user.id ? user : item),
+    selectedUserId: action === 'delete' ? null : user.id,
+    accountActionLoading: false,
+    accountActionStatus: 'success',
+    accountActionMessage: accountActionSuccessMessage(action),
+  })),
+  on(AdminUsersActions.accountActionFailed, (state, { error }) => ({
+    ...state,
+    accountActionLoading: false,
+    accountActionStatus: 'error',
+    accountActionMessage: error,
+  })),
 );
 
 export function normalizeSearchFilters(filters: AdminUserSearchFilters): AdminUserSearchFilters {
@@ -172,4 +200,16 @@ function userMatchesSearch(user: AdminUser, filters: AdminUserSearchFilters): bo
 
   return [user.username, user.firstName, user.lastName, user.email]
     .some((value) => value.toLocaleLowerCase().includes(query));
+}
+
+function accountActionSuccessMessage(action: 'activate' | 'deactivate' | 'delete'): string {
+  if (action === 'activate') {
+    return 'Korisnik je aktiviran.';
+  }
+
+  if (action === 'deactivate') {
+    return 'Korisnik je deaktiviran.';
+  }
+
+  return 'Korisnik je obrisan.';
 }

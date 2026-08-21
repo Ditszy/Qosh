@@ -61,6 +61,50 @@ export const createAdminUser = createEffect(
   { functional: true },
 );
 
+export const runAdminAccountAction = createEffect(
+  (actions$ = inject(Actions), adminUsersApi = inject(AdminUsersApiService)) =>
+    actions$.pipe(
+      ofType(AdminUsersActions.accountAction),
+      exhaustMap(({ userId, action }) =>
+        adminAccountActionRequest(adminUsersApi, userId, action).pipe(
+          map((user) => AdminUsersActions.accountActionSucceeded({ user, action })),
+          catchError((error: unknown) => of(AdminUsersActions.accountActionFailed({
+            error: accountActionError(error, action),
+          }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+function adminAccountActionRequest(
+  adminUsersApi: AdminUsersApiService,
+  userId: string,
+  action: 'activate' | 'deactivate' | 'delete',
+) {
+  if (action === 'activate') {
+    return adminUsersApi.activateUser(userId);
+  }
+
+  if (action === 'deactivate') {
+    return adminUsersApi.deactivateUser(userId);
+  }
+
+  return adminUsersApi.deleteUser(userId);
+}
+
+function accountActionError(error: unknown, action: 'activate' | 'deactivate' | 'delete'): string {
+  if (error instanceof HttpErrorResponse && error.status === 400 && action === 'delete') {
+    return 'Korisnik ima podatke u aplikaciji. Deaktiviraj nalog umesto brisanja.';
+  }
+
+  if (error instanceof HttpErrorResponse && error.status === 404) {
+    return 'Korisnik nije pronaen.';
+  }
+
+  return 'Nije moguće izvršiti akciju nad korisnikom.';
+}
+
 function createUserError(error: unknown): string {
   if (error instanceof HttpErrorResponse && error.status === 409) {
     return 'Email ili korisničko ime je već zauzeto.';

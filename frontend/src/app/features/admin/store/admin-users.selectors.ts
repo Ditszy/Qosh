@@ -28,3 +28,9 @@ export const selectAdminCreateUserState = createSelector(selectAdminUsersState, 
   status: state.createUserStatus,
   message: state.createUserMessage,
 }));
+
+export const selectAdminAccountActionState = createSelector(selectAdminUsersState, (state) => ({
+  loading: state.accountActionLoading,
+  status: state.accountActionStatus,
+  message: state.accountActionMessage,
+}));

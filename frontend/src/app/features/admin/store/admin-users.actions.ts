@@ -1,7 +1,7 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
 import type { AdminCreateUserRequest, AdminUserStats } from '../admin-users-api.service';
-import type { AdminUser, AdminUserSearchFilters } from '../admin-users.models';
+import type { AdminAccountAction, AdminUser, AdminUserSearchFilters } from '../admin-users.models';
 
 export const AdminUsersActions = createActionGroup({
   source: 'Admin Users',
@@ -18,5 +18,8 @@ export const AdminUsersActions = createActionGroup({
     'Create User': props<{ payload: AdminCreateUserRequest }>(),
     'Create User Succeeded': props<{ user: AdminUser }>(),
     'Create User Failed': props<{ error: string }>(),
+    'Account Action': props<{ userId: string; action: AdminAccountAction }>(),
+    'Account Action Succeeded': props<{ user: AdminUser; action: AdminAccountAction }>(),
+    'Account Action Failed': props<{ error: string }>(),
   },
 });
