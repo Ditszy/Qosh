@@ -1,1 +1,86 @@
-<p>tournament-match-recap works!</p>
+<section class="recap-section" aria-label="Rezime mečeva">
+  <header>
+    <div>
+      <p class="eyebrow">Rezime</p>
+      <h3>Rezime mečeva</h3>
+    </div>
+  </header>
+
+  @if (sortedRecaps().length > 0) {
+  <div class="recap-list">
+    @for (recap of sortedRecaps(); track recap.match.id) {
+    <article class="recap-card">
+      <header class="recap-card-header">
+        <div>
+          <span>Runda {{ recap.match.round }}</span>
+          <h4>Meč {{ recap.match.bracketPosition }}</h4>
+        </div>
+        <a [routerLink]="['/matches', recap.match.id, 'live']">Otvori meč</a>
+      </header>
+
+      <div class="score-row">
+        @for (team of recap.teams; track team.team.id) {
+        <div class="score-team" [class.winner]="recap.winnerTeam?.id === team.team.id">
+          <span>{{ team.team.name }}</span>
+          <strong>{{ team.score }}</strong>
+        </div>
+        }
+      </div>
+
+      <div class="highlight-grid">
+        @for (highlight of recap.highlights; track highlight.key) {
+        <div class="highlight-card">
+          <span>{{ highlightLabel(highlight.key) }}</span>
+          @if (highlight.player) {
+          <a [routerLink]="['/profiles', highlight.player.id]">
+            {{ highlight.player.firstName }} {{ highlight.player.lastName }}
+          </a>
+          <strong>{{ highlight.valueLabel }}</strong>
+          @if (highlight.team) {
+          <small>{{ highlight.team.name }}</small>
+          }
+          } @else {
+          <p>Nema kandidata.</p>
+          }
+        </div>
+        }
+      </div>
+
+      <div class="stat-comparison" aria-label="Poređenje timova">
+        @for (team of recap.teams; track team.team.id) {
+        <dl>
+          <div>
+            <dt>Tim</dt>
+            <dd>{{ team.team.name }}</dd>
+          </div>
+          <div>
+            <dt>REB</dt>
+            <dd>{{ team.totals.rebounds }}</dd>
+          </div>
+          <div>
+            <dt>AST</dt>
+            <dd>{{ team.totals.assists }}</dd>
+          </div>
+          <div>
+            <dt>STL</dt>
+            <dd>{{ team.totals.steals }}</dd>
+          </div>
+          <div>
+            <dt>BLK</dt>
+            <dd>{{ team.totals.blocks }}</dd>
+          </div>
+          <div>
+            <dt>TO</dt>
+            <dd>{{ team.totals.turnovers }}</dd>
+          </div>
+        </dl>
+        }
+      </div>
+
+    </article>
+    }
+  </div>
+  } @else {
+  <p class="surface-message">Rezime će biti dostupan kada se završi prvi meč.</p>
+  }
+</section>

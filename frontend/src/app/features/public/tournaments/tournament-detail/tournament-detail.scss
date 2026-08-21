@@ -52,6 +52,32 @@
   text-transform: uppercase;
 }
 
+.detail-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+  border-bottom: 1px solid #2b303a;
+}
+
+.detail-tabs button {
+  border: 1px solid #2b303a;
+  border-bottom: 0;
+  background: #101218;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 950;
+  padding: 10px 14px;
+  text-transform: uppercase;
+}
+
+.detail-tabs button.active {
+  background: #ff5a1f;
+  border-color: #ff5a1f;
+  color: #090a0d;
+}
+
 .signup-form {
   margin-bottom: 20px;
   border: 1px solid #2b303a;

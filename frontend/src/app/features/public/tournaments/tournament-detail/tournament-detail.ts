@@ -10,6 +10,7 @@ import { AuthService } from '../../../../core/auth/auth';
 import { TeamsApiService } from '../../../player/teams-api.service';
 import { TournamentAwardsBoard } from '../tournament-awards-board/tournament-awards-board';
 import { TournamentBracket } from '../tournament-bracket/tournament-bracket';
+import { TournamentMatchRecap } from '../tournament-match-recap/tournament-match-recap';
 import type {
   Tournament,
   TournamentMatch,
@@ -17,6 +18,8 @@ import type {
   TournamentTeamDetail,
 } from '../tournament.models';
 import { selectTournamentDetailView, TournamentsActions } from '../store';
+
+type DetailTab = 'teams' | 'bracket' | 'recap';
 
 const statusLabels: Record<TournamentStatus, string> = {
   DRAFT: 'U pripremi',
@@ -29,7 +32,7 @@ const statusLabels: Record<TournamentStatus, string> = {
 
 @Component({
   selector: 'app-tournament-detail',
-  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink, TournamentAwardsBoard, TournamentBracket],
+  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink, TournamentAwardsBoard, TournamentBracket, TournamentMatchRecap],
   templateUrl: './tournament-detail.html',
   styleUrl: './tournament-detail.scss',
 })
@@ -48,7 +51,13 @@ export class TournamentDetail {
   protected readonly teamRemovalFeedback = signal<string | null>(null);
   protected readonly removingTeamIds = signal<Record<string, boolean>>({});
   protected readonly selectedTeamId = signal<string | null>(null);
+  protected readonly activeTab = signal<DetailTab>('teams');
   protected readonly detailView = this.store.selectSignal(selectTournamentDetailView);
+  protected readonly matchRecaps = computed(() => {
+    const state = this.detailView();
+
+    return state.status === 'loaded' ? Object.values(state.recapsByMatchId) : [];
+  });
   protected readonly selectedTeam = computed(() => {
     const state = this.detailView();
     const selectedTeamId = this.selectedTeamId();
@@ -67,6 +76,7 @@ export class TournamentDetail {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe((tournamentId) => {
       this.selectedTeamId.set(null);
+      this.activeTab.set('teams');
       this.store.dispatch(TournamentsActions.loadDetail({ tournamentId }));
     });
   }
@@ -159,5 +169,9 @@ export class TournamentDetail {
 
   protected closeTeam(): void {
     this.selectedTeamId.set(null);
+  }
+
+  protected setActiveTab(tab: DetailTab): void {
+    this.activeTab.set(tab);
   }
 }

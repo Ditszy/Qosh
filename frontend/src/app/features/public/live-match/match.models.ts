@@ -66,23 +66,12 @@ export type MatchRecapPlayerHighlight = {
   statLine: StatisticLine | null;
 };
 
-export type MatchRecapEvent = {
-  id: string;
-  type: MatchEventType;
-  clockRemainingSeconds: number | null;
-  occurredAt: string;
-  createdAt: string;
-  team: TeamSummary;
-  player: PublicUser | null;
-};
-
 export type MatchRecap = {
   match: StatisticsMatchSummary;
   isFinal: boolean;
   winnerTeam: TeamSummary | null;
   teams: MatchRecapTeamSummary[];
   highlights: MatchRecapPlayerHighlight[];
-  keyEvents: MatchRecapEvent[];
 };
 
 export type MatchRecapsByMatchId = Record<string, MatchRecap>;

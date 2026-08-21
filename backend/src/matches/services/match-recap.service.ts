@@ -13,7 +13,6 @@ import { StatisticLine, StatisticTotals, TeamSummary } from '../../statistics/ty
 import { MatchStatus } from '../enums/match-status.enum';
 import {
     MatchRecap,
-    MatchRecapEvent,
     MatchRecapHighlightKey,
     MatchRecapPlayerHighlight,
     MatchRecapTeamSummary,
@@ -63,41 +62,18 @@ export class MatchRecapService {
             throw new NotFoundException('Match not found');
         }
 
-        const [statistics, recentEvents] = await this.prisma.$transaction([
-            this.prisma.matchPlayerStat.findMany({
-                where: { matchId },
-                select: {
-                    ...statCounterSelect(),
-                    team: {
-                        select: teamSummarySelect(),
-                    },
-                    player: {
-                        select: publicUserSelect,
-                    },
+        const statistics = await this.prisma.matchPlayerStat.findMany({
+            where: { matchId },
+            select: {
+                ...statCounterSelect(),
+                team: {
+                    select: teamSummarySelect(),
                 },
-            }),
-            this.prisma.matchEvent.findMany({
-                where: { matchId },
-                select: {
-                    id: true,
-                    type: true,
-                    clockRemainingSeconds: true,
-                    occurredAt: true,
-                    createdAt: true,
-                    team: {
-                        select: teamSummarySelect(),
-                    },
-                    player: {
-                        select: publicUserSelect,
-                    },
+                player: {
+                    select: publicUserSelect,
                 },
-                orderBy: [
-                    { occurredAt: 'desc' },
-                    { createdAt: 'desc' },
-                ],
-                take: 8,
-            }),
-        ]);
+            },
+        });
 
         const playerStatistics = statistics.map((statistic): RecapPlayerStatistic => ({
             player: statistic.player,
@@ -112,15 +88,6 @@ export class MatchRecapService {
             winnerTeam: isFinal && match.winnerTeam ? toTeamSummary(match.winnerTeam) : null,
             teams: this.buildTeamSummaries(match, statistics),
             highlights: this.buildHighlights(playerStatistics),
-            keyEvents: recentEvents.reverse().map((event): MatchRecapEvent => ({
-                id: event.id,
-                type: event.type,
-                clockRemainingSeconds: event.clockRemainingSeconds,
-                occurredAt: event.occurredAt,
-                createdAt: event.createdAt,
-                team: toTeamSummary(event.team),
-                player: event.player,
-            })),
         };
     }
 

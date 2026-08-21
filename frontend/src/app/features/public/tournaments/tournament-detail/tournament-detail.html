@@ -74,6 +74,13 @@
 
   <app-tournament-awards-board [awards]="state.awards" />
 
+  <nav class="detail-tabs" aria-label="Sekcije turnira">
+    <button type="button" [class.active]="activeTab() === 'teams'" (click)="setActiveTab('teams')">Timovi</button>
+    <button type="button" [class.active]="activeTab() === 'bracket'" (click)="setActiveTab('bracket')">Breket</button>
+    <button type="button" [class.active]="activeTab() === 'recap'" (click)="setActiveTab('recap')">Rezime</button>
+  </nav>
+
+  @if (activeTab() === 'teams') {
   <section class="team-section" aria-label="Timovi">
     <h3>Timovi</h3>
     @if (teamRemovalFeedback()) {
@@ -101,8 +108,15 @@
     <p class="surface-message">Još nema prijavljenih timova.</p>
     }
   </section>
+  }
 
+  @if (activeTab() === 'bracket') {
   <app-tournament-bracket [matches]="state.matches" />
+  }
+
+  @if (activeTab() === 'recap') {
+  <app-tournament-match-recap [recaps]="matchRecaps()" />
+  }
 
   @if (selectedTeam(); as team) {
   <div class="team-modal-backdrop" role="presentation" (click)="closeTeam()"></div>

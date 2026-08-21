@@ -1,0 +1,192 @@
+:host {
+  display: block;
+}
+
+.recap-section {
+  display: grid;
+  gap: 12px;
+}
+
+.recap-section header,
+.recap-card-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+h3,
+h4 {
+  margin: 0;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+h3 {
+  font-size: 1.2rem;
+}
+
+h4 {
+  margin-top: 4px;
+  font-size: 1rem;
+}
+
+.recap-list {
+  display: grid;
+  gap: 14px;
+}
+
+.recap-card,
+.highlight-card,
+.surface-message {
+  border: 1px solid #2b303a;
+  background: #101218;
+}
+
+.recap-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.recap-card-header a {
+  color: #ff5a1f;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.recap-card-header span,
+.highlight-card > span,
+dt {
+  color: #9ca3af;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.score-row,
+.highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.score-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #2b303a;
+  background: #090a0d;
+  color: #ffffff;
+  padding: 12px;
+}
+
+.score-team span {
+  overflow-wrap: anywhere;
+  font-weight: 850;
+}
+
+.score-team strong {
+  color: #ffffff;
+  font-size: 1.45rem;
+  font-weight: 950;
+}
+
+.score-team.winner {
+  border-color: #ff5a1f;
+}
+
+.score-team.winner strong {
+  color: #ff5a1f;
+}
+
+.highlight-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+}
+
+.highlight-card a {
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 950;
+  line-height: 1.15;
+  text-decoration: none;
+}
+
+.highlight-card strong {
+  color: #ff5a1f;
+  font-weight: 950;
+}
+
+.highlight-card small,
+.highlight-card p,
+.surface-message {
+  color: #b8bdc7;
+  line-height: 1.45;
+}
+
+.highlight-card p {
+  margin: 0;
+}
+
+.stat-comparison {
+  display: grid;
+  gap: 1px;
+  background: #242832;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.6fr) repeat(5, minmax(52px, 1fr));
+  gap: 1px;
+  margin: 0;
+}
+
+dl div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  background: #090a0d;
+  padding: 10px;
+}
+
+dt,
+dd {
+  margin: 0;
+}
+
+dd {
+  overflow-wrap: anywhere;
+  color: #ffffff;
+  font-weight: 950;
+}
+
+.surface-message {
+  padding: 16px;
+  font-weight: 800;
+}
+
+@media (max-width: 760px) {
+  .recap-section header,
+  .recap-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  dl {
+    grid-template-columns: 1fr;
+  }
+}
