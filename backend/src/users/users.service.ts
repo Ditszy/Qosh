@@ -1,5 +1,7 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ChangeMyPasswordDto } from "./dto/change-my-password.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateMyProfileDto } from "./dto/update-my-profile.dto";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { UserRole } from "../common/user-role.enum";
@@ -252,6 +254,42 @@ export class UsersService {
         });
     }
 
+    async updateMyProfile(id: string, updateMyProfileDto: UpdateMyProfileDto): Promise<PublicUser> {
+        const user = await this.findSessionUserById(id);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        this.assertPlayerSelfService(user);
+
+        return this.prisma.user.update({
+            where: { id },
+            data: {
+                firstName: updateMyProfileDto.firstName,
+                lastName: updateMyProfileDto.lastName,
+            },
+            select: publicUserSelect,
+        });
+    }
+
+    async changeMyPassword(id: string, changeMyPasswordDto: ChangeMyPasswordDto): Promise<void> {
+        const user = await this.prisma.user.findUnique({ where: { id } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        this.assertPlayerSelfService(user);
+
+        const isMatch = await bcrypt.compare(changeMyPasswordDto.oldPassword, user.password);
+        if (!isMatch) {
+            throw new BadRequestException('Old password is not correct');
+        }
+
+        const hashedPassword = await bcrypt.hash(changeMyPasswordDto.newPassword, 10);
+        await this.prisma.user.update({
+            where: { id },
+            data: { password: hashedPassword },
+        });
+    }
+
     async deleteByAdmin(id: string, actorId: string): Promise<AdminUser> {
         if (id === actorId) {
             throw new BadRequestException('Admins cannot delete their own account');
@@ -309,6 +347,12 @@ export class UsersService {
 
         if (relationCounts.some((count) => count > 0)) {
             throw new BadRequestException('User has project records and cannot be deleted. Deactivate the account instead.');
+        }
+    }
+
+    private assertPlayerSelfService(user: Pick<SessionUser, 'role' | 'isActive'>): void {
+        if (!user.isActive || user.role !== UserRole.PLAYER) {
+            throw new ForbiddenException('Only active player accounts can update player profile settings');
         }
     }
 }

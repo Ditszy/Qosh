@@ -5,7 +5,9 @@ import { RolesGuard } from "../common/roles.guard";
 import { Roles } from "../common/roles.decorator";
 import { UserRole } from "../common/user-role.enum";
 import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { ChangeMyPasswordDto } from "./dto/change-my-password.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateMyProfileDto } from "./dto/update-my-profile.dto";
 
 type AuthenticatedRequest = {
     user: {
@@ -42,6 +44,18 @@ export class UserController {
     @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
     findOfficials(@Query('q') query = '', @Query('role') role?: UserRole) {
         return this.usersService.findOfficials(query, role);
+    }
+
+    @Patch('me/profile')
+    @Roles(UserRole.PLAYER)
+    updateMyProfile(@Body() updateMyProfileDto: UpdateMyProfileDto, @Request() req: AuthenticatedRequest) {
+        return this.usersService.updateMyProfile(req.user.id, updateMyProfileDto);
+    }
+
+    @Patch('me/password')
+    @Roles(UserRole.PLAYER)
+    changeMyPassword(@Body() changeMyPasswordDto: ChangeMyPasswordDto, @Request() req: AuthenticatedRequest) {
+        return this.usersService.changeMyPassword(req.user.id, changeMyPasswordDto);
     }
 
     @Get(':id')
