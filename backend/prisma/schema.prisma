@@ -83,6 +83,7 @@ model User {
   firstName              String
   lastName               String
   role                   UserRole     @default(PLAYER)
+  isActive               Boolean      @default(true)
   tournaments            Tournament[]
   teamMembers            TeamMember[]
   invitedToTeams         TeamInvite[] @relation("InvitedUser")
