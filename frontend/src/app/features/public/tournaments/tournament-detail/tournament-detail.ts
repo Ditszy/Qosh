@@ -8,6 +8,7 @@ import { distinctUntilChanged, filter, finalize, map } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
 import { TeamsApiService } from '../../../player/teams-api.service';
+import { TournamentAwardsBoard } from '../tournament-awards-board/tournament-awards-board';
 import type {
   Tournament,
   TournamentMatch,
@@ -41,7 +42,7 @@ const bracketSlotStep = bracketCardHeight + bracketFirstRoundGap;
 
 @Component({
   selector: 'app-tournament-detail',
-  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink],
+  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink, TournamentAwardsBoard],
   templateUrl: './tournament-detail.html',
   styleUrl: './tournament-detail.scss',
 })

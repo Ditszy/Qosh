@@ -1,0 +1,58 @@
+<section class="awards-board" aria-label="Nagrade turnira">
+  <header>
+    <div>
+      <p class="eyebrow">Nagrade</p>
+      <h3>Nagrade turnira</h3>
+    </div>
+  </header>
+
+  @if (hasWinners()) {
+  <div class="awards-grid">
+    @for (award of awards(); track award.key) {
+    <article class="award-card" [class.empty-award]="!award.winner">
+      <span>{{ award.label }}</span>
+      @if (award.winner) {
+      <a [routerLink]="['/profiles', award.winner.id]">
+        {{ award.winner.firstName }} {{ award.winner.lastName }}
+      </a>
+      @if (award.valueLabel) {
+      <strong>{{ award.valueLabel }}</strong>
+      }
+      @if (award.teams.length > 0) {
+      <small>{{ teamNames(award.teams) }}</small>
+      }
+      @if (award.statLine) {
+      <dl>
+        <div>
+          <dt>PTS</dt>
+          <dd>{{ award.statLine.points }}</dd>
+        </div>
+        <div>
+          <dt>REB</dt>
+          <dd>{{ award.statLine.rebounds }}</dd>
+        </div>
+        <div>
+          <dt>AST</dt>
+          <dd>{{ award.statLine.assists }}</dd>
+        </div>
+        <div>
+          <dt>STL</dt>
+          <dd>{{ award.statLine.steals }}</dd>
+        </div>
+        <div>
+          <dt>BLK</dt>
+          <dd>{{ award.statLine.blocks }}</dd>
+        </div>
+      </dl>
+      }
+      } @else {
+      <p>Još nema kandidata.</p>
+      }
+      <p>{{ award.description }}</p>
+    </article>
+    }
+  </div>
+  } @else {
+  <p class="surface-message">Nagrade će biti dostupne kada se odigraju mečevi.</p>
+  }
+</section>
