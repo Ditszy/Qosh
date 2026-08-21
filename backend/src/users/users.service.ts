@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
@@ -208,6 +208,19 @@ export class UsersService {
     async findAdminById(id: string): Promise<AdminUser | null> {
         return this.prisma.user.findUnique({
             where: { id },
+            select: adminUserSelect,
+        });
+    }
+
+    async setActiveStatus(id: string, isActive: boolean): Promise<AdminUser> {
+        const user = await this.findAdminById(id);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return this.prisma.user.update({
+            where: { id },
+            data: { isActive },
             select: adminUserSelect,
         });
     }

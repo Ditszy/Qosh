@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../common/roles.guard";
@@ -40,6 +40,16 @@ export class UserController {
     @Get(':id')
     findById(@Param('id') id: string) {
         return this.usersService.findAdminById(id);
+    }
+
+    @Patch(':id/activate')
+    activate(@Param('id') id: string) {
+        return this.usersService.setActiveStatus(id, true);
+    }
+
+    @Patch(':id/deactivate')
+    deactivate(@Param('id') id: string) {
+        return this.usersService.setActiveStatus(id, false);
     }
 
     @Post('create')
