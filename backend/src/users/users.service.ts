@@ -225,6 +225,28 @@ export class UsersService {
         });
     }
 
+    async deleteByAdmin(id: string, actorId: string): Promise<AdminUser> {
+        if (id === actorId) {
+            throw new BadRequestException('Admins cannot delete their own account');
+        }
+
+        const user = await this.findAdminById(id);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        await this.assertUserHasNoDomainRecords(id);
+
+        return this.prisma.$transaction(async (tx) => {
+            await tx.refreshSession.deleteMany({ where: { userId: id } });
+
+            return tx.user.delete({
+                where: { id },
+                select: adminUserSelect,
+            });
+        });
+    }
+
     async createByAdmin(createUserDto: CreateUserDto): Promise<AdminUser> {
         const existing = await this.findByEmail(createUserDto.email);
         if (existing) {
@@ -244,5 +266,22 @@ export class UsersService {
             },
             select: adminUserSelect,
         });
+    }
+
+    private async assertUserHasNoDomainRecords(id: string): Promise<void> {
+        const relationCounts = await Promise.all([
+            this.prisma.tournament.count({ where: { organizerId: id } }),
+            this.prisma.teamMember.count({ where: { userId: id } }),
+            this.prisma.teamInvite.count({ where: { OR: [{ invitedUserId: id }, { inviterId: id }] } }),
+            this.prisma.match.count({ where: { OR: [{ scorerId: id }, { refereeId: id }] } }),
+            this.prisma.matchEvent.count({ where: { OR: [{ playerId: id }, { scorerId: id }] } }),
+            this.prisma.matchPlayerStat.count({ where: { playerId: id } }),
+            this.prisma.notification.count({ where: { recipientId: id } }),
+            this.prisma.refereeReport.count({ where: { refereeId: id } }),
+        ]);
+
+        if (relationCounts.some((count) => count > 0)) {
+            throw new BadRequestException('User has project records and cannot be deleted. Deactivate the account instead.');
+        }
     }
 }

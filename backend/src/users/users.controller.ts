@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../common/roles.guard";
@@ -6,6 +6,13 @@ import { Roles } from "../common/roles.decorator";
 import { UserRole } from "../common/user-role.enum";
 import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 import { CreateUserDto } from "./dto/create-user.dto";
+
+type AuthenticatedRequest = {
+    user: {
+        id: string;
+        role: UserRole;
+    };
+};
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -50,6 +57,11 @@ export class UserController {
     @Patch(':id/deactivate')
     deactivate(@Param('id') id: string) {
         return this.usersService.setActiveStatus(id, false);
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.usersService.deleteByAdmin(id, req.user.id);
     }
 
     @Post('create')
