@@ -1,5 +1,5 @@
 import type { LiveStreamMessage } from '../../../core/live';
-import type { MatchStatistics } from '../../statistics';
+import type { MatchStatistics, StatisticsMatchSummary, StatisticLine } from '../../statistics';
 import type {
   MatchClockStatus,
   MatchStatus,
@@ -48,6 +48,44 @@ export type MatchRefereeReport = {
   updatedAt: string;
   referee: PublicUser;
 };
+
+export type MatchRecapHighlightKey = 'TOP_SCORER' | 'PLAYER_OF_MATCH';
+
+export type MatchRecapTeamSummary = {
+  team: TeamSummary;
+  score: number;
+  totals: StatisticLine;
+};
+
+export type MatchRecapPlayerHighlight = {
+  key: MatchRecapHighlightKey;
+  player: PublicUser | null;
+  team: TeamSummary | null;
+  value: number | null;
+  valueLabel: string | null;
+  statLine: StatisticLine | null;
+};
+
+export type MatchRecapEvent = {
+  id: string;
+  type: MatchEventType;
+  clockRemainingSeconds: number | null;
+  occurredAt: string;
+  createdAt: string;
+  team: TeamSummary;
+  player: PublicUser | null;
+};
+
+export type MatchRecap = {
+  match: StatisticsMatchSummary;
+  isFinal: boolean;
+  winnerTeam: TeamSummary | null;
+  teams: MatchRecapTeamSummary[];
+  highlights: MatchRecapPlayerHighlight[];
+  keyEvents: MatchRecapEvent[];
+};
+
+export type MatchRecapsByMatchId = Record<string, MatchRecap>;
 
 export type MatchLiveSnapshot = {
   match: MatchDetail;

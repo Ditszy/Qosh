@@ -12,6 +12,7 @@ import type {
   MatchLivePayload,
   MatchLiveStreamMessage,
   MatchReadBundle,
+  MatchRecap,
   MatchRefereeReport,
 } from './match.models';
 
@@ -41,6 +42,10 @@ export class MatchesApiService {
 
   getRefereeReport(matchId: string): Observable<MatchRefereeReport> {
     return this.http.get<MatchRefereeReport>(this.apiUrl.build(`/matches/${matchId}/report`));
+  }
+
+  getMatchRecap(matchId: string): Observable<MatchRecap> {
+    return this.http.get<MatchRecap>(this.apiUrl.build(`/matches/${matchId}/recap`));
   }
 
   getMatchReadBundle(matchId: string): Observable<MatchReadBundle> {

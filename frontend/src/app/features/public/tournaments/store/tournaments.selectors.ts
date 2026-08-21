@@ -13,3 +13,8 @@ export const selectTournamentDetailView = createSelector(
   selectTournamentsState,
   (state) => state.detailView,
 );
+
+export const selectTournamentDetailRecaps = createSelector(
+  selectTournamentDetailView,
+  (view) => (view.status === 'loaded' ? view.recapsByMatchId : {}),
+);

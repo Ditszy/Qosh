@@ -8,6 +8,7 @@ import type {
   TournamentMatch,
   TournamentTeamDetail,
 } from '../tournament.models';
+import type { MatchRecapsByMatchId } from '../../live-match/match.models';
 import type { TournamentAward } from '../../../statistics/statistics.models';
 import { TournamentsActions } from './tournaments.actions';
 
@@ -26,6 +27,7 @@ export type TournamentDetailViewState =
       teams: TournamentTeamDetail[];
       matches: TournamentMatch[];
       awards: TournamentAward[];
+      recapsByMatchId: MatchRecapsByMatchId;
     }
   | { status: 'error' };
 
@@ -65,10 +67,10 @@ export const tournamentsReducer = createReducer(
     selectedTournamentId: tournamentId,
     detailView: { status: 'loading' },
   })),
-  on(TournamentsActions.loadDetailSucceeded, (state, { tournamentId, tournament, teams, matches, awards }) => ({
+  on(TournamentsActions.loadDetailSucceeded, (state, { tournamentId, tournament, teams, matches, awards, recapsByMatchId }) => ({
     ...state,
     selectedTournamentId: tournamentId,
-    detailView: { status: 'loaded', tournament, teams, matches, awards },
+    detailView: { status: 'loaded', tournament, teams, matches, awards, recapsByMatchId },
   })),
   on(TournamentsActions.loadDetailFailed, (state, { tournamentId }) => ({
     ...state,
