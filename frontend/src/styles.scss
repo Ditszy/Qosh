@@ -146,11 +146,16 @@ body {
   font-size: 0.82rem;
   font-weight: 900;
   line-height: 1.1;
+  text-decoration: none;
 }
 
 .account-summary strong {
   color: #9ca3af;
   font-size: 0.68rem;
+}
+
+.account-summary:hover {
+  color: #ffb37a;
 }
 
 main {

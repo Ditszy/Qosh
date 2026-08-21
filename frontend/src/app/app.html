@@ -36,10 +36,10 @@
 
     <div class="account-actions" aria-label="Korisničke akcije">
       @if (currentUser(); as user) {
-      <span class="account-summary">
+      <a class="account-summary" [routerLink]="['/profiles', user.id]">
         {{ accountLabel() }}
         <strong>{{ user.role }}</strong>
-      </span>
+      </a>
       <app-notification-bell />
       <button class="text-action" type="button" (click)="logout()">Odjava</button>
       } @else {
