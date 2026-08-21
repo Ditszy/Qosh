@@ -4,9 +4,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
 
 import { AdminCreateUserRole, AdminUserStats } from '../admin-users-api.service';
-import type { AdminUserSearchRole } from '../admin-users.models';
+import type { AdminAccountAction, AdminUserSearchRole } from '../admin-users.models';
 import {
   AdminUsersActions,
+  selectAdminAccountActionState,
   selectAdminCreateUserState,
   selectAdminUserSearchState,
   selectAdminUserStatsState,
@@ -65,6 +66,7 @@ export class AdminUsers implements OnInit {
   readonly userSearchState$ = this.store.select(selectAdminUserSearchState);
   readonly selectedUser$ = this.store.select(selectSelectedAdminUser);
   readonly createUserState = this.store.selectSignal(selectAdminCreateUserState);
+  readonly accountActionState = this.store.selectSignal(selectAdminAccountActionState);
 
   constructor() {
     effect(() => {
@@ -104,5 +106,17 @@ export class AdminUsers implements OnInit {
 
   closeUserDetails(): void {
     this.store.dispatch(AdminUsersActions.clearSelectedUser());
+  }
+
+  runAccountAction(userId: string, action: AdminAccountAction): void {
+    if (this.accountActionState().loading) {
+      return;
+    }
+
+    if (action === 'delete' && !confirm('Obrisati nalog? Ova akcija je moguća samo za korisnike bez podataka u projektu.')) {
+      return;
+    }
+
+    this.store.dispatch(AdminUsersActions.accountAction({ userId, action }));
   }
 }

@@ -149,10 +149,28 @@
       </dl>
 
       <div class="account-actions" aria-label="Akcije naloga">
-        <button type="button" disabled>Aktiviraj</button>
-        <button type="button" disabled>Deaktiviraj</button>
-        <button type="button" class="danger-action" disabled>Obriši nalog</button>
+        @if (selectedUser.isActive === false) {
+        <button type="button" [disabled]="accountActionState().loading"
+          (click)="runAccountAction(selectedUser.id, 'activate')">
+          {{ accountActionState().loading ? 'Aktiviranje...' : 'Aktiviraj' }}
+        </button>
+        } @else {
+        <button type="button" [disabled]="accountActionState().loading"
+          (click)="runAccountAction(selectedUser.id, 'deactivate')">
+          {{ accountActionState().loading ? 'Deaktiviranje...' : 'Deaktiviraj' }}
+        </button>
+        }
+        <button type="button" class="danger-action" [disabled]="accountActionState().loading"
+          (click)="runAccountAction(selectedUser.id, 'delete')">
+          Obriši nalog
+        </button>
       </div>
+      @if (accountActionState().message) {
+      <p class="account-message" [class.is-success]="accountActionState().status === 'success'"
+        [class.is-error]="accountActionState().status === 'error'">
+        {{ accountActionState().message }}
+      </p>
+      }
     </section>
   </div>
   }
