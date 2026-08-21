@@ -1,1 +1,48 @@
-<p>player-profile-settings works!</p>
+<div class="modal-backdrop" (click)="close()">
+  <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="profile-settings-title"
+    (click)="$event.stopPropagation()">
+    <header>
+      <div>
+        <p class="eyebrow">Nalog igrača</p>
+        <h3 id="profile-settings-title">Podešavanja profila</h3>
+      </div>
+      <button type="button" class="close-button" aria-label="Zatvori podešavanja" (click)="close()">X</button>
+    </header>
+
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+      <h4>Ime na profilu</h4>
+      <label>
+        Ime
+        <input type="text" formControlName="firstName" />
+      </label>
+      <label>
+        Prezime
+        <input type="text" formControlName="lastName" />
+      </label>
+      <button type="submit" [disabled]="profileForm.invalid || savingName()">
+        {{ savingName() ? 'Čuvanje...' : 'Sačuvaj ime' }}
+      </button>
+      @if (nameMessage()) {
+      <p class="settings-message">{{ nameMessage() }}</p>
+      }
+    </form>
+
+    <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+      <h4>Promena lozinke</h4>
+      <label>
+        Stara lozinka
+        <input type="password" formControlName="oldPassword" />
+      </label>
+      <label>
+        Nova lozinka
+        <input type="password" formControlName="newPassword" />
+      </label>
+      <button type="submit" [disabled]="passwordForm.invalid || savingPassword()">
+        {{ savingPassword() ? 'Čuvanje...' : 'Promeni lozinku' }}
+      </button>
+      @if (passwordMessage()) {
+      <p class="settings-message">{{ passwordMessage() }}</p>
+      }
+    </form>
+  </section>
+</div>

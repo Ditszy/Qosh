@@ -1,11 +1,11 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, catchError, combineLatest, filter, map, of, startWith, switchMap } from 'rxjs';
 
-import { AuthService } from '../../../core/auth/auth';
+import { AuthService, ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../core/auth/auth';
+import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
 import { StatisticsApiService } from '../statistics-api.service';
 import type { PlayerProfile as PlayerProfileModel } from '../statistics.models';
 
@@ -16,13 +16,12 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, DatePipe, ReactiveFormsModule],
+  imports: [AsyncPipe, DatePipe, PlayerProfileSettings],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })
 export class PlayerProfile {
   private readonly route = inject(ActivatedRoute);
-  private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly statisticsApi = inject(StatisticsApiService);
   private readonly refreshProfile$ = new Subject<void>();
@@ -33,14 +32,6 @@ export class PlayerProfile {
   protected readonly passwordMessage = signal('');
   protected readonly savingName = signal(false);
   protected readonly savingPassword = signal(false);
-  protected readonly profileForm = this.formBuilder.nonNullable.group({
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
-  });
-  protected readonly passwordForm = this.formBuilder.nonNullable.group({
-    oldPassword: ['', Validators.required],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
-  });
 
   protected readonly state$ = this.route.paramMap.pipe(
     map((params) => params.get('id')),
@@ -65,12 +56,7 @@ export class PlayerProfile {
     return user?.role === 'PLAYER' && user.id === profile.user.id;
   }
 
-  protected openSettings(profile: PlayerProfileModel): void {
-    this.profileForm.reset({
-      firstName: profile.user.firstName,
-      lastName: profile.user.lastName,
-    });
-    this.passwordForm.reset();
+  protected openSettings(): void {
     this.nameMessage.set('');
     this.passwordMessage.set('');
     this.settingsOpen.set(true);
@@ -80,15 +66,10 @@ export class PlayerProfile {
     this.settingsOpen.set(false);
   }
 
-  protected saveProfile(): void {
-    if (this.profileForm.invalid || this.savingName()) {
-      this.profileForm.markAllAsTouched();
-      return;
-    }
-
+  protected saveProfile(payload: UpdateMyProfileRequest): void {
     this.savingName.set(true);
     this.nameMessage.set('');
-    this.authService.updateMyProfile(this.profileForm.getRawValue()).subscribe({
+    this.authService.updateMyProfile(payload).subscribe({
       next: () => {
         this.savingName.set(false);
         this.nameMessage.set('Profil je ažuriran.');
@@ -101,18 +82,12 @@ export class PlayerProfile {
     });
   }
 
-  protected changePassword(): void {
-    if (this.passwordForm.invalid || this.savingPassword()) {
-      this.passwordForm.markAllAsTouched();
-      return;
-    }
-
+  protected changePassword(payload: ChangeMyPasswordRequest): void {
     this.savingPassword.set(true);
     this.passwordMessage.set('');
-    this.authService.changeMyPassword(this.passwordForm.getRawValue()).subscribe({
+    this.authService.changeMyPassword(payload).subscribe({
       next: () => {
         this.savingPassword.set(false);
-        this.passwordForm.reset();
         this.passwordMessage.set('Lozinka je promenjena.');
       },
       error: (error: unknown) => {
