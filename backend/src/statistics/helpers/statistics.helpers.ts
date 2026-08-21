@@ -13,6 +13,8 @@ import {
     StatisticTotals,
     TeamSummary,
     TeamWithMembers,
+    TournamentAward,
+    TournamentAwardKey,
 } from '../types/statistics.types';
 
 export const leaderCategories: LeaderCategory[] = [
@@ -271,6 +273,24 @@ export function findLeader(statistics: PlayerStatistic[], category: LeaderCatego
         })[0] ?? null;
 }
 
+export function buildTournamentAwards(statistics: PlayerStatistic[]): TournamentAward[] {
+    return tournamentAwardDefinitions.map((definition) => {
+        const winner = findAwardWinner(statistics, definition.value);
+        const value = winner ? roundAwardValue(definition.value(winner)) : null;
+
+        return {
+            key: definition.key,
+            label: definition.label,
+            description: definition.description,
+            winner: winner?.player ?? null,
+            teams: winner?.teams ?? [],
+            value,
+            valueLabel: winner && value !== null ? definition.valueLabel(winner, value) : null,
+            statLine: winner ? toStatisticLine(winner) : null,
+        };
+    });
+}
+
 function getNumericStatValue(statistic: PlayerStatistic, category: LeaderCategory): number {
     return statistic[category] ?? 0;
 }
@@ -356,4 +376,139 @@ function percentage(made: number, attempted: number): number | null {
     }
 
     return Number(((made / attempted) * 100).toFixed(1));
+}
+
+type AwardDefinition = {
+    key: TournamentAwardKey;
+    label: string;
+    description: string;
+    value: (statistic: PlayerStatistic) => number;
+    valueLabel: (statistic: PlayerStatistic, value: number) => string;
+};
+
+const minimumShooterAttempts = 5;
+
+const tournamentAwardDefinitions: AwardDefinition[] = [
+    {
+        key: 'MVP',
+        label: 'MVP',
+        description: 'Najkorisniji igrač turnira po ukupnom učinku.',
+        value: mvpScore,
+        valueLabel: (_statistic, value) => `${value} MVP bodova`,
+    },
+    {
+        key: 'TOP_SCORER',
+        label: 'Najbolji strelac',
+        description: 'Igrač sa najviše postignutih poena.',
+        value: (statistic) => statistic.points,
+        valueLabel: (statistic) => `${statistic.points} PTS`,
+    },
+    {
+        key: 'BEST_PLAYMAKER',
+        label: 'Najbolji asistent',
+        description: 'Igrač koji je najviše kreirao poene za saigrače.',
+        value: (statistic) => statistic.assists,
+        valueLabel: (statistic) => `${statistic.assists} AST`,
+    },
+    {
+        key: 'BEST_DEFENDER',
+        label: 'Najbolji defanzivac',
+        description: 'Najbolji učinak u ukradenim loptama i blokadama.',
+        value: (statistic) => (statistic.steals * 2) + (statistic.blocks * 2) + (statistic.rebounds * 0.25),
+        valueLabel: (statistic, value) => `${value} DEF · ${statistic.steals} STL · ${statistic.blocks} BLK`,
+    },
+    {
+        key: 'BEST_SHOOTER',
+        label: 'Najbolji šuter',
+        description: 'Najefikasniji šuter sa dovoljnim brojem pokušaja.',
+        value: shooterScore,
+        valueLabel: (statistic, value) => `${value}% šut · ${totalShotAttempts(statistic)} pokušaja`,
+    },
+    {
+        key: 'HUSTLE_PLAYER',
+        label: 'Hustle igrač',
+        description: 'Igrač koji najviše doprinosi skokovima, pritiskom i energijom.',
+        value: hustleScore,
+        valueLabel: (_statistic, value) => `${value} hustle bodova`,
+    },
+];
+
+function findAwardWinner(
+    statistics: PlayerStatistic[],
+    getValue: (statistic: PlayerStatistic) => number,
+): PlayerStatistic | null {
+    return statistics
+        .filter((statistic) => statistic.gamesPlayed > 0 && getValue(statistic) > 0)
+        .sort((first, second) => {
+            const valueDifference = getValue(second) - getValue(first);
+
+            if (valueDifference !== 0) {
+                return valueDifference;
+            }
+
+            if (second.points !== first.points) {
+                return second.points - first.points;
+            }
+
+            return first.player.username.localeCompare(second.player.username);
+        })[0] ?? null;
+}
+
+function mvpScore(statistic: PlayerStatistic): number {
+    return statistic.points
+        + (statistic.rebounds * 1.2)
+        + (statistic.assists * 1.5)
+        + (statistic.steals * 2)
+        + (statistic.blocks * 2)
+        - statistic.turnovers
+        - (statistic.fouls * 0.5)
+        + shootingEfficiencyBonus(statistic);
+}
+
+function hustleScore(statistic: PlayerStatistic): number {
+    return statistic.rebounds
+        + (statistic.steals * 1.5)
+        + (statistic.blocks * 1.5)
+        - (statistic.turnovers * 0.5)
+        - (statistic.fouls * 0.25);
+}
+
+function shooterScore(statistic: PlayerStatistic): number {
+    const attempts = totalShotAttempts(statistic);
+
+    if (attempts < minimumShooterAttempts) {
+        return 0;
+    }
+
+    return totalShootingPercentage(statistic);
+}
+
+function shootingEfficiencyBonus(statistic: PlayerStatistic): number {
+    const attempts = totalShotAttempts(statistic);
+
+    if (attempts < minimumShooterAttempts) {
+        return 0;
+    }
+
+    return Math.max(0, (totalShootingPercentage(statistic) - 50) / 10);
+}
+
+function totalShotAttempts(statistic: StatisticTotals): number {
+    return statistic.onePointAttempted + statistic.twoPointAttempted + statistic.freeThrowAttempted;
+}
+
+function totalShootingPercentage(statistic: StatisticTotals): number {
+    const attempts = totalShotAttempts(statistic);
+
+    if (attempts === 0) {
+        return 0;
+    }
+
+    const made = statistic.onePointMade + statistic.twoPointMade + statistic.freeThrowMade;
+
+    return Number(((made / attempts) * 100).toFixed(1));
+}
+
+function roundAwardValue(value: number): number {
+    return Number(value.toFixed(1));
 }

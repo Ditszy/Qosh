@@ -23,6 +23,11 @@ export class StatisticsController {
         return this.statisticsService.findMatchPlayerStatistics(matchId);
     }
 
+    @Get('tournaments/:tournamentId/statistics/awards')
+    findTournamentAwards(@Param('tournamentId') tournamentId: string) {
+        return this.statisticsService.findTournamentAwards(tournamentId);
+    }
+
     @Get('tournaments/:tournamentId/statistics/players')
     findTournamentPlayerStatistics(
         @Param('tournamentId') tournamentId: string,

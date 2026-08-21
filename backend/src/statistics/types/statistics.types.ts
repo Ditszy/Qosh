@@ -77,6 +77,25 @@ export type PlayerStatisticLeader = {
     leader: PlayerStatistic | null;
 };
 
+export type TournamentAwardKey =
+    | 'MVP'
+    | 'TOP_SCORER'
+    | 'BEST_PLAYMAKER'
+    | 'BEST_DEFENDER'
+    | 'BEST_SHOOTER'
+    | 'HUSTLE_PLAYER';
+
+export type TournamentAward = {
+    key: TournamentAwardKey;
+    label: string;
+    description: string;
+    winner: PublicUser | null;
+    teams: TeamSummary[];
+    value: number | null;
+    valueLabel: string | null;
+    statLine: StatisticLine | null;
+};
+
 export type PlayerMatchStatistic = StatisticLine & {
     player: PublicUser;
     team: TeamSummary;

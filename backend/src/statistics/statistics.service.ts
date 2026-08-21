@@ -6,6 +6,7 @@ import { FindPlayerStatisticsDto } from './dto/find-player-statistics.dto';
 import {
     addPersistedStatLine,
     assignPersistedStatLine,
+    buildTournamentAwards,
     buildPlayerStatisticsWhere,
     compareStatistics,
     createMutableStatistic,
@@ -33,6 +34,7 @@ import {
     PlayerStatisticLeader,
     RecentMatchStatisticState,
     TeamSummary,
+    TournamentAward,
 } from './types/statistics.types';
 
 @Injectable()
@@ -109,6 +111,17 @@ export class StatisticsService {
             category,
             leader: findLeader(statistics, category),
         }));
+    }
+
+    async findTournamentAwards(tournamentId: string): Promise<TournamentAward[]> {
+        const statistics = await this.findPlayerStatistics({
+            tournamentId,
+            minGamesPlayed: 1,
+            sortBy: undefined,
+            sortDirection: undefined,
+        });
+
+        return buildTournamentAwards(statistics);
     }
 
     async findMatchPlayerStatistics(matchId: string): Promise<MatchStatistics> {
