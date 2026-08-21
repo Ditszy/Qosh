@@ -1,10 +1,11 @@
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, catchError, combineLatest, filter, map, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService, ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../core/auth/auth';
+import { PlayerProfilePreviousMatches } from './player-profile-previous-matches/player-profile-previous-matches';
 import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
 import { StatisticsApiService } from '../statistics-api.service';
 import type { PlayerProfile as PlayerProfileModel } from '../statistics.models';
@@ -16,7 +17,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, DatePipe, PlayerProfileSettings],
+  imports: [AsyncPipe, PlayerProfilePreviousMatches, PlayerProfileSettings],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })

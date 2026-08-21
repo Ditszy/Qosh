@@ -1,0 +1,78 @@
+.recent-matches {
+  display: grid;
+  gap: 12px;
+}
+
+.section-header h3 {
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.section-header span,
+dt,
+.match-history header span {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.surface-message {
+  color: #b8bdc7;
+  font-weight: 800;
+  margin: 0;
+}
+
+.match-history {
+  display: grid;
+  gap: 12px;
+}
+
+.match-history article {
+  border: 1px solid #2b303a;
+  background: #101218;
+  padding: 18px;
+}
+
+.match-history header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.match-history dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  gap: 10px;
+  border-top: 1px solid #242832;
+  padding-top: 12px;
+}
+
+.match-history dl div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+dl,
+dd {
+  margin: 0;
+}
+
+dd,
+.match-history strong {
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.match-history dd {
+  color: #ff5a1f;
+}
+
+@media (max-width: 760px) {
+  .match-history header {
+    display: grid;
+  }
+}

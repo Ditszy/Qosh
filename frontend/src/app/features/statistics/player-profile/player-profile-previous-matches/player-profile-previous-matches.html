@@ -1,0 +1,73 @@
+<section class="recent-matches" aria-label="Prethodne utakmice">
+  <div class="section-header">
+    <span>Forma</span>
+    <h3>Prethodne utakmice</h3>
+  </div>
+
+  @if (matches().length > 0) {
+  <div class="match-history">
+    @for (matchStat of matches(); track matchStat.match.id) {
+    <article>
+      <header>
+        <strong>{{ matchStat.match.tournament.name }}</strong>
+        <span>
+          R{{ matchStat.match.round }} / M{{ matchStat.match.bracketPosition }}
+          @if (matchStat.match.scheduledAt) {
+          / {{ matchStat.match.scheduledAt | date: 'shortDate' }}
+          }
+        </span>
+      </header>
+
+      <dl>
+        <div>
+          <dt>Tim</dt>
+          <dd>{{ matchStat.team.name }}</dd>
+        </div>
+        <div>
+          <dt>PTS</dt>
+          <dd>{{ matchStat.points }}</dd>
+        </div>
+        <div>
+          <dt>REB</dt>
+          <dd>{{ matchStat.rebounds }}</dd>
+        </div>
+        <div>
+          <dt>AST</dt>
+          <dd>{{ matchStat.assists }}</dd>
+        </div>
+        <div>
+          <dt>1P</dt>
+          <dd>{{ matchStat.onePointMade }}/{{ matchStat.onePointAttempted }}</dd>
+        </div>
+        <div>
+          <dt>2P</dt>
+          <dd>{{ matchStat.twoPointMade }}/{{ matchStat.twoPointAttempted }}</dd>
+        </div>
+        <div>
+          <dt>FT</dt>
+          <dd>{{ matchStat.freeThrowMade }}/{{ matchStat.freeThrowAttempted }}</dd>
+        </div>
+        <div>
+          <dt>STL</dt>
+          <dd>{{ matchStat.steals }}</dd>
+        </div>
+        <div>
+          <dt>BLK</dt>
+          <dd>{{ matchStat.blocks }}</dd>
+        </div>
+        <div>
+          <dt>TOV</dt>
+          <dd>{{ matchStat.turnovers }}</dd>
+        </div>
+        <div>
+          <dt>PF</dt>
+          <dd>{{ matchStat.fouls }}</dd>
+        </div>
+      </dl>
+    </article>
+    }
+  </div>
+  } @else {
+  <p class="surface-message">Još nema zabeleženih utakmica za ovog igrača.</p>
+  }
+</section>
