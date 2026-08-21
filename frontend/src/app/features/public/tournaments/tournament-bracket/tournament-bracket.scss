@@ -1,0 +1,87 @@
+:host {
+  display: block;
+}
+
+.match-section {
+  display: grid;
+  gap: 12px;
+}
+
+.match-section h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.surface-message {
+  border: 1px solid #2b303a;
+  background: #101218;
+  color: #b8bdc7;
+  line-height: 1.55;
+  padding: 20px;
+  font-weight: 800;
+}
+
+.bracket-board {
+  overflow-x: auto;
+}
+
+.bracket-stage {
+  position: relative;
+}
+
+.bracket-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bracket-lines path {
+  fill: none;
+  stroke: #3b414d;
+  stroke-width: 2;
+}
+
+.round-title {
+  position: absolute;
+  top: 0;
+  margin: 0;
+  color: #9ca3af;
+}
+
+.bracket-match {
+  position: absolute;
+  width: 240px;
+  height: 110px;
+  border: 1px solid #2b303a;
+  background: #101218;
+  padding: 12px;
+}
+
+.match-label {
+  color: #9ca3af;
+}
+
+.bracket-team {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: #ffffff;
+  font-weight: 850;
+}
+
+.bracket-team span {
+  overflow-wrap: anywhere;
+}
+
+.bracket-team.winner {
+  color: #ff5a1f;
+}
+
+.bracket-match a {
+  color: #ff5a1f;
+  display: inline-block;
+  margin-top: 12px;
+}

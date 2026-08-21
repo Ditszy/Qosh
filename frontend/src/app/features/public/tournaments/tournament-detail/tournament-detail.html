@@ -102,45 +102,7 @@
     }
   </section>
 
-  <section class="match-section" aria-label="Mečevi">
-    <h3>Breket</h3>
-
-    @if (state.matches.length > 0) {
-    <div class="bracket-board">
-      @if (bracketLayout(state.matches); as bracket) {
-      <div class="bracket-stage" [style.width.px]="bracket.width" [style.height.px]="bracket.height">
-        <svg class="bracket-lines" [attr.width]="bracket.width" [attr.height]="bracket.height" aria-hidden="true">
-          @for (path of bracket.connectors; track path) {
-          <path [attr.d]="path"></path>
-          }
-        </svg>
-        @for (round of bracket.rounds; track round.round) {
-        <h4 class="round-title" [style.left.px]="round.x" style="width: 240px; text-align: center;">
-          Runda {{ round.round }}
-        </h4>
-        @for (card of round.matches; track card.match.id) {
-        <article class="bracket-match" [style.left.px]="round.x" [style.top.px]="card.y">
-          <div class="match-label">{{ card.match.scheduledAt ? (card.match.scheduledAt | date: 'shortTime') :
-            'TerminTBD' }}</div>
-          <div class="bracket-team" [class.winner]="card.match.winnerTeamId === card.match.teamAId">
-            <span>{{ teamName(card.match.teamA) }}</span>
-            <strong>{{ card.match.teamAScore }}</strong>
-          </div>
-          <div class="bracket-team" [class.winner]="card.match.winnerTeamId === card.match.teamBId">
-            <span>{{ teamName(card.match.teamB) }}</span>
-            <strong>{{ card.match.teamBScore }}</strong>
-          </div>
-          <a [routerLink]="['/matches', card.match.id, 'live']">Otvori meč</a>
-        </article>
-        }
-        }
-      </div>
-      }
-    </div>
-    } @else {
-    <p class="surface-message">Breket još nije generisan.</p>
-    }
-  </section>
+  <app-tournament-bracket [matches]="state.matches" />
 
   @if (selectedTeam(); as team) {
   <div class="team-modal-backdrop" role="presentation" (click)="closeTeam()"></div>
