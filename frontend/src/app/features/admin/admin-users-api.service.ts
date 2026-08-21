@@ -49,4 +49,16 @@ export class AdminUsersApiService {
   createUser(payload: AdminCreateUserRequest): Observable<AdminUser> {
     return this.http.post<AdminUser>(this.apiUrl.build('/users/create'), payload);
   }
+
+  activateUser(userId: string): Observable<AdminUser> {
+    return this.http.patch<AdminUser>(this.apiUrl.build(`/users/${userId}/activate`), {});
+  }
+
+  deactivateUser(userId: string): Observable<AdminUser> {
+    return this.http.patch<AdminUser>(this.apiUrl.build(`/users/${userId}/deactivate`), {});
+  }
+
+  deleteUser(userId: string): Observable<AdminUser> {
+    return this.http.delete<AdminUser>(this.apiUrl.build(`/users/${userId}`));
+  }
 }
