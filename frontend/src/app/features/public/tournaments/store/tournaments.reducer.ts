@@ -8,6 +8,7 @@ import type {
   TournamentMatch,
   TournamentTeamDetail,
 } from '../tournament.models';
+import type { TournamentAward } from '../../../statistics/statistics.models';
 import { TournamentsActions } from './tournaments.actions';
 
 export const tournamentsFeatureKey = 'tournaments';
@@ -19,7 +20,13 @@ export type TournamentListViewState =
 
 export type TournamentDetailViewState =
   | { status: 'loading' }
-  | { status: 'loaded'; tournament: Tournament; teams: TournamentTeamDetail[]; matches: TournamentMatch[] }
+  | {
+      status: 'loaded';
+      tournament: Tournament;
+      teams: TournamentTeamDetail[];
+      matches: TournamentMatch[];
+      awards: TournamentAward[];
+    }
   | { status: 'error' };
 
 export type TournamentsState = {
@@ -58,10 +65,10 @@ export const tournamentsReducer = createReducer(
     selectedTournamentId: tournamentId,
     detailView: { status: 'loading' },
   })),
-  on(TournamentsActions.loadDetailSucceeded, (state, { tournamentId, tournament, teams, matches }) => ({
+  on(TournamentsActions.loadDetailSucceeded, (state, { tournamentId, tournament, teams, matches, awards }) => ({
     ...state,
     selectedTournamentId: tournamentId,
-    detailView: { status: 'loaded', tournament, teams, matches },
+    detailView: { status: 'loaded', tournament, teams, matches, awards },
   })),
   on(TournamentsActions.loadDetailFailed, (state, { tournamentId }) => ({
     ...state,

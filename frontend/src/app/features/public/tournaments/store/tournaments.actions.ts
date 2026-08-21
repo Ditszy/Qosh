@@ -8,6 +8,7 @@ import type {
   TournamentMatch,
   TournamentTeamDetail,
 } from '../tournament.models';
+import type { TournamentAward } from '../../../statistics/statistics.models';
 
 export const TournamentsActions = createActionGroup({
   source: 'Tournaments',
@@ -21,6 +22,7 @@ export const TournamentsActions = createActionGroup({
       tournament: Tournament;
       teams: TournamentTeamDetail[];
       matches: TournamentMatch[];
+      awards: TournamentAward[];
     }>(),
     'Load Detail Failed': props<{ tournamentId: string }>(),
     'Detail Live Message Received': props<{ tournamentId: string; message: TournamentLiveMessage }>(),

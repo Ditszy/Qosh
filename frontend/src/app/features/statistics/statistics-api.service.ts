@@ -10,6 +10,7 @@ import type {
   PlayerStatistic,
   PlayerStatisticLeader,
   PlayerStatisticsFilters,
+  TournamentAward,
 } from './statistics.models';
 
 @Injectable({
@@ -50,6 +51,10 @@ export class StatisticsApiService {
         params: this.toParams({ ...filters, tournamentId: undefined }),
       },
     );
+  }
+
+  getTournamentAwards(tournamentId: string): Observable<TournamentAward[]> {
+    return this.http.get<TournamentAward[]>(this.apiUrl.build(`/tournaments/${tournamentId}/statistics/awards`));
   }
 
   getMatchStatistics(matchId: string): Observable<MatchStatistics> {
