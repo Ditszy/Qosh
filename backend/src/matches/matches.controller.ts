@@ -27,6 +27,11 @@ export class MatchesController {
         return this.matchesService.findPublicLiveCenter();
     }
 
+    @Get('matches/:id/recap')
+    findRecapById(@Param('id') id: string) {
+        return this.matchesService.findRecapById(id);
+    }
+
     @Get('matches/:id')
     findById(@Param('id') id: string) {
         return this.matchesService.findById(id);
