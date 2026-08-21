@@ -28,6 +28,16 @@ export type RegisterRequest = LoginRequest & {
   lastName: string;
 };
 
+export type UpdateMyProfileRequest = {
+  firstName: string;
+  lastName: string;
+};
+
+export type ChangeMyPasswordRequest = {
+  oldPassword: string;
+  newPassword: string;
+};
+
 export type AuthSession = {
   access_token: string;
   user: AuthUser;
@@ -60,6 +70,16 @@ export class AuthService {
 
   register(payload: RegisterRequest) {
     return this.http.post<AuthUser>(this.apiUrl.build('/auth/register'), payload);
+  }
+
+  updateMyProfile(payload: UpdateMyProfileRequest) {
+    return this.http.patch<AuthUser>(this.apiUrl.build('/users/me/profile'), payload).pipe(
+      tap((user) => this.store.dispatch(AuthActions.currentUserUpdated({ user }))),
+    );
+  }
+
+  changeMyPassword(payload: ChangeMyPasswordRequest) {
+    return this.http.patch<void>(this.apiUrl.build('/users/me/password'), payload);
   }
 
   logout(): void {
