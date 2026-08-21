@@ -39,7 +39,7 @@ export class UserController {
 
     @Get(':id')
     findById(@Param('id') id: string) {
-        return this.usersService.findById(id);
+        return this.usersService.findAdminById(id);
     }
 
     @Post('create')

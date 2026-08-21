@@ -13,6 +13,12 @@ export type PublicUser = {
     role: UserRole;
 };
 
+export type AdminUser = PublicUser & {
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+};
+
 export type UserStats = Record<
     'totalUsers' | 'players' | 'organizers' | 'referees' | 'scorers' | 'admins',
     number
@@ -31,11 +37,18 @@ export const publicUserSelect = {
     role: true,
 };
 
+const adminUserSelect = {
+    ...publicUserSelect,
+    isActive: true,
+    createdAt: true,
+    updatedAt: true,
+};
+
 @Injectable()
 export class UsersService {
     constructor(private readonly prisma: PrismaService) { }
 
-    async findAll(query = '', role?: UserRole): Promise<PublicUser[]> {
+    async findAll(query = '', role?: UserRole): Promise<AdminUser[]> {
         const search = query.trim();
         const take = 8;
 
@@ -58,7 +71,7 @@ export class UsersService {
                     { email: { startsWith: search, mode: 'insensitive' } },
                 ],
             },
-            select: publicUserSelect,
+            select: adminUserSelect,
             orderBy: [{ role: 'asc' }, { username: 'asc' }],
             take,
         });
@@ -78,7 +91,7 @@ export class UsersService {
                     { email: { contains: search, mode: 'insensitive' } },
                 ],
             },
-            select: publicUserSelect,
+            select: adminUserSelect,
             orderBy: [{ role: 'asc' }, { username: 'asc' }],
             take: take - startsWithMatches.length,
         });
@@ -192,7 +205,14 @@ export class UsersService {
         });
     }
 
-    async createByAdmin(createUserDto: CreateUserDto): Promise<PublicUser> {
+    async findAdminById(id: string): Promise<AdminUser | null> {
+        return this.prisma.user.findUnique({
+            where: { id },
+            select: adminUserSelect,
+        });
+    }
+
+    async createByAdmin(createUserDto: CreateUserDto): Promise<AdminUser> {
         const existing = await this.findByEmail(createUserDto.email);
         if (existing) {
             throw new ConflictException('User already exists');
@@ -209,7 +229,7 @@ export class UsersService {
                 ...createUserDto,
                 password: hashedPassword,
             },
-            select: publicUserSelect,
+            select: adminUserSelect,
         });
     }
 }
