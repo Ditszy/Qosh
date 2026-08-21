@@ -45,6 +45,7 @@ export class AuthService {
     async validateUser(email: string, password: string) {
         const user = await this.usersService.findByEmailWithPassword(email);
         if (!user) return null;
+        if (!user.isActive) return null;
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return null;
@@ -100,10 +101,27 @@ export class AuthService {
             throw new UnauthorizedException('Invalid refresh token');
         }
 
-        const user = await this.usersService.findById(currentSession.userId);
+        const user = await this.usersService.findSessionUserById(currentSession.userId);
         if (!user) {
             throw new UnauthorizedException('Invalid refresh token');
         }
+        if (!user.isActive) {
+            await this.prisma.refreshSession.updateMany({
+                where: { userId: currentSession.userId, revokedAt: null },
+                data: { revokedAt: now },
+            });
+
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
+        const sessionUser = {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+        };
 
         const nextRefreshToken = this.generateRefreshToken();
         const expiresAt = this.getRefreshTokenExpiry();
@@ -128,8 +146,8 @@ export class AuthService {
             refreshToken: nextRefreshToken,
             expiresAt,
             session: {
-                access_token: this.createAccessToken(user),
-                user,
+                access_token: this.createAccessToken(sessionUser),
+                user: sessionUser,
             },
         };
     }

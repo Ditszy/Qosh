@@ -19,12 +19,16 @@ export type AdminUser = PublicUser & {
     updatedAt: Date;
 };
 
+export type SessionUser = PublicUser & {
+    isActive: boolean;
+};
+
 export type UserStats = Record<
     'totalUsers' | 'players' | 'organizers' | 'referees' | 'scorers' | 'admins',
     number
 >;
 
-type UserWithPassword = PublicUser & {
+type UserWithPassword = SessionUser & {
     password: string;
 };
 
@@ -42,6 +46,11 @@ const adminUserSelect = {
     isActive: true,
     createdAt: true,
     updatedAt: true,
+};
+
+const sessionUserSelect = {
+    ...publicUserSelect,
+    isActive: true,
 };
 
 @Injectable()
@@ -205,6 +214,13 @@ export class UsersService {
         });
     }
 
+    async findSessionUserById(id: string): Promise<SessionUser | null> {
+        return this.prisma.user.findUnique({
+            where: { id },
+            select: sessionUserSelect,
+        });
+    }
+
     async findAdminById(id: string): Promise<AdminUser | null> {
         return this.prisma.user.findUnique({
             where: { id },
@@ -218,10 +234,21 @@ export class UsersService {
             throw new NotFoundException('User not found');
         }
 
-        return this.prisma.user.update({
-            where: { id },
-            data: { isActive },
-            select: adminUserSelect,
+        return this.prisma.$transaction(async (tx) => {
+            const updatedUser = await tx.user.update({
+                where: { id },
+                data: { isActive },
+                select: adminUserSelect,
+            });
+
+            if (!isActive) {
+                await tx.refreshSession.updateMany({
+                    where: { userId: id, revokedAt: null },
+                    data: { revokedAt: new Date() },
+                });
+            }
+
+            return updatedUser;
         });
     }
 
