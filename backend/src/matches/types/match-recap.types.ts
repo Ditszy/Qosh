@@ -29,13 +29,6 @@ export type MatchRecapEvent = {
     player: PublicUser | null;
 };
 
-export type MatchRecapRefereeReport = {
-    id: string;
-    notes: string;
-    createdAt: Date;
-    referee: PublicUser;
-};
-
 export type MatchRecap = {
     match: MatchSummary;
     isFinal: boolean;
@@ -43,5 +36,4 @@ export type MatchRecap = {
     teams: MatchRecapTeamSummary[];
     highlights: MatchRecapPlayerHighlight[];
     keyEvents: MatchRecapEvent[];
-    refereeReport: MatchRecapRefereeReport | null;
 };

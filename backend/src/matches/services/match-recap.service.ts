@@ -16,7 +16,6 @@ import {
     MatchRecapEvent,
     MatchRecapHighlightKey,
     MatchRecapPlayerHighlight,
-    MatchRecapRefereeReport,
     MatchRecapTeamSummary,
 } from '../types/match-recap.types';
 
@@ -56,16 +55,6 @@ export class MatchRecapService {
                 },
                 winnerTeam: {
                     select: teamSummarySelect(),
-                },
-                refereeReport: {
-                    select: {
-                        id: true,
-                        notes: true,
-                        createdAt: true,
-                        referee: {
-                            select: publicUserSelect,
-                        },
-                    },
                 },
             },
         });
@@ -132,7 +121,6 @@ export class MatchRecapService {
                 team: toTeamSummary(event.team),
                 player: event.player,
             })),
-            refereeReport: this.toRefereeReport(match.refereeReport),
         };
     }
 
@@ -234,16 +222,4 @@ export class MatchRecapService {
         ).toFixed(1));
     }
 
-    private toRefereeReport(report: MatchRecapRefereeReport | null): MatchRecapRefereeReport | null {
-        if (!report) {
-            return null;
-        }
-
-        return {
-            id: report.id,
-            notes: report.notes,
-            createdAt: report.createdAt,
-            referee: report.referee,
-        };
-    }
 }
