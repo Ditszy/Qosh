@@ -98,6 +98,7 @@ model User {
   notifications          Notification[]
   refereeReports         RefereeReport[]
   refreshSessions        RefreshSession[]
+  passwordResetTokens    PasswordResetToken[]
 
   @@map("users")
 }
@@ -307,6 +308,22 @@ model RefreshSession {
   @@index([expiresAt])
   @@index([revokedAt])
   @@map("refresh_sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([usedAt])
+  @@map("password_reset_tokens")
 }
 
 model RefereeReport {
