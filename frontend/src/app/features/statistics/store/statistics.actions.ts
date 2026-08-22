@@ -14,8 +14,10 @@ export const StatisticsActions = createActionGroup({
     'Load Global Rankings Succeeded': props<{
       filters: NormalizedPlayerStatisticsFilters;
       rankings: PlayerStatistic[];
-      leaders: PlayerStatisticLeader[];
     }>(),
     'Load Global Rankings Failed': props<{ filters: NormalizedPlayerStatisticsFilters; error: string }>(),
+    'Load Global Leaders': props<{ filters?: PlayerStatisticsFilters }>(),
+    'Load Global Leaders Succeeded': props<{ leaders: PlayerStatisticLeader[] }>(),
+    'Load Global Leaders Failed': props<{ error: string }>(),
   },
 });

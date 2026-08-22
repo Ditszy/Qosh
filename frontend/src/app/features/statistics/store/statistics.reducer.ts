@@ -56,19 +56,19 @@ export const statisticsReducer = createReducer(
   on(StatisticsActions.globalRankingFiltersChanged, (state, { filters }) => ({
     ...state,
     globalRankings: {
+      ...state.globalRankings,
       filters: normalizePlayerStatisticsFilters(filters),
       rankings: [],
-      leaders: [],
       loading: true,
       error: null,
     },
   })),
-  on(StatisticsActions.loadGlobalRankingsSucceeded, (state, { filters, rankings, leaders }) => ({
+  on(StatisticsActions.loadGlobalRankingsSucceeded, (state, { filters, rankings }) => ({
     ...state,
     globalRankings: {
+      ...state.globalRankings,
       filters,
       rankings,
-      leaders,
       loading: false,
       error: null,
     },
@@ -76,11 +76,19 @@ export const statisticsReducer = createReducer(
   on(StatisticsActions.loadGlobalRankingsFailed, (state, { filters, error }) => ({
     ...state,
     globalRankings: {
+      ...state.globalRankings,
       filters,
       rankings: [],
-      leaders: [],
       loading: false,
       error,
     },
   })),
+  on(StatisticsActions.loadGlobalLeadersSucceeded, (state, { leaders }) => ({
+    ...state,
+    globalRankings: {
+      ...state.globalRankings,
+      leaders,
+    },
+  })),
+  on(StatisticsActions.loadGlobalLeadersFailed, (state) => state),
 );

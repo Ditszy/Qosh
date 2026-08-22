@@ -48,6 +48,7 @@ export class Rankings implements OnInit {
   protected readonly state$: Observable<PlayerRankingsState> = this.store.select(selectGlobalPlayerRankingsState);
 
   ngOnInit(): void {
+    this.store.dispatch(StatisticsActions.loadGlobalLeaders({}));
     this.dispatchFilters();
   }
 
