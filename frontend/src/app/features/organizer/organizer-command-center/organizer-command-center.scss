@@ -1,0 +1,150 @@
+:host {
+  display: block;
+}
+
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.command-center {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.command-header {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.command-header span,
+small {
+  color: #9aa4b2;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.command-header span {
+  text-transform: uppercase;
+}
+
+h2 {
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+.queue-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.queue-card {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  min-height: 11rem;
+  border: 1px solid #293241;
+  border-radius: 8px;
+  background: #121822;
+  padding: 0.9rem;
+}
+
+.queue-card > header,
+.queue-item {
+  display: grid;
+  align-items: center;
+  gap: 0.65rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.queue-card > header span {
+  display: inline-grid;
+  min-width: 2rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #293241;
+  color: #d7dce5;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+h3 {
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.queue-item {
+  min-height: 3.25rem;
+  border-top: 1px solid #293241;
+  padding-top: 0.65rem;
+}
+
+.queue-item div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.queue-item strong,
+.queue-item small {
+  overflow-wrap: anywhere;
+}
+
+.queue-item strong {
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+p {
+  border-top: 1px solid #293241;
+  color: #9aa4b2;
+  font-size: 0.85rem;
+  font-weight: 750;
+  padding-top: 0.7rem;
+}
+
+button,
+a {
+  box-sizing: border-box;
+  display: inline-grid;
+  min-width: 4.75rem;
+  min-height: 2.2rem;
+  place-items: center;
+  border: 1px solid #384151;
+  border-radius: 6px;
+  background: #10151f;
+  color: #f7f8fa;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+button:not(:disabled):hover,
+a:hover {
+  border-color: #ff7a1a;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 640px) {
+  .queue-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .queue-item {
+    grid-template-columns: 1fr;
+  }
+
+  button,
+  a {
+    justify-self: start;
+  }
+}

@@ -1,0 +1,144 @@
+<section class="command-center" aria-label="Organizer command center">
+  <header class="command-header">
+    <span>Komandni centar</span>
+    <h2>Prioriteti</h2>
+  </header>
+
+  <div class="queue-grid">
+    <section class="queue-card">
+      <header>
+        <h3>Uživo</h3>
+        <span>{{ liveMatches().length }}</span>
+      </header>
+      @if (liveMatches().length) {
+      @for (item of liveMatches(); track item.match.id) {
+      <article class="queue-item">
+        <div>
+          <strong>{{ teamLabel(item.match) }}</strong>
+          <small>{{ item.tournament.name }}</small>
+        </div>
+        <a [routerLink]="['/matches', item.match.id, 'live']">Otvori</a>
+      </article>
+      }
+      } @else {
+      <p>Nema stavki.</p>
+      }
+    </section>
+
+    <section class="queue-card">
+      <header>
+        <h3>Sledeći mečevi</h3>
+        <span>{{ nextMatches().length }}</span>
+      </header>
+      @if (nextMatches().length) {
+      @for (item of nextMatches(); track item.match.id) {
+      <article class="queue-item">
+        <div>
+          <strong>{{ teamLabel(item.match) }}</strong>
+          <small>{{ item.match.scheduledAt | date: 'short' }} · {{ item.match.location || item.tournament.location
+            }}</small>
+        </div>
+        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item.match)">Izmeni</button>
+      </article>
+      }
+      } @else {
+      <p>Nema stavki.</p>
+      }
+    </section>
+
+    <section class="queue-card">
+      <header>
+        <h3>Nisu zakazani</h3>
+        <span>{{ unscheduledMatches().length }}</span>
+      </header>
+      @if (unscheduledMatches().length) {
+      @for (item of unscheduledMatches(); track item.match.id) {
+      <article class="queue-item">
+        <div>
+          <strong>{{ teamLabel(item.match) }}</strong>
+          <small>{{ item.tournament.name }} · R{{ item.match.round }}.{{ item.match.bracketPosition }}</small>
+        </div>
+        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item.match)">Zakaži</button>
+      </article>
+      }
+      } @else {
+      <p>Nema stavki.</p>
+      }
+    </section>
+
+    <section class="queue-card">
+      <header>
+        <h3>Službena lica</h3>
+        <span>{{ missingOfficialMatches().length }}</span>
+      </header>
+      @if (missingOfficialMatches().length) {
+      @for (item of missingOfficialMatches(); track item.match.id) {
+      <article class="queue-item">
+        <div>
+          <strong>{{ teamLabel(item.match) }}</strong>
+          <small>Nedostaje: {{ missingOfficialsLabel(item.match) }}</small>
+        </div>
+        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item.match)">Dodeli</button>
+      </article>
+      }
+      } @else {
+      <p>Nema stavki.</p>
+      }
+    </section>
+
+    <section class="queue-card">
+      <header>
+        <h3>Žreb i start</h3>
+        <span>{{ readyForBracket().length + readyToStart().length }}</span>
+      </header>
+      @if (readyForBracket().length || readyToStart().length) {
+      @for (tournament of readyForBracket(); track tournament.id) {
+      <article class="queue-item">
+        <div>
+          <strong>{{ tournament.name }}</strong>
+          <small>{{ tournament.startsAt | date: 'mediumDate' }}</small>
+        </div>
+        <button type="button" [disabled]="pendingAction() === 'bracket:' + tournament.id"
+          (click)="requestBracket(tournament.id)">
+          Žreb
+        </button>
+      </article>
+      }
+      @for (tournament of readyToStart(); track tournament.id) {
+      <article class="queue-item">
+        <div>
+          <strong>{{ tournament.name }}</strong>
+          <small>{{ tournament.matches.length }} mečeva</small>
+        </div>
+        <button type="button" [disabled]="pendingAction() === 'start:' + tournament.id"
+          (click)="requestStart(tournament.id)">
+          Start
+        </button>
+      </article>
+      }
+      } @else {
+      <p>Nema stavki.</p>
+      }
+    </section>
+
+    <section class="queue-card">
+      <header>
+        <h3>Nedavna finala</h3>
+        <span>{{ recentFinals().length }}</span>
+      </header>
+      @if (recentFinals().length) {
+      @for (item of recentFinals(); track item.match.id) {
+      <article class="queue-item">
+        <div>
+          <strong>{{ item.match.teamAScore }} - {{ item.match.teamBScore }} · {{ winnerLabel(item.match) }}</strong>
+          <small>{{ item.tournament.name }}</small>
+        </div>
+        <a [routerLink]="['/matches', item.match.id, 'live']">Rezime</a>
+      </article>
+      }
+      } @else {
+      <p>Nema stavki.</p>
+      }
+    </section>
+  </div>
+</section>
