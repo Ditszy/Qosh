@@ -1,7 +1,7 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
 
@@ -28,7 +28,7 @@ const matchEventTypeLabels: Record<MatchEventType, string> = {
 
 @Component({
   selector: 'app-live-match',
-  imports: [AsyncPipe, DatePipe, LiveMatchBoxScore, LiveMatchScoreboard, LiveMatchTabs],
+  imports: [AsyncPipe, DatePipe, RouterLink, LiveMatchBoxScore, LiveMatchScoreboard, LiveMatchTabs],
   templateUrl: './live-match.html',
   styleUrl: './live-match.scss',
 })

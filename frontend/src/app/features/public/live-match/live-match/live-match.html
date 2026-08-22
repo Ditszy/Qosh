@@ -10,6 +10,42 @@
   @case ('loaded') {
   <app-live-match-scoreboard [match]="state.bundle.match" />
 
+  <section class="match-meta" aria-label="Detalji meča">
+    <article>
+      <span>Turnir</span>
+      <a [routerLink]="['/tournaments', state.bundle.match.tournament.id]">
+        {{ state.bundle.match.tournament.name }}
+      </a>
+    </article>
+
+    <article>
+      <span>Lokacija</span>
+      <strong>{{ state.bundle.match.location || state.bundle.match.tournament.location || 'TBD' }}</strong>
+    </article>
+
+    <article>
+      <span>Zapisničar</span>
+      <strong>
+        @if (state.bundle.match.scorer) {
+        {{ state.bundle.match.scorer.firstName }} {{ state.bundle.match.scorer.lastName }}
+        } @else {
+        TBD
+        }
+      </strong>
+    </article>
+
+    <article>
+      <span>Sudija</span>
+      <strong>
+        @if (state.bundle.match.referee) {
+        {{ state.bundle.match.referee.firstName }} {{ state.bundle.match.referee.lastName }}
+        } @else {
+        TBD
+        }
+      </strong>
+    </article>
+  </section>
+
   <app-live-match-tabs [selectedPanel]="selectedPanel" (panelSelected)="selectPanel($event)" />
 
   @if (selectedPanel === 'events') {
