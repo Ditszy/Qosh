@@ -7,12 +7,14 @@ import { AuthController } from "./auth.controller";
 import { LocalStrategy } from "./local.strategy";
 import { JwtStrategy } from "./jwt.strategy";
 import { AuthService } from "./auth.service";
+import { MailModule } from "../mail/mail.module";
 
 const DEFAULT_ACCESS_TOKEN_EXPIRATION_SECONDS = 900;
 
 @Module({
     imports: [
         UsersModule,
+        MailModule,
         PassportModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],

@@ -1,15 +1,19 @@
-import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { UsersService } from "../users/users.service";
 import { JwtService } from "@nestjs/jwt";
 import { RegisterDto } from "./dto/register.dto";
+import { ResetPasswordDto } from "./dto/reset-password.dto";
 import * as bcrypt from "bcryptjs";
 import { UserRole } from "../common/user-role.enum";
 import { PrismaService } from "../prisma/prisma.service";
 import { createHash, randomBytes, randomUUID } from "crypto";
+import { MailService } from "../mail/mail.service";
 
 const REFRESH_TOKEN_BYTES = 64;
+const PASSWORD_RESET_TOKEN_BYTES = 32;
 const DEFAULT_REFRESH_TOKEN_EXPIRATION_DAYS = 30;
+const DEFAULT_PASSWORD_RESET_EXPIRATION_MINUTES = 60;
 
 @Injectable()
 export class AuthService {
@@ -18,6 +22,7 @@ export class AuthService {
         private jwtService: JwtService,
         private prisma: PrismaService,
         private configService: ConfigService,
+        private mailService: MailService,
     ) { }
 
     async register(registerDto: RegisterDto) {
@@ -65,6 +70,101 @@ export class AuthService {
                 role: user.role,
             }
         };
+    }
+
+    async forgotPassword(email: string): Promise<{ success: true }> {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                email: { equals: email.trim(), mode: 'insensitive' },
+                isActive: true,
+            },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+            },
+        });
+
+        if (!user) {
+            return { success: true };
+        }
+
+        const now = new Date();
+        const resetToken = this.generatePasswordResetToken();
+        const expiresInMinutes = this.getPasswordResetExpiryMinutes();
+        const expiresAt = new Date(now.getTime() + expiresInMinutes * 60 * 1000);
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.passwordResetToken.updateMany({
+                where: {
+                    userId: user.id,
+                    usedAt: null,
+                },
+                data: { usedAt: now },
+            });
+
+            await tx.passwordResetToken.create({
+                data: {
+                    userId: user.id,
+                    tokenHash: this.hashPasswordResetToken(resetToken),
+                    expiresAt,
+                },
+            });
+        });
+
+        await this.mailService.sendPasswordResetMail({
+            to: user.email,
+            firstName: user.firstName,
+            resetUrl: this.buildPasswordResetUrl(resetToken),
+            expiresInMinutes,
+        });
+
+        return { success: true };
+    }
+
+    async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ success: true }> {
+        const now = new Date();
+        const tokenHash = this.hashPasswordResetToken(resetPasswordDto.token);
+        const resetToken = await this.prisma.passwordResetToken.findUnique({
+            where: { tokenHash },
+            include: { user: true },
+        });
+
+        if (!resetToken || resetToken.usedAt || resetToken.expiresAt <= now || !resetToken.user.isActive) {
+            throw new BadRequestException('Password reset token is invalid or expired');
+        }
+
+        const hashedPassword = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.user.update({
+                where: { id: resetToken.userId },
+                data: { password: hashedPassword },
+            });
+
+            await tx.passwordResetToken.update({
+                where: { id: resetToken.id },
+                data: { usedAt: now },
+            });
+
+            await tx.passwordResetToken.updateMany({
+                where: {
+                    userId: resetToken.userId,
+                    usedAt: null,
+                },
+                data: { usedAt: now },
+            });
+
+            await tx.refreshSession.updateMany({
+                where: {
+                    userId: resetToken.userId,
+                    revokedAt: null,
+                },
+                data: { revokedAt: now },
+            });
+        });
+
+        return { success: true };
     }
 
     async createRefreshSession(userId: string) {
@@ -174,8 +274,16 @@ export class AuthService {
         return createHash('sha256').update(refreshToken).digest('hex');
     }
 
+    hashPasswordResetToken(token: string): string {
+        return createHash('sha256').update(token).digest('hex');
+    }
+
     private generateRefreshToken(): string {
         return randomBytes(REFRESH_TOKEN_BYTES).toString('base64url');
+    }
+
+    private generatePasswordResetToken(): string {
+        return randomBytes(PASSWORD_RESET_TOKEN_BYTES).toString('base64url');
     }
 
     private getRefreshTokenExpiry(): Date {
@@ -186,6 +294,22 @@ export class AuthService {
         const days = Number(configuredDays) || DEFAULT_REFRESH_TOKEN_EXPIRATION_DAYS;
 
         return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    }
+
+    private getPasswordResetExpiryMinutes(): number {
+        const configuredMinutes = this.configService.get<string>(
+            'PASSWORD_RESET_EXPIRATION_MINUTES',
+            String(DEFAULT_PASSWORD_RESET_EXPIRATION_MINUTES),
+        );
+
+        return Number(configuredMinutes) || DEFAULT_PASSWORD_RESET_EXPIRATION_MINUTES;
+    }
+
+    private buildPasswordResetUrl(token: string): string {
+        const frontendUrl = this.configService.get<string>('APP_FRONTEND_URL', 'http://localhost:4200');
+        const normalizedFrontendUrl = frontendUrl.endsWith('/') ? frontendUrl.slice(0, -1) : frontendUrl;
+
+        return `${normalizedFrontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
     }
 
     private async revokeRefreshTokenFamily(tokenFamilyId: string, revokedAt: Date): Promise<void> {
