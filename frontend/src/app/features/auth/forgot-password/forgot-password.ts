@@ -1,44 +1,44 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-forgot-password',
   imports: [ReactiveFormsModule, RouterLink],
-  templateUrl: './login.html',
-  styleUrl: './login.scss',
+  templateUrl: './forgot-password.html',
+  styleUrl: './forgot-password.scss',
 })
-export class Login {
+export class ForgotPassword {
   private readonly authService = inject(AuthService);
   private readonly formBuilder = inject(FormBuilder);
-  private readonly router = inject(Router);
 
   protected readonly isSubmitting = signal(false);
+  protected readonly successMessage = signal('');
   protected readonly errorMessage = signal('');
 
-  protected readonly loginForm = this.formBuilder.nonNullable.group({
+  protected readonly forgotPasswordForm = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', Validators.required],
   });
 
   protected submit(): void {
-    if (this.loginForm.invalid || this.isSubmitting()) {
-      this.loginForm.markAllAsTouched();
+    if (this.forgotPasswordForm.invalid || this.isSubmitting()) {
+      this.forgotPasswordForm.markAllAsTouched();
       return;
     }
 
+    this.successMessage.set('');
     this.errorMessage.set('');
     this.isSubmitting.set(true);
 
     this.authService
-      .login(this.loginForm.getRawValue())
+      .forgotPassword(this.forgotPasswordForm.getRawValue())
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
-        next: () => void this.router.navigateByUrl('/tournaments'),
-        error: () => this.errorMessage.set('Prijava nije uspela. Proveri email i lozinku.'),
+        next: () => this.successMessage.set('Ako nalog postoji, poslali smo instrukcije za reset lozinke.'),
+        error: () => this.errorMessage.set('Trenutno nije moguce poslati instrukcije. Pokusaj ponovo.'),
       });
   }
 }

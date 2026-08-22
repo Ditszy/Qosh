@@ -11,6 +11,7 @@
         Lozinka
         <input type="password" formControlName="password" autocomplete="current-password" />
       </label>
+      <a class="auth-inline-link" routerLink="/forgot-password">Zaboravljena lozinka?</a>
 
       @if (loginForm.invalid && loginForm.touched) {
       <p class="form-message">Unesi validan email i lozinku.</p>
