@@ -38,6 +38,19 @@ export type ChangeMyPasswordRequest = {
   newPassword: string;
 };
 
+export type ForgotPasswordRequest = {
+  email: string;
+};
+
+export type ResetPasswordRequest = {
+  token: string;
+  newPassword: string;
+};
+
+export type AuthCommandResponse = {
+  success: true;
+};
+
 export type AuthSession = {
   access_token: string;
   user: AuthUser;
@@ -80,6 +93,14 @@ export class AuthService {
 
   changeMyPassword(payload: ChangeMyPasswordRequest) {
     return this.http.patch<void>(this.apiUrl.build('/users/me/password'), payload);
+  }
+
+  forgotPassword(payload: ForgotPasswordRequest) {
+    return this.http.post<AuthCommandResponse>(this.apiUrl.build('/auth/forgot-password'), payload);
+  }
+
+  resetPassword(payload: ResetPasswordRequest) {
+    return this.http.post<AuthCommandResponse>(this.apiUrl.build('/auth/reset-password'), payload);
   }
 
   logout(): void {

@@ -2,7 +2,9 @@ import { Routes } from '@angular/router';
 import { roleGuard } from './core/auth/auth.guards';
 import { AdminUsers } from './features/admin/admin-users/admin-users';
 import { Login } from './features/auth/login/login';
+import { ForgotPassword } from './features/auth/forgot-password/forgot-password';
 import { Register } from './features/auth/register/register';
+import { ResetPassword } from './features/auth/reset-password/reset-password';
 import { OrganizerDashboard } from './features/organizer/organizer-dashboard/organizer-dashboard';
 import { MyTeam } from './features/player/my-team/my-team';
 import { LiveCenter } from './features/public/live-center/live-center/live-center';
@@ -28,8 +30,10 @@ export const routes: Routes = [
   { path: 'live', component: LiveCenter },
   { path: 'rankings', component: Rankings },
   { path: 'profiles/:id', component: PlayerProfile },
+  { path: 'forgot-password', component: ForgotPassword },
   { path: 'login', component: Login },
   { path: 'register', component: Register },
+  { path: 'reset-password', component: ResetPassword },
   { path: 'my-team', component: MyTeam, canActivate: [roleGuard], data: { roles: ['PLAYER'] } },
   { path: 'organizer', component: OrganizerDashboard, canActivate: [roleGuard], data: { roles: ['ORGANIZER', 'ADMIN'] } },
   { path: 'scorer/matches/:matchId', component: ScorerConsole, canActivate: [roleGuard], data: { roles: ['SCORER', 'ADMIN'] } },
