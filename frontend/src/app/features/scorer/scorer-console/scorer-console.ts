@@ -6,7 +6,8 @@ import { finalize, switchMap } from 'rxjs';
 
 import { ScorerMatchApiService } from '../scorer-match-api.service';
 import { MatchesApiService } from '../../public/live-match/matches-api.service';
-import type { MatchEventType } from '../../public/live-match/match.models';
+import type { MatchEvent, MatchEventType } from '../../public/live-match/match.models';
+import { ScorerCorrectionPanel } from '../scorer-correction-panel/scorer-correction-panel';
 import {
   ScorerActions,
   selectAssignedMatches,
@@ -39,7 +40,7 @@ const PLAYER_EVENT_BUTTONS: EventButton[] = [
 
 @Component({
   selector: 'app-scorer-console',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, ScorerCorrectionPanel],
   templateUrl: './scorer-console.html',
   styleUrl: './scorer-console.scss',
 })
@@ -125,6 +126,8 @@ export class ScorerConsole implements OnInit, OnDestroy {
   });
   protected readonly teamStats = computed(() => this.matchBundle()?.statistics.teams ?? []);
   protected readonly canRecordPlayerEvents = computed(() => this.match()?.status !== 'FINAL' && !this.pendingAction());
+  protected readonly canUndoEvents = computed(() => this.match()?.status === 'LIVE' && !this.pendingAction());
+  protected readonly matchEvents = computed(() => this.matchBundle()?.events ?? []);
   protected readonly liveMatchLink = computed(() => {
     const id = this.matchId().trim();
 
@@ -260,6 +263,32 @@ export class ScorerConsole implements OnInit, OnDestroy {
 
   protected recordPlayerEvent(teamId: string, playerId: string, type: MatchEventType): void {
     this.saveEvent(teamId, playerId, type);
+  }
+
+  protected undoEvent(event: MatchEvent): void {
+    const matchId = this.matchId().trim();
+
+    if (!matchId || !this.canUndoEvents()) {
+      return;
+    }
+
+    if (!window.confirm('Poništiti ovaj događaj? Rezultat i statistika će biti ispravljeni.')) {
+      return;
+    }
+
+    this.commandError.set('');
+    this.successMessage.set('');
+    this.pendingAction.set('undo');
+    this.scorerApi
+      .undoEvent(matchId, event.id)
+      .pipe(finalize(() => this.pendingAction.set('')))
+      .subscribe({
+        next: (result) => {
+          this.store.dispatch(ScorerActions.eventUndone({ result }));
+          this.successMessage.set('Događaj poništen.');
+        },
+        error: () => this.commandError.set('Poništavanje događaja nije uspelo. Proveri status meča i dodelu zapisničara.'),
+      });
   }
 
   private saveEvent(teamId: string, playerId: string | null, type: MatchEventType): void {

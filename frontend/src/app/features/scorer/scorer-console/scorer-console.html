@@ -110,6 +110,9 @@
   </div>
   }
 
+  <app-scorer-correction-panel [events]="matchEvents()" [canUndo]="canUndoEvents()"
+    (undoRequested)="undoEvent($event)" />
+
   @if (pendingAction()) {
   <p>Slanje komande...</p>
   }
