@@ -17,12 +17,21 @@ export class PlayerRankingsService {
   private readonly statisticsApi = inject(StatisticsApiService);
 
   watchGlobalRankings(filters$: Observable<PlayerStatisticsFilters>): Observable<PlayerRankingsState> {
-    return filters$.pipe(
+    const rankingsState$ = filters$.pipe(
       map((filters) => this.normalizeFilters(filters)), //clean filter
       debounceTime(250), //wait 250ms before request
       distinctUntilChanged((previous, current) => this.filtersEqual(previous, current)), //skip duplicates
-      switchMap((filters) => this.loadGlobalRankings(filters)),
+      switchMap((filters) => this.loadGlobalRankingRows(filters)),
       shareReplay({ bufferSize: 1, refCount: true }), //share with latest subscribers
+    );
+
+    const leaders$ = this.statisticsApi
+      .listPlayerStatisticLeaders()
+      .pipe(catchError(() => of([])), shareReplay({ bufferSize: 1, refCount: true }));
+
+    return combineLatest([rankingsState$, leaders$]).pipe(
+      map(([state, leaders]) => ({ ...state, leaders })),
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
   }
 
@@ -30,7 +39,7 @@ export class PlayerRankingsService {
     tournamentId$: Observable<string>,
     filters$: Observable<PlayerStatisticsFilters>,
   ): Observable<PlayerRankingsState> {
-    return combineLatest([tournamentId$, filters$]).pipe(
+    const rankingsState$ = combineLatest([tournamentId$, filters$]).pipe(
       map(([tournamentId, filters]) => ({
         tournamentId,
         filters: this.normalizeFilters({
@@ -43,31 +52,38 @@ export class PlayerRankingsService {
         (previous, current) =>
           previous.tournamentId === current.tournamentId && this.filtersEqual(previous.filters, current.filters),
       ),
-      switchMap(({ tournamentId, filters }) => this.loadTournamentRankings(tournamentId, filters)),
+      switchMap(({ tournamentId, filters }) => this.loadTournamentRankingRows(tournamentId, filters)),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+
+    const leaders$ = tournamentId$.pipe(
+      distinctUntilChanged(),
+      switchMap((tournamentId) =>
+        this.statisticsApi.listTournamentPlayerStatisticLeaders(tournamentId).pipe(catchError(() => of([]))),
+      ),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+
+    return combineLatest([rankingsState$, leaders$]).pipe(
+      map(([state, leaders]) => ({ ...state, leaders })),
       shareReplay({ bufferSize: 1, refCount: true }),
     );
   }
 
-  private loadGlobalRankings(filters: NormalizedPlayerStatisticsFilters): Observable<PlayerRankingsState> {
-    return combineLatest({
-      rankings: this.statisticsApi.listPlayerStatistics(filters),
-      leaders: this.statisticsApi.listPlayerStatisticLeaders(filters),
-    }).pipe(
-      map(({ rankings, leaders }) => this.loadedState(filters, rankings, leaders)),
+  private loadGlobalRankingRows(filters: NormalizedPlayerStatisticsFilters): Observable<PlayerRankingsState> {
+    return this.statisticsApi.listPlayerStatistics(filters).pipe(
+      map((rankings) => this.loadedState(filters, rankings)),
       startWith(this.loadingState(filters)),
       catchError((error) => of(this.errorState(filters, error))),
     );
   }
 
-  private loadTournamentRankings(
+  private loadTournamentRankingRows(
     tournamentId: string,
     filters: NormalizedPlayerStatisticsFilters,
   ): Observable<PlayerRankingsState> {
-    return combineLatest({
-      rankings: this.statisticsApi.listTournamentPlayerStatistics(tournamentId, filters),
-      leaders: this.statisticsApi.listTournamentPlayerStatisticLeaders(tournamentId, filters),
-    }).pipe(
-      map(({ rankings, leaders }) => this.loadedState(filters, rankings, leaders)),
+    return this.statisticsApi.listTournamentPlayerStatistics(tournamentId, filters).pipe(
+      map((rankings) => this.loadedState(filters, rankings)),
       startWith(this.loadingState(filters)),
       catchError((error) => of(this.errorState(filters, error))),
     );
@@ -114,12 +130,11 @@ export class PlayerRankingsService {
   private loadedState(
     filters: NormalizedPlayerStatisticsFilters,
     rankings: PlayerRankingsState['rankings'],
-    leaders: PlayerRankingsState['leaders'],
   ): PlayerRankingsState {
     return {
       filters,
       rankings,
-      leaders,
+      leaders: [],
       loading: false,
       error: null,
     };
