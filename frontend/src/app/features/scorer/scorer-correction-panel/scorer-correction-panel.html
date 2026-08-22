@@ -1,0 +1,22 @@
+@if (recentEvents().length) {
+<section class="correction-panel" aria-label="Korekcije događaja">
+  <header>
+    <h3>Korekcije</h3>
+    <span>Poslednjih {{ recentEvents().length }} događaja</span>
+  </header>
+
+  <div class="correction-list">
+    @for (event of recentEvents(); track event.id) {
+    <article>
+      <div>
+        <strong>{{ eventTypeLabel(event.type) }}</strong>
+        <span>{{ event.team.name }} | {{ event.player ? event.player.firstName + ' ' + event.player.lastName : 'Bez
+          igrača' }}</span>
+      </div>
+      <time>{{ eventClockLabel(event) }}</time>
+      <button type="button" [disabled]="!canUndo()" (click)="undoEvent(event)">Poništi</button>
+    </article>
+    }
+  </div>
+</section>
+}
