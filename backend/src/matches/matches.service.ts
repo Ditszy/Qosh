@@ -92,6 +92,10 @@ export class MatchesService {
         return this.matchEventsService.create(matchId, createMatchEventDto, actor);
     }
 
+    async deleteEvent(matchId: string, eventId: string, actor: MatchActor) {
+        return this.matchEventsService.delete(matchId, eventId, actor);
+    }
+
     async findEventsByMatchId(matchId: string) {
         return this.matchEventsService.findByMatchId(matchId);
     }

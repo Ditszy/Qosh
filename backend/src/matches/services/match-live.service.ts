@@ -73,6 +73,10 @@ export class MatchLiveService {
         this.publish(matchId, 'match.event.created', { event });
     }
 
+    publishEventDeleted(matchId: string, event: object): void {
+        this.publish(matchId, 'match.event.deleted', { event });
+    }
+
     publishScoreChange(score: MatchScorePayload): void {
         this.publish(score.id, 'match.score', score);
     }

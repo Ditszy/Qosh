@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Request, Sse, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
@@ -169,6 +169,21 @@ export class MatchesController {
         @Request() req: AuthenticatedRequest,
     ) {
         return this.matchesService.createEvent(id, createMatchEventDto, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Delete('matches/:id/events/:eventId')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.SCORER, UserRole.ADMIN)
+    deleteEvent(
+        @Param('id') id: string,
+        @Param('eventId') eventId: string,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.matchesService.deleteEvent(id, eventId, {
             id: req.user.id,
             role: req.user.role,
         });

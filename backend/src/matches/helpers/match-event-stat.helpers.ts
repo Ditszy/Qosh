@@ -52,6 +52,25 @@ export function getMatchPlayerStatUpdateData(type: MatchEventType) {
     return updateData;
 }
 
+export function getMatchPlayerStatRevertData(type: MatchEventType) {
+    const counters = getMatchPlayerStatCounterValues(type);
+    const updateData: Record<string, { decrement: number }> = {};
+
+    for (const [field, value] of Object.entries(counters)) {
+        if (value > 0) {
+            updateData[field] = {
+                decrement: value,
+            };
+        }
+    }
+
+    return updateData;
+}
+
+export function getMatchPlayerStatCounterValuesForEvent(type: MatchEventType): MatchPlayerStatCounters {
+    return getMatchPlayerStatCounterValues(type);
+}
+
 function getMatchPlayerStatCounterValues(type: MatchEventType): MatchPlayerStatCounters {
     const counters = createEmptyCounters();
 
