@@ -1,6 +1,12 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { MatchDetail, MatchEvent, MatchEventType, MatchReadBundle } from '../../public/live-match/match.models';
+import type {
+  MatchDetail,
+  MatchEvent,
+  MatchEventType,
+  MatchReadBundle,
+  MatchScorePayload,
+} from '../../public/live-match/match.models';
 import type { MatchStatistics, StatisticLine, StatisticTotals } from '../../statistics';
 import { ScorerActions } from './scorer.actions';
 
@@ -118,6 +124,21 @@ export const scorerReducer = createReducer(
       },
     };
   }),
+  on(ScorerActions.eventUndone, (state, { result }) => {
+    if (!state.selectedBundle || state.selectedBundle.match.id !== result.event.matchId) {
+      return state;
+    }
+
+    return {
+      ...state,
+      selectedBundle: {
+        ...state.selectedBundle,
+        match: applyScorePayload(state.selectedBundle.match, result.score),
+        events: state.selectedBundle.events.filter((event) => event.id !== result.event.id),
+        statistics: removeEventFromStatistics(state.selectedBundle.statistics, result.event),
+      },
+    };
+  }),
 );
 
 function applyScore(match: MatchDetail, event: MatchEvent): MatchDetail {
@@ -155,6 +176,29 @@ function applyEventToStatistics(statistics: MatchStatistics, event: MatchEvent):
   };
 }
 
+function removeEventFromStatistics(statistics: MatchStatistics, event: MatchEvent): MatchStatistics {
+  if (!event.playerId) {
+    return statistics;
+  }
+
+  const delta = statDeltaForEvent(event.type);
+
+  return {
+    ...statistics,
+    teams: statistics.teams.map((team) => {
+      if (team.team.id !== event.teamId || !team.players.some((stat) => stat.player.id === event.playerId)) {
+        return team;
+      }
+
+      return {
+        ...team,
+        players: team.players.map((stat) => stat.player.id === event.playerId ? subtractDeltaFromLine(stat, delta) : stat),
+        totals: subtractDeltaFromLine(team.totals, delta),
+      };
+    }),
+  };
+}
+
 function addDeltaToLine<T extends StatisticLine>(line: T, delta: StatisticTotals): T {
   const totals = Object.fromEntries(
     statCounters.map((field) => [field, line[field] + delta[field]]),
@@ -166,6 +210,29 @@ function addDeltaToLine<T extends StatisticLine>(line: T, delta: StatisticTotals
     onePointPercentage: percentage(totals.onePointMade, totals.onePointAttempted),
     twoPointPercentage: percentage(totals.twoPointMade, totals.twoPointAttempted),
     freeThrowPercentage: percentage(totals.freeThrowMade, totals.freeThrowAttempted),
+  };
+}
+
+function subtractDeltaFromLine<T extends StatisticLine>(line: T, delta: StatisticTotals): T {
+  const totals = Object.fromEntries(
+    statCounters.map((field) => [field, Math.max(0, line[field] - delta[field])]),
+  ) as StatisticTotals;
+
+  return {
+    ...line,
+    ...totals,
+    onePointPercentage: percentage(totals.onePointMade, totals.onePointAttempted),
+    twoPointPercentage: percentage(totals.twoPointMade, totals.twoPointAttempted),
+    freeThrowPercentage: percentage(totals.freeThrowMade, totals.freeThrowAttempted),
+  };
+}
+
+function applyScorePayload(match: MatchDetail, score: MatchScorePayload): MatchDetail {
+  return {
+    ...match,
+    teamAScore: score.teamAScore,
+    teamBScore: score.teamBScore,
+    updatedAt: score.updatedAt,
   };
 }
 

@@ -1,6 +1,6 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
-import type { MatchDetail, MatchEvent, MatchReadBundle } from '../../public/live-match/match.models';
+import type { MatchDetail, MatchEvent, MatchEventUndoResult, MatchReadBundle } from '../../public/live-match/match.models';
 
 export const ScorerActions = createActionGroup({
   source: 'Scorer',
@@ -13,5 +13,6 @@ export const ScorerActions = createActionGroup({
     'Load Match Failed': props<{ matchId: string; error: string }>(),
     'Match Updated': props<{ match: MatchDetail }>(),
     'Event Recorded': props<{ event: MatchEvent }>(),
+    'Event Undone': props<{ result: MatchEventUndoResult }>(),
   },
 });

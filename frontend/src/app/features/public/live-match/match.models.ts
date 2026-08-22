@@ -102,6 +102,15 @@ export type MatchEventCreatedPayload = {
   event: MatchEvent;
 };
 
+export type MatchEventDeletedPayload = {
+  event: MatchEvent;
+};
+
+export type MatchEventUndoResult = {
+  event: MatchEvent;
+  score: MatchScorePayload;
+};
+
 export type MatchReportCreatedPayload = {
   report: MatchRefereeReport;
 };
@@ -118,6 +127,7 @@ export type MatchLivePayload =
   | MatchLiveSnapshot
   | MatchClockPayload
   | MatchEventCreatedPayload
+  | MatchEventDeletedPayload
   | MatchReportCreatedPayload
   | MatchScorePayload
   | MatchFinalizedPayload;
@@ -126,6 +136,7 @@ export type MatchLiveStreamMessage =
   | (LiveStreamMessage<MatchLiveSnapshot> & { type: 'match.snapshot' })
   | (LiveStreamMessage<MatchClockPayload> & { type: 'match.clock' })
   | (LiveStreamMessage<MatchEventCreatedPayload> & { type: 'match.event.created' })
+  | (LiveStreamMessage<MatchEventDeletedPayload> & { type: 'match.event.deleted' })
   | (LiveStreamMessage<MatchReportCreatedPayload> & { type: 'match.report.created' })
   | (LiveStreamMessage<MatchScorePayload> & { type: 'match.score' })
   | (LiveStreamMessage<MatchFinalizedPayload> & { type: 'match.finalized' });

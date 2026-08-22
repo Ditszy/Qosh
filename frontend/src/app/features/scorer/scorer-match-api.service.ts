@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../core/api';
-import type { MatchDetail, MatchEvent, MatchEventType } from '../public/live-match/match.models';
+import type { MatchDetail, MatchEvent, MatchEventType, MatchEventUndoResult } from '../public/live-match/match.models';
 
 export type AdjustMatchClockRequest = {
   secondsDelta: number;
@@ -49,6 +49,10 @@ export class ScorerMatchApiService {
 
   recordEvent(matchId: string, request: CreateMatchEventRequest): Observable<MatchEvent> {
     return this.http.post<MatchEvent>(this.apiUrl.build(`/matches/${matchId}/events`), request);
+  }
+
+  undoEvent(matchId: string, eventId: string): Observable<MatchEventUndoResult> {
+    return this.http.delete<MatchEventUndoResult>(this.apiUrl.build(`/matches/${matchId}/events/${eventId}`));
   }
 
   finalizeMatch(matchId: string): Observable<MatchDetail> {
