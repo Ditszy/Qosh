@@ -91,15 +91,38 @@
 
   <section class="profile-details" aria-label="Detaljna statistika">
     <article>
-      <h3>Timovi</h3>
-      @if (state.profile.totals.teams.length > 0) {
-      <p>
-        @for (team of state.profile.totals.teams; track team.id) {
-        <span>{{ team.name }}</span>
+      <h3>Najbolja utakmica</h3>
+      @if (bestMatch(state.profile.previousMatches); as bestMatch) {
+      <div class="best-match-card">
+        <p>
+          <span>Protiv</span>
+          <strong>{{ bestMatch.opponentTeam?.name ?? 'TBD' }}</strong>
+        </p>
+        <p>
+          <span>Turnir</span>
+          <strong>{{ bestMatch.match.tournament.name }}</strong>
+        </p>
+        @if (bestMatch.match.scheduledAt) {
+        <time>{{ bestMatch.match.scheduledAt | date: 'shortDate' }}</time>
         }
-      </p>
+        <dl class="best-match-stats">
+          <div>
+            <dt>PTS</dt>
+            <dd>{{ bestMatch.points }}</dd>
+          </div>
+          <div>
+            <dt>REB</dt>
+            <dd>{{ bestMatch.rebounds }}</dd>
+          </div>
+          <div>
+            <dt>AST</dt>
+            <dd>{{ bestMatch.assists }}</dd>
+          </div>
+        </dl>
+        <a class="best-match-link" [routerLink]="['/matches', bestMatch.match.id, 'live']">Otvori meč</a>
+      </div>
       } @else {
-      <p>Nema timova sa zabeleženom statistikom.</p>
+      <p>Nema zabeleženih utakmica.</p>
       }
     </article>
 

@@ -1,6 +1,6 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, catchError, combineLatest, filter, map, of, startWith, switchMap } from 'rxjs';
 
@@ -8,7 +8,7 @@ import { AuthService, ChangeMyPasswordRequest, UpdateMyProfileRequest } from '..
 import { PlayerProfilePreviousMatches } from './player-profile-previous-matches/player-profile-previous-matches';
 import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
 import { StatisticsApiService } from '../statistics-api.service';
-import type { PlayerProfile as PlayerProfileModel } from '../statistics.models';
+import type { PlayerProfile as PlayerProfileModel, PlayerRecentMatchStatistic } from '../statistics.models';
 
 type PlayerProfileState =
   | { status: 'loading' }
@@ -17,7 +17,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, PlayerProfilePreviousMatches, PlayerProfileSettings],
+  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfilePreviousMatches, PlayerProfileSettings],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })
@@ -49,6 +49,15 @@ export class PlayerProfile {
 
   protected percentageValue(value: number | null): string {
     return value === null ? '-' : `${value}%`;
+  }
+
+  protected bestMatch(matches: PlayerRecentMatchStatistic[]): PlayerRecentMatchStatistic | null {
+    return [...matches].sort(
+      (first, second) =>
+        second.points - first.points ||
+        second.rebounds - first.rebounds ||
+        second.assists - first.assists,
+    )[0] ?? null;
   }
 
   protected canManageProfile(profile: PlayerProfileModel): boolean {
