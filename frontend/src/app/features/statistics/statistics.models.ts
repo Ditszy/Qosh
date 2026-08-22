@@ -137,6 +137,7 @@ export type MatchStatistics = {
 export type PlayerRecentMatchStatistic = StatisticLine & {
   match: StatisticsMatchSummary;
   team: StatisticsTeamSummary;
+  opponentTeam: StatisticsTeamSummary | null;
 };
 
 export type PlayerProfile = {

@@ -71,6 +71,17 @@ dd,
   color: #ff5a1f;
 }
 
+.match-history dd a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.match-history dd a:hover,
+.match-history dd a:focus-visible {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
 @media (max-width: 760px) {
   .match-history header {
     display: grid;

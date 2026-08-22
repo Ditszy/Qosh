@@ -115,6 +115,7 @@ export type MatchStatistics = {
 export type PlayerRecentMatchStatistic = StatisticLine & {
     match: MatchSummary;
     team: TeamSummary;
+    opponentTeam: TeamSummary | null;
 };
 
 export type PlayerProfile = {
@@ -126,6 +127,7 @@ export type PlayerProfile = {
 export type RecentMatchStatisticState = {
     match: MatchSummary;
     team: TeamSummary;
+    opponentTeam: TeamSummary | null;
     statistic: StatisticLine;
     updatedAt: Date;
 };

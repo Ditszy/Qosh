@@ -20,8 +20,12 @@
 
       <dl>
         <div>
-          <dt>Tim</dt>
-          <dd>{{ matchStat.team.name }}</dd>
+          <dt>Protiv</dt>
+          <dd>
+            <a [routerLink]="['/matches', matchStat.match.id, 'live']">
+              {{ matchStat.opponentTeam?.name ?? 'TBD' }}
+            </a>
+          </dd>
         </div>
         <div>
           <dt>PTS</dt>

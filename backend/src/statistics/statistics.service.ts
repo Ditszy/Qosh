@@ -251,7 +251,15 @@ export class StatisticsService {
                     select: teamSummarySelect(),
                 },
                 match: {
-                    select: matchSummarySelect(),
+                    select: {
+                        ...matchSummarySelect(),
+                        teamA: {
+                            select: teamSummarySelect(),
+                        },
+                        teamB: {
+                            select: teamSummarySelect(),
+                        },
+                    },
                 },
             },
             orderBy: {
@@ -269,6 +277,7 @@ export class StatisticsService {
             recentMatchStatistics.push({
                 match: toMatchSummary(playerStat.match),
                 team: playerStat.team,
+                opponentTeam: this.getOpponentTeam(playerStat.match, playerStat.team.id),
                 statistic: toStatisticLine(playerStat),
                 updatedAt: playerStat.updatedAt,
             });
@@ -280,6 +289,7 @@ export class StatisticsService {
             .map((matchStatistic) => ({
                 match: matchStatistic.match,
                 team: matchStatistic.team,
+                opponentTeam: matchStatistic.opponentTeam,
                 ...matchStatistic.statistic,
             }));
 
@@ -303,5 +313,20 @@ export class StatisticsService {
         if (!tournament) {
             throw new NotFoundException('Tournament not found');
         }
+    }
+
+    private getOpponentTeam(
+        match: { teamA: TeamSummary | null; teamB: TeamSummary | null },
+        playerTeamId: string,
+    ): TeamSummary | null {
+        if (match.teamA?.id === playerTeamId) {
+            return match.teamB;
+        }
+
+        if (match.teamB?.id === playerTeamId) {
+            return match.teamA;
+        }
+
+        return null;
     }
 }
