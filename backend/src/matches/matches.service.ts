@@ -104,6 +104,10 @@ export class MatchesService {
         return this.matchLiveService.watchMatch(matchId);
     }
 
+    watchLiveCenter() {
+        return this.matchLiveService.watchLiveCenter();
+    }
+
     async finalize(id: string, actor: MatchActor): Promise<MatchWithRelations> {
         return this.matchFinalizationService.finalize(id, actor);
     }

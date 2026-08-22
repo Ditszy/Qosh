@@ -1,6 +1,6 @@
 import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
 import { Observable, Subject, concat, defer, from, merge, timer } from 'rxjs';
-import { filter, map, switchMap } from 'rxjs/operators';
+import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
 import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
@@ -65,6 +65,16 @@ export class MatchLiveService {
         return concat(initialSnapshot$, merge(clockTicks$, updateMessages$));
     }
 
+    watchLiveCenter(): Observable<MessageEvent> {
+        const initialSnapshot$ = defer(() => from(this.createLiveCenterMessage()));
+        const updateMessages$ = merge(timer(15000, 15000), this.matchUpdates$).pipe(
+            debounceTime(150),
+            switchMap(() => from(this.createLiveCenterMessage())),
+        );
+
+        return concat(initialSnapshot$, updateMessages$);
+    }
+
     publishClockChange(match: MatchClockPayload): void {
         this.publish(match.id, 'match.clock', this.toClockPayload(match));
     }
@@ -118,6 +128,13 @@ export class MatchLiveService {
         return {
             type: 'match.clock',
             data: this.toClockPayload(this.matchesReadService.withCurrentClock(match)),
+        };
+    }
+
+    private async createLiveCenterMessage(): Promise<MessageEvent> {
+        return {
+            type: 'matches.live.snapshot',
+            data: await this.matchesReadService.findPublicLiveCenter(),
         };
     }
 
