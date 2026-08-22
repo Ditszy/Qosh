@@ -2,7 +2,7 @@
   <header class="page-header">
     <p class="eyebrow">Live centar</p>
     <h2>Mečevi uživo</h2>
-    <button type="button" (click)="refresh()">Osveži</button>
+    <span class="live-status">Live</span>
   </header>
 
   @if (state$ | async; as state) {

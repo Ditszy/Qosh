@@ -23,23 +23,19 @@
   text-transform: uppercase;
 }
 
-.page-header button {
+.live-status {
   grid-column: 2;
   grid-row: 1 / span 2;
   border: 1px solid #ff5a1f;
-  background: transparent;
+  background: rgba(255, 90, 31, 0.12);
   color: #ffffff;
-  cursor: pointer;
   font-weight: 950;
   min-height: 40px;
   padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-transform: uppercase;
-}
-
-.page-header button:hover,
-.page-header button:focus-visible {
-  background: #ff5a1f;
-  color: #090a0d;
 }
 
 .surface-message {
@@ -96,7 +92,7 @@
     grid-template-columns: 1fr;
   }
 
-  .page-header button {
+  .live-status {
     grid-column: 1;
     grid-row: auto;
     width: 100%;

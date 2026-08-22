@@ -153,3 +153,7 @@ export type MatchLiveCenter = {
   recent: MatchDetail[];
   upcoming: MatchDetail[];
 };
+
+export type MatchLiveCenterStreamMessage = LiveStreamMessage<MatchLiveCenter> & {
+  type: 'matches.live.snapshot';
+};

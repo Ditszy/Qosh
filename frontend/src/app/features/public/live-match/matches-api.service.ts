@@ -9,6 +9,7 @@ import type {
   MatchDetail,
   MatchEvent,
   MatchLiveCenter,
+  MatchLiveCenterStreamMessage,
   MatchLivePayload,
   MatchLiveStreamMessage,
   MatchReadBundle,
@@ -30,6 +31,10 @@ export class MatchesApiService {
 
   getLiveCenter(): Observable<MatchLiveCenter> {
     return this.http.get<MatchLiveCenter>(this.apiUrl.build('/matches/live'));
+  }
+
+  watchLiveCenter(): Observable<MatchLiveCenterStreamMessage> {
+    return this.liveStream.connect<MatchLiveCenter>('/matches/live/stream') as Observable<MatchLiveCenterStreamMessage>;
   }
 
   listMatchEvents(matchId: string): Observable<MatchEvent[]> {
