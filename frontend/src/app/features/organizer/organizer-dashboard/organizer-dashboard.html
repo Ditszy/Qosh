@@ -4,6 +4,14 @@
     <h1>Moji turniri</h1>
   </header>
 
+  @if (state$ | async; as commandState) {
+  @if (commandState.status === 'loaded') {
+  <app-organizer-command-center [tournaments]="commandState.tournaments" [pendingAction]="pendingAction()"
+    (matchEditRequested)="editCommandCenterMatch($event)" (bracketRequested)="generateBracket($event)"
+    (startRequested)="startTournament($event)" />
+  }
+  }
+
   <form class="create-form" #tournamentForm="ngForm" (ngSubmit)="submitTournament(tournamentForm)">
     <h2>Novi turnir</h2>
     <label>

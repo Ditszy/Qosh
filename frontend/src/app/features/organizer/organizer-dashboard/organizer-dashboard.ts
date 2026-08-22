@@ -7,6 +7,7 @@ import { finalize } from 'rxjs';
 
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
+import { OrganizerCommandCenter } from '../organizer-command-center/organizer-command-center';
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
 import type { Tournament, TournamentMatch, TournamentStatus } from '../../public/tournaments/tournament.models';
 
@@ -27,7 +28,7 @@ const tournamentStatusLabels: Record<TournamentStatus, string> = {
 
 @Component({
   selector: 'app-organizer-dashboard',
-  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink],
+  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink, OrganizerCommandCenter],
   templateUrl: './organizer-dashboard.html',
   styleUrl: './organizer-dashboard.scss',
 })
@@ -192,6 +193,18 @@ export class OrganizerDashboard {
 
   protected editMatch(id: string): void {
     this.editingMatchId.set(id);
+  }
+
+  protected editCommandCenterMatch(match: TournamentMatch): void {
+    this.editingMatchId.set(match.id);
+    this.expandedTournamentMatches.update((expanded) => ({
+      ...expanded,
+      [match.tournamentId]: true,
+    }));
+    this.expandedRounds.update((expanded) => ({
+      ...expanded,
+      [this.roundKey(match.tournamentId, match.round)]: true,
+    }));
   }
 
   protected cancelMatchEdit(): void {
