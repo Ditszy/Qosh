@@ -22,6 +22,8 @@ import * as liveMatchEffects from './features/public/live-match/store/live-match
 import { liveMatchFeatureKey, liveMatchReducer } from './features/public/live-match/store';
 import * as tournamentEffects from './features/public/tournaments/store/tournaments.effects';
 import { tournamentsFeatureKey, tournamentsReducer } from './features/public/tournaments/store';
+import * as refereeEffects from './features/referee/store/referee.effects';
+import { refereeFeatureKey, refereeReducer } from './features/referee/store';
 import * as scorerEffects from './features/scorer/store/scorer.effects';
 import { scorerFeatureKey, scorerReducer } from './features/scorer/store';
 import * as statisticsEffects from './features/statistics/store/statistics.effects';
@@ -40,6 +42,7 @@ export const appConfig: ApplicationConfig = {
       [notificationsFeatureKey]: notificationsReducer,
       [organizerDashboardFeatureKey]: organizerDashboardReducer,
       [playerTeamsFeatureKey]: playerTeamsReducer,
+      [refereeFeatureKey]: refereeReducer,
       [scorerFeatureKey]: scorerReducer,
       [statisticsFeatureKey]: statisticsReducer,
       [tournamentsFeatureKey]: tournamentsReducer,
@@ -49,6 +52,7 @@ export const appConfig: ApplicationConfig = {
     provideEffects(notificationEffects),
     provideEffects(organizerDashboardEffects),
     provideEffects(playerTeamsEffects),
+    provideEffects(refereeEffects),
     provideEffects(scorerEffects),
     provideEffects(statisticsEffects),
     provideEffects(tournamentEffects),
