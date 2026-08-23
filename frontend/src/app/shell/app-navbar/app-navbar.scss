@@ -1,0 +1,146 @@
+:host {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: block;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(180px, 260px) auto;
+  gap: 24px;
+  align-items: center;
+  min-height: 72px;
+  padding: 0 32px;
+  border-bottom: 1px solid #242832;
+  background: rgba(8, 9, 11, 0.94);
+  backdrop-filter: blur(14px);
+}
+
+.brand,
+.main-nav,
+.player-search,
+.account-actions {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  gap: 10px;
+  color: #ffffff;
+  font-weight: 950;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  background: #ff5a1f;
+  color: #090a0d;
+  font-size: 1.35rem;
+  font-weight: 950;
+}
+
+.main-nav {
+  gap: 4px;
+  justify-content: center;
+}
+
+.main-nav a {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: #c4c8d0;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.main-nav a:hover,
+.text-action:hover {
+  color: #ffffff;
+}
+
+.player-search {
+  position: relative;
+}
+
+.player-search input {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #30343d;
+  background: #090a0d;
+  color: #ffffff;
+  padding: 0 12px;
+}
+
+.player-search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  width: min(320px, 80vw);
+  border: 1px solid #30343d;
+  background: #11141a;
+}
+
+.player-search-results button,
+.player-search-results span {
+  padding: 10px 12px;
+  color: #ffffff;
+}
+
+.player-search-results button {
+  display: grid;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.account-actions {
+  gap: 10px;
+}
+
+.account-summary {
+  display: grid;
+  gap: 3px;
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-decoration: none;
+}
+
+.account-summary strong {
+  color: #9ca3af;
+  font-size: 0.68rem;
+}
+
+.account-summary:hover {
+  color: #ffb37a;
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .main-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .account-actions {
+    justify-content: flex-start;
+  }
+}

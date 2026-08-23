@@ -1,67 +1,27 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { catchError, map, of, startWith } from 'rxjs';
 
-import { AuthService, UserRole } from './core/auth/auth';
-import { NotificationBell } from './features/notifications';
 import type { MatchDetail } from './features/public/live-match/match.models';
 import { MatchesApiService } from './features/public/live-match/matches-api.service';
-import { PlayerProfileSearchService, PublicUser } from './features/statistics';
-
-type NavRole = 'GUEST' | UserRole;
-
-type NavItem = {
-  label: string;
-  path: string;
-  roles: NavRole[];
-};
+import { AppNavbar } from './shell/app-navbar/app-navbar';
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, NotificationBell, ReactiveFormsModule, RouterLink, RouterOutlet],
+  imports: [AppNavbar, AsyncPipe, RouterLink, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  private readonly authService = inject(AuthService);
   private readonly matchesApi = inject(MatchesApiService);
-  private readonly playerProfileSearch = inject(PlayerProfileSearchService);
   private readonly router = inject(Router);
 
   protected readonly isHomeRoute = signal(this.router.url === '/');
-  protected readonly playerSearchControl = new FormControl('', { nonNullable: true });
-  protected readonly playerSearchState$ = this.playerProfileSearch.watch(
-    this.playerSearchControl.valueChanges.pipe(startWith(this.playerSearchControl.value)),
-  );
-  protected readonly currentUser = this.authService.currentUser;
-  protected readonly currentRole = computed<NavRole>(() => this.currentUser()?.role ?? 'GUEST');
   protected readonly landingPreview$ = this.matchesApi.getLiveCenter().pipe(
     map(({ live, recent, upcoming }) => ({ match: live[0] ?? recent[0] ?? upcoming[0] ?? null })),
     startWith({ match: null }),
     catchError(() => of({ match: null })),
-  );
-  protected readonly accountLabel = computed(() => {
-    const user = this.currentUser();
-
-    return user ? `${user.firstName} ${user.lastName}` : '';
-  });
-
-  protected readonly navItems: NavItem[] = [
-    { label: 'Početna', path: '/', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Turniri', path: '/tournaments', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Uživo', path: '/live', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Rang lista', path: '/rankings', roles: ['GUEST', 'PLAYER', 'ORGANIZER', 'REFEREE', 'SCORER', 'ADMIN'] },
-    { label: 'Moj tim', path: '/my-team', roles: ['PLAYER'] },
-    { label: 'Organizator', path: '/organizer', roles: ['ORGANIZER', 'ADMIN'] },
-    { label: 'Zapisničar', path: '/scorer', roles: ['SCORER', 'ADMIN'] },
-    { label: 'Izveštaji', path: '/reports', roles: ['REFEREE', 'ADMIN'] },
-    { label: 'Admin', path: '/admin', roles: ['ADMIN'] },
-  ];
-
-  protected readonly visibleNavItems = computed(() =>
-    this.navItems.filter((item) => item.roles.includes(this.currentRole())),
   );
 
   constructor() {
@@ -70,16 +30,6 @@ export class App {
         this.isHomeRoute.set(event.urlAfterRedirects.split('?')[0] === '/');
       }
     });
-  }
-
-  protected logout(): void {
-    this.authService.logout();
-    void this.router.navigateByUrl('/');
-  }
-
-  protected openPlayerProfile(player: PublicUser): void {
-    this.playerSearchControl.setValue('');
-    void this.router.navigateByUrl(`/profiles/${player.id}`);
   }
 
   protected landingTeamName(match: MatchDetail | null, slot: 'A' | 'B'): string {

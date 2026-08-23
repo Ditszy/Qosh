@@ -6,6 +6,7 @@ import { provideStore } from '@ngrx/store';
 import { App } from './app';
 import { provideApiBaseUrl } from './core/api';
 import { authFeatureKey, authReducer } from './core/auth/store';
+import { notificationsFeatureKey, notificationsReducer } from './features/notifications/store';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -15,7 +16,10 @@ describe('App', () => {
         provideHttpClient(),
         provideApiBaseUrl(),
         provideRouter([]),
-        provideStore({ [authFeatureKey]: authReducer }),
+        provideStore({
+          [authFeatureKey]: authReducer,
+          [notificationsFeatureKey]: notificationsReducer,
+        }),
       ],
     }).compileComponents();
   });
