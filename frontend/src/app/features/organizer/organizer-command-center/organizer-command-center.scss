@@ -37,7 +37,7 @@ h2 {
 .queue-grid {
   display: grid;
   gap: 0.85rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
 }
 
 .queue-card {
@@ -45,6 +45,7 @@ h2 {
   align-content: start;
   gap: 0.65rem;
   min-height: 11rem;
+  min-width: 0;
   border: 1px solid #293241;
   border-radius: 8px;
   background: #121822;
@@ -57,6 +58,7 @@ h2 {
   align-items: center;
   gap: 0.65rem;
   grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
 }
 
 .queue-card > header span {
@@ -135,16 +137,30 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
+  h2 {
+    font-size: 1.05rem;
+  }
+
+  h3 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
   .queue-grid {
     grid-template-columns: 1fr;
   }
 
+  .queue-card {
+    min-height: 0;
+  }
+
+  .queue-card > header,
   .queue-item {
     grid-template-columns: 1fr;
   }
 
   button,
   a {
-    justify-self: start;
+    width: 100%;
   }
 }

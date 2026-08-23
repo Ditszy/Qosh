@@ -145,6 +145,13 @@ button:disabled {
 .match-summary {
   display: grid;
   gap: 0.25rem;
+  min-width: 0;
+}
+
+.tournament-heading a,
+.match-summary a,
+small {
+  overflow-wrap: anywhere;
 }
 
 .tournament-heading span {
@@ -222,6 +229,7 @@ button:disabled {
 .official-picker {
   box-sizing: border-box;
   position: relative;
+  min-width: 0;
 }
 
 .autocomplete-list {
@@ -263,6 +271,7 @@ button:disabled {
   border: 1px solid #293241;
   background: #0d121b;
   padding: 0.85rem;
+  min-width: 0;
 }
 
 .schedule-form > input:not([type='hidden']),
@@ -308,10 +317,27 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
+  .tournament-heading span {
+    justify-self: start;
+  }
+
+  .tournament-actions button,
+  .match-edit-button {
+    width: 100%;
+  }
+
+  .match-list {
+    padding-left: 0;
+  }
+
   .schedule-form,
   .schedule-form input,
   .schedule-form select,
   .schedule-form button {
     width: 100%;
+  }
+
+  .autocomplete-list {
+    position: static;
   }
 }

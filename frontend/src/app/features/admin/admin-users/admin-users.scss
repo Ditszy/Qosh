@@ -16,6 +16,7 @@ form, .stats-panel, li, .user-result, .user-detail {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   background: rgba(18, 21, 28, 0.9);
+  min-width: 0;
 }
 form {
   display: grid;
@@ -45,6 +46,8 @@ label {
   color: #d7dbe4;
 }
 input, select {
+  box-sizing: border-box;
+  width: 100%;
   min-height: 2.5rem;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 6px;
@@ -111,6 +114,10 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   color: #a7adba;
   overflow-wrap: anywhere;
 }
+.user-result strong,
+.page-header span {
+  overflow-wrap: anywhere;
+}
 .role-badge {
   border: 1px solid rgba(255, 139, 61, 0.35);
   border-radius: 999px;
@@ -149,6 +156,9 @@ button:disabled { cursor: not-allowed; opacity: 0.45; }
   width: min(100%, 680px);
 }
 .user-detail header {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
   align-items: flex-start;
 }
 .user-detail header div {
@@ -226,11 +236,49 @@ li {
   padding: 0.875rem 1rem;
 }
 @media (max-width: 640px) {
-  .search-form, .user-result {
+  .admin-users {
+    gap: 1rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.55rem;
+    line-height: 1.15;
+  }
+
+  form button,
+  .account-actions button {
+    width: 100%;
+  }
+
+  .search-form {
     grid-template-columns: 1fr;
   }
 
   .user-result {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .modal-backdrop {
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+
+  .user-detail {
+    max-height: calc(100dvh - 1.5rem);
+  }
+
+  dl {
+    grid-template-columns: 1fr;
+  }
+
+  .account-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .stats-panel > div,
+  li {
     align-items: flex-start;
     flex-direction: column;
   }
