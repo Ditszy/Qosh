@@ -65,6 +65,7 @@ dd,
 .match-history strong {
   color: #ffffff;
   font-weight: 900;
+  overflow-wrap: anywhere;
 }
 
 .match-history dd {
@@ -85,5 +86,19 @@ dd,
 @media (max-width: 760px) {
   .match-history header {
     display: grid;
+  }
+
+  .match-history article {
+    padding: 16px;
+  }
+
+  .match-history dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .match-history dl {
+    grid-template-columns: 1fr;
   }
 }

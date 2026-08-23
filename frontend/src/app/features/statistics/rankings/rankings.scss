@@ -156,6 +156,7 @@ dt {
 
 .player strong {
   color: #ffffff;
+  overflow-wrap: anywhere;
 }
 
 .player span {
@@ -215,12 +216,26 @@ dd {
 }
 
 @media (max-width: 760px) {
+  .rankings-page {
+    padding: 24px 0 36px;
+  }
+
+  .page-header h2 {
+    font-size: 1.55rem;
+  }
+
   .rankings-shell {
     grid-template-columns: 1fr;
   }
 
+  .ranking-panel,
+  .leader-panel {
+    padding: 16px;
+  }
+
   .ranking-row {
     grid-template-columns: 40px 1fr;
+    gap: 8px 12px;
   }
 
   .filter-bar {
@@ -229,5 +244,26 @@ dd {
 
   .ranking-row > span:not(.rank) {
     grid-column: 2;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel-header,
+  dl div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .category-selector {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .category-selector button {
+    min-height: 40px;
+  }
+
+  .leader-row dd {
+    text-align: left;
   }
 }
