@@ -1,1 +1,38 @@
-<p>organizer-tournament-form works!</p>
+<form class="tournament-form" #tournamentForm="ngForm" (ngSubmit)="submit(tournamentForm)">
+  <h2>{{ title() }}</h2>
+  <label>
+    Naziv
+    <input type="text" name="name" [ngModel]="initialValue()?.name || ''" required />
+  </label>
+  <label class="description-field">
+    Opis
+    <textarea name="description" [ngModel]="initialValue()?.description || ''" rows="4"></textarea>
+  </label>
+  <label>
+    Lokacija
+    <input type="text" name="location" [ngModel]="initialValue()?.location || ''" required />
+  </label>
+  <label>
+    Početak
+    <input type="datetime-local" name="startsAt" [ngModel]="dateInput(initialValue()?.startsAt)" required />
+  </label>
+  <label>
+    Maksimalno timova
+    <input type="number" name="maxTeams" [ngModel]="initialValue()?.maxTeams || 8" min="2" max="32" required />
+  </label>
+  <label>
+    Kotizacija
+    <input type="number" name="entryFee" [ngModel]="initialValue()?.entryFee || 0" min="0" required />
+  </label>
+  @if (errorMessage()) {
+  <p class="error-message">{{ errorMessage() }}</p>
+  }
+  <button type="submit" [disabled]="tournamentForm.invalid || isSubmitting()">
+    {{ isSubmitting() ? pendingLabel() : submitLabel() }}
+  </button>
+  @if (showCancel()) {
+  <button class="secondary-button" type="button" (click)="cancel()">
+    Otkaži
+  </button>
+  }
+</form>

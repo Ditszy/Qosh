@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
 import { FormsModule, NgForm, NgModel } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -8,6 +8,10 @@ import { finalize } from 'rxjs';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
 import { OrganizerCommandCenter } from '../organizer-command-center/organizer-command-center';
+import {
+  OrganizerTournamentForm,
+  type OrganizerTournamentFormValue,
+} from '../organizer-tournament-form/organizer-tournament-form';
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
 import type { Tournament, TournamentMatch, TournamentStatus } from '../../public/tournaments/tournament.models';
 
@@ -28,7 +32,7 @@ const tournamentStatusLabels: Record<TournamentStatus, string> = {
 
 @Component({
   selector: 'app-organizer-dashboard',
-  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink, OrganizerCommandCenter],
+  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink, OrganizerCommandCenter, OrganizerTournamentForm],
   templateUrl: './organizer-dashboard.html',
   styleUrl: './organizer-dashboard.scss',
 })
@@ -50,71 +54,40 @@ export class OrganizerDashboard {
   protected readonly referees = signal<OfficialUser[]>([]);
 
   protected readonly state$ = this.store.select(selectOrganizerDashboardView);
+  protected readonly createTournamentForm = viewChild<OrganizerTournamentForm>('createTournamentForm');
 
   constructor() {
     this.reloadDashboard();
   }
 
-  protected submitTournament(form: NgForm): void {
-    if (form.invalid || this.isSubmitting()) {
-      form.control.markAllAsTouched();
+  protected submitTournament(value: OrganizerTournamentFormValue): void {
+    if (this.isSubmitting()) {
       return;
     }
 
-    const value = form.value as {
-      name: string;
-      description?: string;
-      location: string;
-      startsAt: string;
-      maxTeams: number;
-      entryFee?: number;
-    };
     this.errorMessage.set('');
     this.isSubmitting.set(true);
     this.organizerApi
-      .createTournament({
-        ...value,
-        description: value.description?.trim() || undefined,
-        startsAt: new Date(value.startsAt).toISOString(),
-        maxTeams: Number(value.maxTeams) || 8,
-        entryFee: Number(value.entryFee) || 0,
-      })
+      .createTournament(value)
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
         next: () => {
-          form.resetForm({ maxTeams: 8, entryFee: 0 });
+          this.createTournamentForm()?.reset();
           this.reloadDashboard();
         },
         error: () => this.errorMessage.set('Turnir nije kreiran. Proveri podatke.'),
       });
   }
 
-  protected updateTournamentDetails(id: string, form: NgForm): void {
-    if (form.invalid || this.pendingAction()) {
-      form.control.markAllAsTouched();
+  protected updateTournamentDetails(id: string, value: OrganizerTournamentFormValue): void {
+    if (this.pendingAction()) {
       return;
     }
-
-    const value = form.value as {
-      name: string;
-      description?: string;
-      location: string;
-      startsAt: string;
-      maxTeams: number;
-      entryFee?: number;
-    };
 
     this.errorMessage.set('');
     this.pendingAction.set(`update:${id}`);
     this.organizerApi
-      .updateTournament(id, {
-        name: value.name,
-        description: value.description?.trim() || undefined,
-        location: value.location,
-        startsAt: new Date(value.startsAt).toISOString(),
-        maxTeams: Number(value.maxTeams) || 8,
-        entryFee: Number(value.entryFee) || 0,
-      })
+      .updateTournament(id, value)
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
         next: () => {
@@ -274,10 +247,6 @@ export class OrganizerDashboard {
     const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
 
     return localDate.toISOString().slice(0, 16);
-  }
-
-  protected tournamentDateInput(startsAt: string): string {
-    return this.matchScheduleInput(startsAt);
   }
 
   protected officialInputValue(matchId: string, role: OfficialRole, official: OfficialDisplayUser | null): string {
