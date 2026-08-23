@@ -103,8 +103,8 @@
                 <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
                 <small>{{ match.location || tournament.location }}</small>
                 <small>
-                  Zapisničar: {{ match.scorer ? (match.scorer.firstName + ' ' + match.scorer.lastName) : 'nije dodeljen'
-                  }}
+                  Zapisničar: {{ match.scorer ? (match.scorer.firstName + ' ' + match.scorer.lastName) : 'nije
+                  dodeljen' }}
                   · Sudija: {{ match.referee ? (match.referee.firstName + ' ' + match.referee.lastName) : 'nije
                   dodeljen' }}
                 </small>
@@ -113,62 +113,9 @@
                 Izmeni
               </button>
               @if (editingMatchId() === match.id) {
-              <form class="schedule-form" #scheduleForm="ngForm" (ngSubmit)="scheduleMatch(match.id, scheduleForm)">
-                <input type="datetime-local" name="scheduledAt" [ngModel]="matchScheduleInput(match.scheduledAt)"
-                  required />
-                <input type="text" name="location" [ngModel]="match.location || tournament.location" required />
-                <label class="official-picker">
-                  <input type="search" placeholder="Traži zapisničara"
-                    [ngModel]="officialInputValue(match.id, 'SCORER', match.scorer)"
-                    [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchScorers($event)" />
-                  @if (scorers().length > 0) {
-                  <ul class="autocomplete-list">
-                    @for (scorer of scorers(); track scorer.id) {
-                    <li>
-                      <button type="button" (click)="selectOfficial(match.id, 'SCORER', scorer, scorerIdModel)">
-                        {{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})
-                      </button>
-                    </li>
-                    }
-                  </ul>
-                  }
-                </label>
-                <input type="hidden" name="scorerId" [ngModel]="match.scorerId || ''" #scorerIdModel="ngModel" />
-                <button class="secondary-button" type="button"
-                  (click)="clearOfficial(match.id, 'SCORER', scorerIdModel)">
-                  Bez zapisničara
-                </button>
-                <label class="official-picker">
-                  <input type="search" placeholder="Traži sudiju"
-                    [ngModel]="officialInputValue(match.id, 'REFEREE', match.referee)"
-                    [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchReferees($event)" />
-                  @if (referees().length > 0) {
-                  <ul class="autocomplete-list">
-                    @for (referee of referees(); track referee.id) {
-                    <li>
-                      <button type="button" (click)="selectOfficial(match.id, 'REFEREE', referee, refereeIdModel)">
-                        {{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
-                      </button>
-                    </li>
-                    }
-                  </ul>
-                  }
-                </label>
-                <input type="hidden" name="refereeId" [ngModel]="match.refereeId || ''" #refereeIdModel="ngModel" />
-                <button class="secondary-button" type="button"
-                  (click)="clearOfficial(match.id, 'REFEREE', refereeIdModel)">
-                  Bez sudije
-                </button>
-                @if (officialSearchError()) {
-                <p class="error-message">{{ officialSearchError() }}</p>
-                }
-                <button type="submit" [disabled]="scheduleForm.invalid || pendingAction() === 'schedule:' + match.id">
-                  Sačuvaj termin
-                </button>
-                <button class="secondary-button" type="button" (click)="cancelMatchEdit()">
-                  Otkaži
-                </button>
-              </form>
+              <app-organizer-match-schedule-form [match]="match" [fallbackLocation]="tournament.location"
+                [isSubmitting]="pendingAction() === 'schedule:' + match.id"
+                (scheduleSubmitted)="scheduleMatch(match.id, $event)" (cancelRequested)="cancelMatchEdit()" />
               }
             </li>
             }

@@ -1,1 +1,53 @@
-<p>organizer-match-schedule-form works!</p>
+@if (match(); as selectedMatch) {
+<form class="schedule-form" #scheduleForm="ngForm" (ngSubmit)="submit(scheduleForm)">
+  <input type="datetime-local" name="scheduledAt" [ngModel]="matchScheduleInput(selectedMatch.scheduledAt)" required />
+  <input type="text" name="location" [ngModel]="selectedMatch.location || fallbackLocation()" required />
+  <label class="official-picker">
+    <input type="search" placeholder="Traži zapisničara" [ngModel]="officialInputValue('SCORER', selectedMatch.scorer)"
+      [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchOfficials($event, 'SCORER')" />
+    @if (scorers().length > 0) {
+    <ul class="autocomplete-list">
+      @for (scorer of scorers(); track scorer.id) {
+      <li>
+        <button type="button" (click)="selectOfficial('SCORER', scorer, scorerIdModel)">
+          {{ scorer.firstName }} {{ scorer.lastName }} ({{ scorer.username }})
+        </button>
+      </li>
+      }
+    </ul>
+    }
+  </label>
+  <input type="hidden" name="scorerId" [ngModel]="selectedMatch.scorerId || ''" #scorerIdModel="ngModel" />
+  <button class="secondary-button" type="button" (click)="clearOfficial('SCORER', scorerIdModel)">
+    Bez zapisničara
+  </button>
+  <label class="official-picker">
+    <input type="search" placeholder="Traži sudiju" [ngModel]="officialInputValue('REFEREE', selectedMatch.referee)"
+      [ngModelOptions]="{ standalone: true }" (ngModelChange)="searchOfficials($event, 'REFEREE')" />
+    @if (referees().length > 0) {
+    <ul class="autocomplete-list">
+      @for (referee of referees(); track referee.id) {
+      <li>
+        <button type="button" (click)="selectOfficial('REFEREE', referee, refereeIdModel)">
+          {{ referee.firstName }} {{ referee.lastName }} ({{ referee.username }})
+        </button>
+      </li>
+      }
+    </ul>
+    }
+  </label>
+  <input type="hidden" name="refereeId" [ngModel]="selectedMatch.refereeId || ''" #refereeIdModel="ngModel" />
+  <button class="secondary-button" type="button" (click)="clearOfficial('REFEREE', refereeIdModel)">
+    Bez sudije
+  </button>
+  @if (officialSearchError()) {
+  <p class="error-message">{{ officialSearchError() }}</p>
+  }
+  <button type="submit" [disabled]="scheduleForm.invalid || isSubmitting()">
+    Sačuvaj termin
+  </button>
+  <button class="secondary-button" type="button" (click)="cancel()">
+    Otkaži
+  </button>
+</form>
+}

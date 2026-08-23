@@ -1,13 +1,15 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { FormsModule, NgForm, NgModel } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { finalize } from 'rxjs';
 
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
-import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
 import { OrganizerCommandCenter } from '../organizer-command-center/organizer-command-center';
+import {
+  OrganizerMatchScheduleForm,
+  type OrganizerMatchScheduleFormValue,
+} from '../organizer-match-schedule-form/organizer-match-schedule-form';
 import {
   OrganizerTournamentForm,
   type OrganizerTournamentFormValue,
@@ -15,7 +17,6 @@ import {
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
 import type { Tournament, TournamentMatch, TournamentStatus } from '../../public/tournaments/tournament.models';
 
-type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'username'>;
 type MatchRoundGroup = {
   round: number;
   matches: TournamentMatch[];
@@ -32,26 +33,28 @@ const tournamentStatusLabels: Record<TournamentStatus, string> = {
 
 @Component({
   selector: 'app-organizer-dashboard',
-  imports: [AsyncPipe, DatePipe, FormsModule, RouterLink, OrganizerCommandCenter, OrganizerTournamentForm],
+  imports: [
+    AsyncPipe,
+    DatePipe,
+    RouterLink,
+    OrganizerCommandCenter,
+    OrganizerMatchScheduleForm,
+    OrganizerTournamentForm,
+  ],
   templateUrl: './organizer-dashboard.html',
   styleUrl: './organizer-dashboard.scss',
 })
 export class OrganizerDashboard {
   private readonly store = inject(Store);
   private readonly organizerApi = inject(OrganizerTournamentsApiService);
-  private readonly officialsApi = inject(OfficialsApiService);
 
   protected readonly isSubmitting = signal(false);
   protected readonly pendingAction = signal('');
   protected readonly errorMessage = signal('');
-  protected readonly officialSearchError = signal('');
   protected readonly editingTournamentId = signal('');
   protected readonly editingMatchId = signal('');
   protected readonly expandedTournamentMatches = signal<Record<string, boolean>>({});
   protected readonly expandedRounds = signal<Record<string, boolean>>({});
-  protected readonly selectedOfficialNames = signal<Record<string, string | null>>({});
-  protected readonly scorers = signal<OfficialUser[]>([]);
-  protected readonly referees = signal<OfficialUser[]>([]);
 
   protected readonly state$ = this.store.select(selectOrganizerDashboardView);
   protected readonly createTournamentForm = viewChild<OrganizerTournamentForm>('createTournamentForm');
@@ -138,22 +141,15 @@ export class OrganizerDashboard {
     });
   }
 
-  protected scheduleMatch(id: string, form: NgForm): void {
-    if (form.invalid || this.pendingAction()) {
-      form.control.markAllAsTouched();
+  protected scheduleMatch(id: string, value: OrganizerMatchScheduleFormValue): void {
+    if (this.pendingAction()) {
       return;
     }
 
-    const value = form.value as { scheduledAt: string; location: string; scorerId?: string; refereeId?: string };
     this.errorMessage.set('');
     this.pendingAction.set(`schedule:${id}`);
     this.organizerApi
-      .scheduleMatch(id, {
-        scheduledAt: new Date(value.scheduledAt).toISOString(),
-        location: value.location,
-        scorerId: value.scorerId || null,
-        refereeId: value.refereeId || null,
-      })
+      .scheduleMatch(id, value)
       .pipe(finalize(() => this.pendingAction.set('')))
       .subscribe({
         next: () => {
@@ -238,86 +234,8 @@ export class OrganizerDashboard {
       .sort((a, b) => a.round - b.round);
   }
 
-  protected matchScheduleInput(scheduledAt: string | null): string {
-    if (!scheduledAt) {
-      return '';
-    }
-
-    const date = new Date(scheduledAt);
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-
-    return localDate.toISOString().slice(0, 16);
-  }
-
-  protected officialInputValue(matchId: string, role: OfficialRole, official: OfficialDisplayUser | null): string {
-    const key = this.officialKey(matchId, role);
-    const selected = this.selectedOfficialNames();
-
-    return key in selected ? selected[key] ?? '' : official ? this.officialName(official) : '';
-  }
-
-  protected selectOfficial(matchId: string, role: OfficialRole, official: OfficialUser, model: NgModel): void {
-    model.control.setValue(official.id);
-    this.selectedOfficialNames.update((selected) => ({
-      ...selected,
-      [this.officialKey(matchId, role)]: this.officialName(official),
-    }));
-
-    if (role === 'SCORER') {
-      this.scorers.set([]);
-    } else {
-      this.referees.set([]);
-    }
-  }
-
-  protected clearOfficial(matchId: string, role: OfficialRole, model: NgModel): void {
-    model.control.setValue('');
-    this.selectedOfficialNames.update((selected) => ({
-      ...selected,
-      [this.officialKey(matchId, role)]: null,
-    }));
-
-    if (role === 'SCORER') {
-      this.scorers.set([]);
-    } else {
-      this.referees.set([]);
-    }
-  }
-
-  protected searchScorers(query: string): void {
-    this.searchOfficials(query, 'SCORER');
-  }
-
-  protected searchReferees(query: string): void {
-    this.searchOfficials(query, 'REFEREE');
-  }
-
-  private searchOfficials(query: string, role: OfficialRole): void {
-    const search = query.trim();
-    const target = role === 'SCORER' ? this.scorers : this.referees;
-
-    if (search.length < 2) {
-      target.set([]);
-      return;
-    }
-
-    this.officialSearchError.set('');
-    this.officialsApi.searchOfficials(search, { role }).subscribe({
-      next: (officials) => target.set(officials),
-      error: () => this.officialSearchError.set('Službena lica nisu učitana.'),
-    });
-  }
-
-  private officialKey(matchId: string, role: OfficialRole): string {
-    return `${matchId}:${role}`;
-  }
-
   private roundKey(tournamentId: string, round: number): string {
     return `${tournamentId}:${round}`;
-  }
-
-  private officialName(official: OfficialDisplayUser): string {
-    return `${official.firstName} ${official.lastName} (${official.username})`;
   }
 
   private reloadDashboard(): void {

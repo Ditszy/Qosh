@@ -46,16 +46,6 @@ h2 {
   padding: 1rem;
 }
 
-label {
-  display: grid;
-  gap: 0.35rem;
-  color: #d7dce5;
-  font-size: 0.9rem;
-}
-
-input,
-select,
-textarea,
 button {
   box-sizing: border-box;
   min-height: 2.45rem;
@@ -181,17 +171,6 @@ small {
   gap: 0.65rem;
 }
 
-.schedule-form {
-  grid-column: 1 / -1;
-  display: grid;
-  gap: 0.65rem;
-  width: min(100%, 22rem);
-  padding: 0.75rem;
-  border: 1px solid #293241;
-  border-radius: 8px;
-  background: #10151f;
-}
-
 .match-edit-button {
   min-width: 6.5rem;
 }
@@ -199,42 +178,6 @@ small {
 .secondary-button {
   background: #10151f;
   color: #f7f8fa;
-}
-
-.official-picker {
-  box-sizing: border-box;
-  position: relative;
-  min-width: 0;
-}
-
-.autocomplete-list {
-  position: absolute;
-  z-index: 5;
-  top: calc(100% + 0.25rem);
-  left: 0;
-  width: 100%;
-  max-height: 12rem;
-  overflow: auto;
-  margin: 0;
-  padding: 0.25rem;
-  list-style: none;
-  border: 1px solid #384151;
-  border-radius: 6px;
-  background: #10151f;
-  box-shadow: 0 0.75rem 1.5rem rgb(0 0 0 / 35%);
-}
-
-.autocomplete-list button {
-  width: 100%;
-  min-height: 2rem;
-  border: 0;
-  background: transparent;
-  color: #f7f8fa;
-  text-align: left;
-}
-
-.autocomplete-list button:hover {
-  background: #1b2432;
 }
 
 .match-list {
@@ -247,30 +190,6 @@ small {
   background: #0d121b;
   padding: 0.85rem;
   min-width: 0;
-}
-
-.schedule-form > input:not([type='hidden']),
-.schedule-form > select,
-.schedule-form > button,
-.official-picker {
-  width: 100%;
-}
-
-.schedule-form > input:not([type='hidden']),
-.schedule-form > select,
-.schedule-form > button,
-.official-picker input {
-  height: 2.45rem;
-  min-height: 2.45rem;
-  line-height: 1;
-}
-
-.official-picker input {
-  width: 100%;
-}
-
-.schedule-form input[type='hidden'] {
-  display: none;
 }
 
 .surface-message {
@@ -305,14 +224,4 @@ small {
     padding-left: 0;
   }
 
-  .schedule-form,
-  .schedule-form input,
-  .schedule-form select,
-  .schedule-form button {
-    width: 100%;
-  }
-
-  .autocomplete-list {
-    position: static;
-  }
 }
