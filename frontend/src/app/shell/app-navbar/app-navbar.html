@@ -1,9 +1,10 @@
 <header class="topbar">
-  <a class="brand" routerLink="/" aria-label="Qosh početna">
+  <a class="brand" routerLink="/" aria-label="Qosh početna" (click)="closeMobileNav()">
     <span class="brand-mark">Q</span>
     <span>Qosh</span>
   </a>
 
+  @if (!isMobile()) {
   <nav class="main-nav" aria-label="Glavna navigacija">
     @for (item of visibleNavItems(); track item.label) {
     <a [routerLink]="item.path">{{ item.label }}</a>
@@ -46,4 +47,59 @@
     <a class="solid-action" routerLink="/register">Registracija</a>
     }
   </div>
+  } @else {
+  <button class="menu-toggle" type="button" aria-label="Otvori navigaciju" aria-controls="mobile-navigation"
+    [attr.aria-expanded]="mobileNavOpen()" (click)="toggleMobileNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  }
+
+  @if (isMobile() && mobileNavOpen()) {
+  <div id="mobile-navigation" class="mobile-menu">
+    <nav class="mobile-nav" aria-label="Mobilna navigacija">
+      @for (item of visibleNavItems(); track item.label) {
+      <a [routerLink]="item.path" (click)="closeMobileNav()">{{ item.label }}</a>
+      }
+    </nav>
+
+    <div class="player-search mobile-search">
+      <input type="search" placeholder="Pretraži igrače" [formControl]="playerSearchControl" />
+
+      @if (playerSearchState$ | async; as state) {
+      @if (state.loading || state.error || state.results.length) {
+      <div class="player-search-results">
+        @if (state.loading) {
+        <span>Pretraga...</span>
+        } @else if (state.error) {
+        <span>{{ state.error }}</span>
+        } @else {
+        @for (player of state.results; track player.id) {
+        <button type="button" (click)="openPlayerProfile(player)">
+          <strong>{{ player.username }}</strong>
+          <span>{{ player.firstName }} {{ player.lastName }}</span>
+        </button>
+        }
+        }
+      </div>
+      }
+      }
+    </div>
+
+    <div class="account-actions mobile-account" aria-label="Korisničke akcije">
+      @if (currentUser(); as user) {
+      <a class="account-summary" [routerLink]="['/profiles', user.id]" (click)="closeMobileNav()">
+        {{ accountLabel() }}
+        <strong>{{ user.role }}</strong>
+      </a>
+      <app-notification-bell />
+      <button class="text-action" type="button" (click)="logout()">Odjava</button>
+      } @else {
+      <a class="text-action" routerLink="/login" (click)="closeMobileNav()">Prijava</a>
+      <a class="solid-action" routerLink="/register" (click)="closeMobileNav()">Registracija</a>
+      }
+    </div>
+  </div>
+  }
 </header>
