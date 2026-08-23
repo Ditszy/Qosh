@@ -23,6 +23,7 @@
   color: #ffffff;
   font-size: 1.05rem;
   line-height: 1.2;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
@@ -53,6 +54,8 @@
 .versus span,
 .match-card footer span {
   color: #b8bdc7;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .score-line b {
@@ -85,6 +88,11 @@
 }
 
 @media (max-width: 680px) {
+  .match-card {
+    min-height: 0;
+    padding: 16px;
+  }
+
   .score-line,
   .versus,
   .match-card footer {

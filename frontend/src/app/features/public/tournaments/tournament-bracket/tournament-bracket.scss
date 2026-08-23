@@ -25,6 +25,7 @@
 
 .bracket-board {
   overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 .bracket-stage {
@@ -73,6 +74,7 @@
 }
 
 .bracket-team span {
+  min-width: 0;
   overflow-wrap: anywhere;
 }
 
@@ -84,4 +86,19 @@
   color: #ff5a1f;
   display: inline-block;
   margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .match-section h3 {
+    font-size: 1.05rem;
+  }
+
+  .surface-message {
+    padding: 16px;
+  }
+
+  .bracket-board {
+    margin-inline: -12px;
+    padding-inline: 12px;
+  }
 }

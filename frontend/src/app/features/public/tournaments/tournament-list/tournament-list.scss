@@ -69,6 +69,14 @@
 }
 
 @media (max-width: 760px) {
+  .tournament-page {
+    padding: 24px 0 36px;
+  }
+
+  .page-header h2 {
+    font-size: 1.55rem;
+  }
+
   .list-tools {
     grid-template-columns: 1fr;
   }
@@ -80,6 +88,7 @@
 
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 12px;
@@ -109,6 +118,18 @@
 
 .tournament-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: 14px;
+}
+
+@media (max-width: 420px) {
+  .pagination {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .pagination button {
+    width: 100%;
+  }
 }

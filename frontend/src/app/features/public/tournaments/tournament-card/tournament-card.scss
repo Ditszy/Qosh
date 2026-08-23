@@ -34,6 +34,7 @@
   color: #ffffff;
   font-size: 1.35rem;
   line-height: 1.15;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
@@ -66,5 +67,24 @@ dt {
 dd {
   color: #ffffff;
   font-weight: 850;
+  min-width: 0;
+  overflow-wrap: anywhere;
   text-align: right;
+}
+
+@media (max-width: 420px) {
+  .tournament-card {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  dl div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  dd {
+    text-align: left;
+  }
 }
