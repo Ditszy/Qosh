@@ -18,6 +18,7 @@ h2, h3, p { margin: 0; }
 .assigned-matches header {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.75rem;
 }
@@ -25,7 +26,7 @@ h2, h3, p { margin: 0; }
 .assigned-match-list {
   display: grid;
   gap: 0.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 }
 
 .assigned-match-list a {
@@ -33,6 +34,7 @@ h2, h3, p { margin: 0; }
   gap: 0.3rem;
   min-height: 4.5rem;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .assigned-match-list span {
@@ -129,6 +131,11 @@ section section {
   font-weight: 800;
 }
 
+.score-row span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .score-row span:last-child {
   text-align: right;
 }
@@ -161,4 +168,54 @@ section section > div > div {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(3.25rem, 1fr));
   gap: 0.4rem;
+}
+
+@media (max-width: 720px) {
+  section[aria-label='Scorer console'] {
+    padding: 1rem 0;
+  }
+
+  section[aria-label='Scorer console'] > div,
+  form {
+    align-items: stretch;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  input,
+  select,
+  button,
+  a {
+    width: 100%;
+  }
+
+  section section {
+    padding: 0.9rem;
+  }
+
+  .score-row {
+    grid-template-columns: 1fr;
+  }
+
+  .score-row span:last-child {
+    text-align: left;
+  }
+
+  .timer-row {
+    grid-template-columns: 1fr;
+  }
+
+  .timer-row strong {
+    font-size: 2.4rem;
+  }
+
+  section section > div > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  section section > div > div {
+    grid-template-columns: 1fr;
+  }
 }

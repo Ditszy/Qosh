@@ -27,6 +27,7 @@
 .section-card strong {
   font-size: 1.2rem;
   font-weight: 900;
+  overflow-wrap: anywhere;
 }
 
 .section-card span:last-child {
@@ -55,6 +56,7 @@
 
 .panel-header h3 {
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .count-pill {
@@ -138,12 +140,14 @@
 
 .detail-line strong {
   color: #ffffff;
+  overflow-wrap: anywhere;
   text-align: right;
 }
 
 .detail-link {
   color: #ffffff;
   font-weight: 900;
+  overflow-wrap: anywhere;
   text-align: right;
   text-decoration: none;
 }
@@ -231,8 +235,22 @@
 }
 
 @media (max-width: 700px) {
+  .section-panel {
+    padding: 16px;
+  }
+
   .section-picker {
     grid-template-columns: 1fr;
+  }
+
+  .panel-header,
+  .team-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .team-meta {
+    flex: 1 1 auto;
   }
 
   .detail-line,
@@ -243,5 +261,33 @@
 
   .detail-line strong {
     text-align: left;
+  }
+
+  .detail-actions,
+  .roster-actions,
+  .invite-search,
+  .account-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .detail-actions button,
+  .roster-actions button,
+  .invite-search input,
+  .invite-search button,
+  .account-actions button,
+  .account-actions a {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .section-card {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .section-panel {
+    padding: 14px;
   }
 }

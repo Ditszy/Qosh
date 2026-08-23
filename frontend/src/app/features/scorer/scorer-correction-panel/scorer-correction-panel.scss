@@ -79,3 +79,17 @@ button:disabled {
   font-variant-numeric: tabular-nums;
   font-weight: 900;
 }
+
+@media (max-width: 640px) {
+  .correction-panel {
+    padding: 0.9rem;
+  }
+
+  .correction-list article {
+    grid-template-columns: 1fr;
+  }
+
+  .correction-list article button {
+    width: 100%;
+  }
+}

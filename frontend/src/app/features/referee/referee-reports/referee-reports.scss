@@ -12,6 +12,13 @@ h1, h2, p { margin: 0; }
 
 header p, small { color: #9aa4b2; }
 
+h1,
+h2,
+strong,
+small {
+  overflow-wrap: anywhere;
+}
+
 form,
 .assigned-matches {
   display: grid;
@@ -88,3 +95,29 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .error { color: #ff8a8a; }
 
 .selected-match { color: #8be28b; }
+
+@media (max-width: 640px) {
+  .referee-reports {
+    padding: 1rem 0;
+  }
+
+  h1 {
+    font-size: 1.65rem;
+  }
+
+  form,
+  .assigned-matches {
+    padding: 0.9rem;
+  }
+
+  .assigned-matches article {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .assigned-matches a,
+  .actions button {
+    width: 100%;
+    text-align: center;
+  }
+}
