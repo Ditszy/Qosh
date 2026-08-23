@@ -26,6 +26,7 @@
 }
 
 .brand {
+  min-width: 0;
   gap: 10px;
   color: #ffffff;
   font-weight: 950;
@@ -34,6 +35,7 @@
 }
 
 .brand-mark {
+  flex: 0 0 auto;
   display: grid;
   place-items: center;
   width: 38px;
@@ -168,10 +170,18 @@
     border-color: #ff5a1f;
   }
 
+  .menu-toggle:focus-visible {
+    outline: 2px solid #ff5a1f;
+    outline-offset: 2px;
+  }
+
   .mobile-menu {
     grid-column: 1 / -1;
     display: grid;
     gap: 14px;
+    max-height: calc(100dvh - 88px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     border-top: 1px solid #242832;
     padding-top: 14px;
   }

@@ -15,6 +15,7 @@ html {
 
 html,
 body {
+  width: 100%;
   min-height: 100%;
   margin: 0;
 }
@@ -22,6 +23,7 @@ body {
 body {
   background: #08090b;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
   text-rendering: optimizeLegibility;
 }
 
@@ -155,14 +157,19 @@ h1 {
 }
 
 .match-card-header strong {
+  min-width: 0;
   color: #ffffff;
+  overflow-wrap: anywhere;
+  text-align: right;
   text-transform: uppercase;
 }
 
 .score-row span {
+  min-width: 0;
   color: #d8dbe2;
   font-size: 1rem;
   font-weight: 850;
+  overflow-wrap: anywhere;
 }
 
 .score-row strong {
@@ -336,31 +343,129 @@ h1 {
 }
 
 @media (max-width: 900px) {
+  main {
+    width: min(100% - 32px, 1180px);
+  }
+
   .hero,
   .feature-strip {
     grid-template-columns: 1fr;
   }
 
   .hero {
+    gap: 32px;
     min-height: auto;
+    padding: 40px 0 28px;
+  }
+
+  h1 {
+    max-width: 720px;
+    font-size: clamp(2.8rem, 10vw, 5rem);
+    line-height: 0.95;
+  }
+
+  .lead {
+    max-width: 620px;
+  }
+
+  .match-card {
+    width: min(100%, 540px);
   }
 }
 
 @media (max-width: 560px) {
+  .app-shell {
+    background-size: 48px 48px;
+  }
+
   main {
-    width: min(100% - 28px, 1180px);
+    width: min(100% - 24px, 1180px);
+  }
+
+  .hero {
+    gap: 24px;
+    padding: 28px 0 22px;
+  }
+
+  .eyebrow,
+  .match-card-header span,
+  .feature-strip span {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
   }
 
   h1 {
-    font-size: 3rem;
+    font-size: clamp(2.25rem, 13vw, 3.25rem);
+  }
+
+  .lead {
+    margin-top: 18px;
+    font-size: 0.96rem;
+    line-height: 1.55;
   }
 
   .hero-actions {
     align-items: stretch;
     flex-direction: column;
+    margin-top: 24px;
   }
 
   .large {
     width: 100%;
+  }
+
+  .match-card-header,
+  .score-row,
+  .clock-row {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .match-card-header {
+    align-items: flex-start;
+  }
+
+  .score-row strong {
+    font-size: 2.35rem;
+  }
+
+  .clock-row span {
+    font-size: 2.1rem;
+  }
+
+  .court-preview {
+    height: 130px;
+  }
+
+  .feature-strip {
+    margin-bottom: 22px;
+  }
+
+  .feature-strip article,
+  .route-placeholder,
+  .auth-view {
+    padding: 18px;
+  }
+
+  .feature-strip h2,
+  .auth-view h2,
+  .route-placeholder h2 {
+    font-size: 1.12rem;
+  }
+
+  .auth-page {
+    min-height: calc(100dvh - 64px);
+    padding: 24px 0;
+  }
+}
+
+@media (max-width: 380px) {
+  h1 {
+    font-size: 2.05rem;
+  }
+
+  .score-row strong,
+  .clock-row span {
+    font-size: 1.95rem;
   }
 }
