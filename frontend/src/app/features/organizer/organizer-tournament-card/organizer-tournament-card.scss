@@ -1,0 +1,161 @@
+:host {
+  display: grid;
+  gap: 0.9rem;
+  border: 1px solid #293241;
+  border-radius: 8px;
+  background: #121822;
+  padding: 1rem;
+}
+
+button {
+  box-sizing: border-box;
+  min-height: 2.45rem;
+  border: 1px solid #384151;
+  border-radius: 6px;
+  background: #ff6b1a;
+  color: #090a0d;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-weight: 850;
+}
+
+button:not(:disabled):hover {
+  border-color: #ffb199;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.tournament-heading,
+.match-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.tournament-heading a,
+.match-summary a {
+  color: #ffffff;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.tournament-heading a:hover,
+.match-summary a:hover {
+  color: #ffb199;
+}
+
+.tournament-heading div,
+.match-summary {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.tournament-heading a,
+.match-summary a,
+small {
+  overflow-wrap: anywhere;
+}
+
+.tournament-heading span {
+  background: #ff6b1a;
+  color: #090a0d;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+small {
+  color: #9aa4b2;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.tournament-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.matches-toggle,
+.round-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #10151f;
+  color: #f7f8fa;
+}
+
+.matches-toggle {
+  border-color: #ff6b1a;
+}
+
+.matches-toggle span,
+.round-toggle span {
+  display: inline-grid;
+  min-width: 2rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #293241;
+  color: #d7dce5;
+  font-size: 0.78rem;
+}
+
+.rounds-panel,
+.round-group,
+.match-list {
+  display: grid;
+}
+
+.rounds-panel {
+  gap: 0.65rem;
+  border-top: 1px solid #293241;
+  padding-top: 0.85rem;
+}
+
+.round-group {
+  gap: 0.65rem;
+}
+
+.match-list {
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0 0 0 0.75rem;
+}
+
+.match-row {
+  border: 1px solid #293241;
+  background: #0d121b;
+  padding: 0.85rem;
+  min-width: 0;
+}
+
+.match-edit-button {
+  min-width: 6.5rem;
+}
+
+@media (max-width: 760px) {
+  .tournament-heading,
+  .match-row {
+    grid-template-columns: 1fr;
+  }
+
+  .tournament-heading span {
+    justify-self: start;
+  }
+
+  .tournament-actions button,
+  .match-edit-button {
+    width: 100%;
+  }
+
+  .match-list {
+    padding-left: 0;
+  }
+}

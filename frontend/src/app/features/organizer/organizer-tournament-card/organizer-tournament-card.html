@@ -1,1 +1,98 @@
-<p>organizer-tournament-card works!</p>
+@if (tournament(); as tournament) {
+<div class="tournament-heading">
+  <div>
+    <a [routerLink]="['/tournaments', tournament.id]">{{ tournament.name }}</a>
+    <small>{{ tournament.location }} - {{ tournament.startsAt | date: 'medium' }}</small>
+  </div>
+  <span>{{ statusLabel(tournament.status) }}</span>
+</div>
+
+<div class="tournament-actions">
+  @if (canEditTournament(tournament)) {
+  <button type="button" (click)="editTournamentRequested.emit(tournament.id)">
+    Izmeni turnir
+  </button>
+  }
+  @if (tournament.status === 'DRAFT') {
+  <button type="button" [disabled]="pendingAction() === 'open:' + tournament.id"
+    (click)="requestSignupStatus(tournament.id, 'open')">
+    Otvori prijave
+  </button>
+  }
+  @if (tournament.status === 'SIGNUPS_OPEN') {
+  <button type="button" [disabled]="pendingAction() === 'lock:' + tournament.id"
+    (click)="requestSignupStatus(tournament.id, 'lock')">
+    Zaključaj prijave
+  </button>
+  }
+  @if (tournament.status === 'SIGNUPS_LOCKED') {
+  <button type="button" [disabled]="pendingAction() === 'bracket:' + tournament.id"
+    (click)="bracketRequested.emit(tournament.id)">
+    Generiši žreb
+  </button>
+  <button type="button" [disabled]="pendingAction() === 'start:' + tournament.id"
+    (click)="startRequested.emit(tournament.id)">
+    Pokreni turnir
+  </button>
+  }
+</div>
+
+@if (editingTournamentId() === tournament.id) {
+<app-organizer-tournament-form title="Izmeni turnir" submitLabel="Sačuvaj turnir" pendingLabel="Čuvanje..."
+  [isSubmitting]="pendingAction() === 'update:' + tournament.id" [initialValue]="tournament" [showCancel]="true"
+  (formSubmitted)="submitTournamentUpdate(tournament.id, $event)"
+  (cancelRequested)="cancelTournamentEditRequested.emit()" />
+}
+
+@if (tournament.matches.length > 0) {
+<button class="matches-toggle" type="button" [attr.aria-expanded]="matchesExpanded()"
+  (click)="matchesToggled.emit(tournament.id)">
+  {{ matchesExpanded() ? 'Sakrij mečeve' : 'Prikaži mečeve' }}
+  <span>{{ tournament.matches.length }}</span>
+</button>
+
+@if (matchesExpanded()) {
+<div class="rounds-panel">
+  @for (roundGroup of matchRoundGroups(tournament.matches); track roundGroup.round) {
+  <section class="round-group">
+    <button class="round-toggle" type="button" [attr.aria-expanded]="isRoundExpanded(tournament.id, roundGroup.round)"
+      (click)="requestRoundToggle(tournament.id, roundGroup.round)">
+      Runda {{ roundGroup.round }}
+      <span>{{ roundGroup.matches.length }}</span>
+    </button>
+
+    @if (isRoundExpanded(tournament.id, roundGroup.round)) {
+    <ol class="match-list">
+      @for (match of roundGroup.matches; track match.id) {
+      <li class="match-row">
+        <div class="match-summary">
+          <a [routerLink]="['/matches', match.id, 'live']">
+            R{{ match.round }}.{{ match.bracketPosition }}
+            {{ match.teamA?.name || 'TBD' }} - {{ match.teamB?.name || 'TBD' }}
+          </a>
+          <small>{{ match.scheduledAt ? (match.scheduledAt | date: 'short') : 'Nije zakazano' }}</small>
+          <small>{{ match.location || tournament.location }}</small>
+          <small>
+            Zapisničar: {{ match.scorer ? (match.scorer.firstName + ' ' + match.scorer.lastName) : 'nije dodeljen' }}
+            · Sudija: {{ match.referee ? (match.referee.firstName + ' ' + match.referee.lastName) : 'nije dodeljen' }}
+          </small>
+        </div>
+        <button class="match-edit-button" type="button" (click)="matchEditRequested.emit(match.id)">
+          Izmeni
+        </button>
+        @if (editingMatchId() === match.id) {
+        <app-organizer-match-schedule-form [match]="match" [fallbackLocation]="tournament.location"
+          [isSubmitting]="pendingAction() === 'schedule:' + match.id"
+          (scheduleSubmitted)="submitMatchSchedule(match.id, $event)"
+          (cancelRequested)="cancelMatchEditRequested.emit()" />
+        }
+      </li>
+      }
+    </ol>
+    }
+  </section>
+  }
+</div>
+}
+}
+}

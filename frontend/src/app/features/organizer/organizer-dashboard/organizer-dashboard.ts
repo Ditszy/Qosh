@@ -1,46 +1,28 @@
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, signal, viewChild } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { finalize } from 'rxjs';
 
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OrganizerCommandCenter } from '../organizer-command-center/organizer-command-center';
+import type { OrganizerMatchScheduleFormValue } from '../organizer-match-schedule-form/organizer-match-schedule-form';
 import {
-  OrganizerMatchScheduleForm,
-  type OrganizerMatchScheduleFormValue,
-} from '../organizer-match-schedule-form/organizer-match-schedule-form';
+  OrganizerTournamentCard,
+  type OrganizerMatchScheduleRequest,
+  type OrganizerRoundToggleRequest,
+  type OrganizerSignupStatusRequest,
+  type OrganizerTournamentUpdateRequest,
+} from '../organizer-tournament-card/organizer-tournament-card';
 import {
   OrganizerTournamentForm,
   type OrganizerTournamentFormValue,
 } from '../organizer-tournament-form/organizer-tournament-form';
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
-import type { Tournament, TournamentMatch, TournamentStatus } from '../../public/tournaments/tournament.models';
-
-type MatchRoundGroup = {
-  round: number;
-  matches: TournamentMatch[];
-};
-
-const tournamentStatusLabels: Record<TournamentStatus, string> = {
-  DRAFT: 'U pripremi',
-  SIGNUPS_OPEN: 'Prijave otvorene',
-  SIGNUPS_LOCKED: 'Prijave zaključane',
-  IN_PROGRESS: 'U toku',
-  COMPLETED: 'Završen',
-  CANCELLED: 'Otkazan',
-};
+import type { TournamentMatch } from '../../public/tournaments/tournament.models';
 
 @Component({
   selector: 'app-organizer-dashboard',
-  imports: [
-    AsyncPipe,
-    DatePipe,
-    RouterLink,
-    OrganizerCommandCenter,
-    OrganizerMatchScheduleForm,
-    OrganizerTournamentForm,
-  ],
+  imports: [AsyncPipe, OrganizerCommandCenter, OrganizerTournamentCard, OrganizerTournamentForm],
   templateUrl: './organizer-dashboard.html',
   styleUrl: './organizer-dashboard.scss',
 })
@@ -160,10 +142,6 @@ export class OrganizerDashboard {
       });
   }
 
-  protected editMatch(id: string): void {
-    this.editingMatchId.set(id);
-  }
-
   protected editCommandCenterMatch(match: TournamentMatch): void {
     this.editingMatchId.set(match.id);
     this.expandedTournamentMatches.update((expanded) => ({
@@ -176,16 +154,20 @@ export class OrganizerDashboard {
     }));
   }
 
-  protected cancelMatchEdit(): void {
-    this.editingMatchId.set('');
+  protected updateTournamentFromCard(request: OrganizerTournamentUpdateRequest): void {
+    this.updateTournamentDetails(request.tournamentId, request.value);
   }
 
-  protected canEditTournament(tournament: Tournament): boolean {
-    return tournament.status === 'DRAFT' || tournament.status === 'SIGNUPS_OPEN';
+  protected updateSignupStatusFromCard(request: OrganizerSignupStatusRequest): void {
+    this.updateSignupStatus(request.tournamentId, request.action);
   }
 
-  protected statusLabel(status: TournamentStatus): string {
-    return tournamentStatusLabels[status];
+  protected toggleRoundFromCard(request: OrganizerRoundToggleRequest): void {
+    this.toggleRound(request.tournamentId, request.round);
+  }
+
+  protected scheduleMatchFromCard(request: OrganizerMatchScheduleRequest): void {
+    this.scheduleMatch(request.matchId, request.value);
   }
 
   protected editTournament(id: string): void {
@@ -194,6 +176,14 @@ export class OrganizerDashboard {
 
   protected cancelTournamentEdit(): void {
     this.editingTournamentId.set('');
+  }
+
+  protected editMatch(id: string): void {
+    this.editingMatchId.set(id);
+  }
+
+  protected cancelMatchEdit(): void {
+    this.editingMatchId.set('');
   }
 
   protected toggleTournamentMatches(tournamentId: string): void {
@@ -214,24 +204,6 @@ export class OrganizerDashboard {
       ...expanded,
       [key]: !expanded[key],
     }));
-  }
-
-  protected isRoundExpanded(tournamentId: string, round: number): boolean {
-    return Boolean(this.expandedRounds()[this.roundKey(tournamentId, round)]);
-  }
-
-  protected matchRoundGroups(matches: TournamentMatch[]): MatchRoundGroup[] {
-    const grouped = matches.reduce<Record<number, TournamentMatch[]>>((rounds, match) => {
-      rounds[match.round] = [...(rounds[match.round] ?? []), match];
-      return rounds;
-    }, {});
-
-    return Object.entries(grouped)
-      .map(([round, roundMatches]) => ({
-        round: Number(round),
-        matches: roundMatches.sort((a, b) => a.bracketPosition - b.bracketPosition),
-      }))
-      .sort((a, b) => a.round - b.round);
   }
 
   private roundKey(tournamentId: string, round: number): string {
