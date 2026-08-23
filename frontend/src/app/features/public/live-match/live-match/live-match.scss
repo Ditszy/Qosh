@@ -122,11 +122,34 @@
 }
 
 @media (max-width: 720px) {
+  .live-match-page {
+    gap: 14px;
+    padding: 24px 0 36px;
+  }
+
   .match-meta {
     grid-template-columns: 1fr;
   }
 
   .event-list {
     max-height: 420px;
+  }
+
+  .event-feed h3,
+  .event-feed article,
+  .report-panel h3,
+  .report-panel article {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 560px) {
+  .event-feed article {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .event-list {
+    max-height: 360px;
   }
 }

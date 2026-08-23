@@ -83,18 +83,33 @@
 
 .match-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: 14px;
 }
 
 @media (max-width: 680px) {
+  .live-center-page {
+    gap: 18px;
+    padding: 24px 0 36px;
+  }
+
   .page-header {
     grid-template-columns: 1fr;
+  }
+
+  .page-header h2 {
+    font-size: 1.55rem;
   }
 
   .live-status {
     grid-column: 1;
     grid-row: auto;
     width: 100%;
+  }
+
+  .section-title {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
   }
 }

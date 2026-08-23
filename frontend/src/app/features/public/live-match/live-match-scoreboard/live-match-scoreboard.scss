@@ -31,9 +31,11 @@
 }
 
 .score-row span {
+  min-width: 0;
   color: #ffffff;
   font-size: 1.1rem;
   font-weight: 950;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
@@ -54,5 +56,12 @@
   .clock-row {
     align-items: flex-start;
     flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+  }
+
+  .score-row strong,
+  .clock-row span {
+    font-size: 1.75rem;
   }
 }

@@ -16,6 +16,11 @@
   padding: 16px;
 }
 
+.box-score article {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
 .box-score h3 {
   margin: 0;
   color: #ffffff;
@@ -56,6 +61,7 @@
 
 .stat-table {
   width: 100%;
+  min-width: 680px;
   border-collapse: collapse;
   font-size: 0.78rem;
 }
@@ -101,5 +107,17 @@
 @media (max-width: 720px) {
   .box-score-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .box-score h3,
+  .box-score-summary,
+  .box-score article {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .box-score-summary {
+    grid-template-columns: 1fr;
   }
 }
