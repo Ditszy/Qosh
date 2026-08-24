@@ -6,10 +6,10 @@
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">3x3 organizacija turnira</p>
-        <h1>Nisam smislio dobar tekst za ovo još.</h1>
+        <h1>Turnir od prijave do poslednjeg poena.</h1>
         <p class="lead">
-          Qosh daje organizatorima, igračima, zapisničarima i sudijama jedno mesto za prijave,
-          žreb, rezultat uživo, izveštaje i rang liste.
+          Qosh povezuje prijave, timove, žreb, raspored, zapisnički sto, sudijske izveštaje
+          i javnu statistiku u jedan tok koji se menja dok turnir traje.
         </p>
 
         <div class="hero-actions">
@@ -37,32 +37,38 @@
           <span>{{ landingClockLabel(preview.match) }}</span>
           <strong>{{ landingStatusLabel(preview.match) }}</strong>
         </div>
-        <div class="court-preview" aria-hidden="true">
-          <span></span>
-        </div>
       </a>
       }
     </section>
 
-    <section class="feature-strip" aria-label="Delovi platforme">
-      <article id="tournaments">
-        <span>01</span>
-        <h2>Turniri</h2>
-        <p>Pregled turnira, status prijava, timovi, kostur takmičenja i raspored mečeva.</p>
-      </article>
+    <section class="landing-summary" aria-label="Pregled platforme">
+      <div class="summary-copy">
+        <h2>Od otvorenih prijava do završene utakmice, bez ručnog prepisivanja.</h2>
+      </div>
 
-      <article id="live">
-        <span>02</span>
-        <h2>Mečevi uživo</h2>
-        <p>Zapisničar kontroliše vreme i događaje, a publika prati promene bez osvežavanja.</p>
-      </article>
+      <div class="summary-grid">
+        <article id="tournaments">
+          <h3>Organizator vidi redosled posla</h3>
+          <p>Turniri, prijave, timovi, žreb, termini i službena lica nalaze se na jednom radnom ekranu.</p>
+        </article>
 
-      <article id="rankings">
-        <span>03</span>
-        <h2>Rang lista</h2>
-        <p>Statistika igrača, učinak po meču, lideri kategorija i proseci na profilu.</p>
-      </article>
+        <article id="live">
+          <h3>Zapisnik odmah menja javni prikaz</h3>
+          <p>Poeni, vreme, događaji i statistika stižu publici bez osvežavanja stranice.</p>
+        </article>
+
+        <article id="rankings">
+          <h3>Statistika ostaje posle finala</h3>
+          <p>Rang liste, profili igrača, lideri kategorija i rezimei mečeva koriste iste podatke iz zapisnika.</p>
+        </article>
+      </div>
     </section>
+
+    <footer class="landing-footer">
+      <strong>Qosh</strong>
+      <span>Established 2026</span>
+      <span>© 2026 Qosh Tournament Systems. All rights reserved.</span>
+    </footer>
 
     }
 
