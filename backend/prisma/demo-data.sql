@@ -62,8 +62,8 @@ values
   ('11111111-1111-4111-8111-111111111112', 'Qosh Open Novi Sad', 'Open signup tournament with thirteen complete 3-player teams.', 'Novi Sad Outdoor Court', '2026-08-22T17:30:00.000Z', 16, 2000, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
   ('11111111-1111-4111-8111-111111111113', 'Qosh Open Zemun', 'Open signup tournament with five complete 3-player teams.', 'Zemun Arena', '2026-08-29T19:00:00.000Z', 8, 1200, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
   ('11111111-1111-4111-8111-111111111114', 'Qosh Open Night', 'Open signup tournament with five complete 3-player teams.', 'Ada Night Court', '2026-09-05T20:00:00.000Z', 8, 1800, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
-  ('11111111-1111-4111-8111-111111111115', 'Qosh Open Nis', 'Open signup tournament with four complete 3-player teams.', 'Nis Fortress Court', '2026-09-12T18:30:00.000Z', 4, 900, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
-  ('11111111-1111-4111-8111-111111111116', 'Qosh Open Kragujevac', 'Open signup tournament with three complete 3-player teams.', 'Jezero Court', '2026-09-19T17:00:00.000Z', 8, 1300, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111115', 'Qosh Open Nis', 'Tournament in progress with semifinal results and a live final.', 'Nis Fortress Court', '2026-09-12T18:30:00.000Z', 4, 900, 'IN_PROGRESS', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
+  ('11111111-1111-4111-8111-111111111116', 'Qosh Open Kragujevac', 'Tournament in progress with one completed match and one live match.', 'Jezero Court', '2026-09-19T17:00:00.000Z', 8, 1300, 'IN_PROGRESS', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
   ('11111111-1111-4111-8111-111111111117', 'Qosh Open Subotica', 'Open signup tournament with three complete 3-player teams.', 'Dudova Suma Court', '2026-09-26T16:30:00.000Z', 12, 1600, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
   ('11111111-1111-4111-8111-111111111118', 'Qosh Open Cacak', 'Open signup tournament with three complete 3-player teams.', 'Morava Sports Center', '2026-10-03T18:00:00.000Z', 16, 2200, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer2@qosh.demo'), now(), now()),
   ('11111111-1111-4111-8111-111111111119', 'Qosh Open Kraljevo', 'Open signup tournament with three complete 3-player teams.', 'Ibar Court', '2026-10-10T19:00:00.000Z', 8, 1100, 'SIGNUPS_OPEN', (select "id" from "users" where "email" = 'organizer@qosh.demo'), now(), now()),
@@ -255,29 +255,49 @@ on conflict ("id") do update set
 delete from "notifications"
 where "matchId" in (
   select "id" from "matches"
-  where "tournamentId" = '11111111-1111-4111-8111-111111111111'
+  where "tournamentId" in (
+    '11111111-1111-4111-8111-111111111111',
+    '11111111-1111-4111-8111-111111111115',
+    '11111111-1111-4111-8111-111111111116'
+  )
 );
 
 delete from "referee_reports"
 where "matchId" in (
   select "id" from "matches"
-  where "tournamentId" = '11111111-1111-4111-8111-111111111111'
+  where "tournamentId" in (
+    '11111111-1111-4111-8111-111111111111',
+    '11111111-1111-4111-8111-111111111115',
+    '11111111-1111-4111-8111-111111111116'
+  )
 );
 
 delete from "match_player_stats"
 where "matchId" in (
   select "id" from "matches"
-  where "tournamentId" = '11111111-1111-4111-8111-111111111111'
+  where "tournamentId" in (
+    '11111111-1111-4111-8111-111111111111',
+    '11111111-1111-4111-8111-111111111115',
+    '11111111-1111-4111-8111-111111111116'
+  )
 );
 
 delete from "match_events"
 where "matchId" in (
   select "id" from "matches"
-  where "tournamentId" = '11111111-1111-4111-8111-111111111111'
+  where "tournamentId" in (
+    '11111111-1111-4111-8111-111111111111',
+    '11111111-1111-4111-8111-111111111115',
+    '11111111-1111-4111-8111-111111111116'
+  )
 );
 
 delete from "matches"
-where "tournamentId" = '11111111-1111-4111-8111-111111111111';
+where "tournamentId" in (
+  '11111111-1111-4111-8111-111111111111',
+  '11111111-1111-4111-8111-111111111115',
+  '11111111-1111-4111-8111-111111111116'
+);
 
 insert into "matches" (
   "id", "tournamentId", "round", "bracketPosition", "teamAId", "teamBId", "winnerTeamId",
@@ -387,6 +407,139 @@ values
     now()
   );
 
+insert into "matches" (
+  "id", "tournamentId", "round", "bracketPosition", "teamAId", "teamBId", "winnerTeamId",
+  "scorerId", "refereeId", "scheduledAt", "location", "status", "teamAScore", "teamBScore",
+  "clockStatus", "clockDurationSeconds", "clockRemainingSeconds", "clockLastStartedAt",
+  "nextRound", "nextBracketPosition", "nextMatchSlot", "createdAt", "updatedAt"
+)
+values
+  (
+    'dddddddd-1001-4000-8000-000000001001',
+    '11111111-1111-4111-8111-111111111115',
+    1,
+    1,
+    '34343434-3434-4434-8434-343434343434',
+    '35353535-3535-4535-8535-353535353535',
+    '34343434-3434-4434-8434-343434343434',
+    (select "id" from "users" where "email" = 'scorer@qosh.demo'),
+    (select "id" from "users" where "email" = 'referee@qosh.demo'),
+    '2026-09-12T18:30:00.000Z',
+    'Nis Fortress Court - Court 1',
+    'FINAL',
+    21,
+    15,
+    'ENDED',
+    600,
+    0,
+    null,
+    2,
+    1,
+    'TEAM_A',
+    now(),
+    now()
+  ),
+  (
+    'dddddddd-1002-4000-8000-000000001002',
+    '11111111-1111-4111-8111-111111111115',
+    1,
+    2,
+    '36363636-3636-4636-8636-363636363636',
+    '37373737-3737-4737-8737-373737373737',
+    '37373737-3737-4737-8737-373737373737',
+    (select "id" from "users" where "email" = 'scorer2@qosh.demo'),
+    (select "id" from "users" where "email" = 'referee2@qosh.demo'),
+    '2026-09-12T18:50:00.000Z',
+    'Nis Fortress Court - Court 1',
+    'FINAL',
+    17,
+    19,
+    'ENDED',
+    600,
+    0,
+    null,
+    2,
+    1,
+    'TEAM_B',
+    now(),
+    now()
+  ),
+  (
+    'dddddddd-1003-4000-8000-000000001003',
+    '11111111-1111-4111-8111-111111111115',
+    2,
+    1,
+    '34343434-3434-4434-8434-343434343434',
+    '37373737-3737-4737-8737-373737373737',
+    null,
+    (select "id" from "users" where "email" = 'scorer@qosh.demo'),
+    (select "id" from "users" where "email" = 'referee2@qosh.demo'),
+    '2026-09-12T19:15:00.000Z',
+    'Nis Fortress Court - Court 1',
+    'LIVE',
+    12,
+    10,
+    'RUNNING',
+    600,
+    284,
+    now(),
+    null,
+    null,
+    null,
+    now(),
+    now()
+  ),
+  (
+    'dddddddd-2001-4000-8000-000000002001',
+    '11111111-1111-4111-8111-111111111116',
+    1,
+    1,
+    '38383838-3838-4838-8838-383838383838',
+    '39393939-3939-4939-8939-393939393939',
+    '38383838-3838-4838-8838-383838383838',
+    (select "id" from "users" where "email" = 'scorer2@qosh.demo'),
+    (select "id" from "users" where "email" = 'referee@qosh.demo'),
+    '2026-09-19T17:00:00.000Z',
+    'Jezero Court - Main',
+    'FINAL',
+    20,
+    14,
+    'ENDED',
+    600,
+    0,
+    null,
+    2,
+    1,
+    'TEAM_A',
+    now(),
+    now()
+  ),
+  (
+    'dddddddd-2002-4000-8000-000000002002',
+    '11111111-1111-4111-8111-111111111116',
+    2,
+    1,
+    '38383838-3838-4838-8838-383838383838',
+    '40404040-4040-4040-8040-404040404040',
+    null,
+    (select "id" from "users" where "email" = 'scorer@qosh.demo'),
+    (select "id" from "users" where "email" = 'referee2@qosh.demo'),
+    '2026-09-19T17:25:00.000Z',
+    'Jezero Court - Main',
+    'LIVE',
+    8,
+    6,
+    'PAUSED',
+    600,
+    352,
+    null,
+    null,
+    null,
+    null,
+    now(),
+    now()
+  );
+
 with demo_match_stats (
   "matchId", "teamId", "playerEmail", "points", "onePointMade", "onePointAttempted",
   "twoPointMade", "twoPointAttempted", "freeThrowMade", "freeThrowAttempted",
@@ -447,6 +600,89 @@ select
   now(),
   now()
 from numbered_match_stats
+on conflict ("matchId", "playerId") do update set
+  "teamId" = excluded."teamId",
+  "points" = excluded."points",
+  "onePointMade" = excluded."onePointMade",
+  "onePointAttempted" = excluded."onePointAttempted",
+  "twoPointMade" = excluded."twoPointMade",
+  "twoPointAttempted" = excluded."twoPointAttempted",
+  "freeThrowMade" = excluded."freeThrowMade",
+  "freeThrowAttempted" = excluded."freeThrowAttempted",
+  "rebounds" = excluded."rebounds",
+  "assists" = excluded."assists",
+  "steals" = excluded."steals",
+  "blocks" = excluded."blocks",
+  "turnovers" = excluded."turnovers",
+  "fouls" = excluded."fouls",
+  "updatedAt" = now();
+
+with active_match_stats (
+  "matchId", "teamId", "playerEmail", "points", "onePointMade", "onePointAttempted",
+  "twoPointMade", "twoPointAttempted", "freeThrowMade", "freeThrowAttempted",
+  "rebounds", "assists", "steals", "blocks", "turnovers", "fouls"
+) as (
+  values
+    ('dddddddd-1001-4000-8000-000000001001', '34343434-3434-4434-8434-343434343434', 'player16@qosh.demo', 10, 4, 6, 3, 5, 0, 0, 5, 2, 2, 0, 1, 1),
+    ('dddddddd-1001-4000-8000-000000001001', '34343434-3434-4434-8434-343434343434', 'player17@qosh.demo', 7, 5, 7, 1, 3, 0, 0, 4, 4, 1, 1, 2, 2),
+    ('dddddddd-1001-4000-8000-000000001001', '34343434-3434-4434-8434-343434343434', 'player18@qosh.demo', 4, 2, 4, 1, 2, 0, 0, 6, 1, 0, 1, 1, 2),
+    ('dddddddd-1001-4000-8000-000000001001', '35353535-3535-4535-8535-353535353535', 'player19@qosh.demo', 8, 4, 6, 2, 4, 0, 0, 4, 2, 1, 0, 2, 2),
+    ('dddddddd-1001-4000-8000-000000001001', '35353535-3535-4535-8535-353535353535', 'player20@qosh.demo', 4, 2, 5, 1, 3, 0, 0, 5, 2, 0, 1, 1, 1),
+    ('dddddddd-1001-4000-8000-000000001001', '35353535-3535-4535-8535-353535353535', 'player21@qosh.demo', 3, 3, 5, 0, 2, 0, 0, 3, 1, 1, 0, 2, 3),
+    ('dddddddd-1002-4000-8000-000000001002', '36363636-3636-4636-8636-363636363636', 'player22@qosh.demo', 7, 5, 8, 1, 3, 0, 0, 4, 3, 1, 0, 2, 1),
+    ('dddddddd-1002-4000-8000-000000001002', '36363636-3636-4636-8636-363636363636', 'player23@qosh.demo', 6, 4, 6, 1, 2, 0, 0, 5, 2, 0, 1, 1, 2),
+    ('dddddddd-1002-4000-8000-000000001002', '36363636-3636-4636-8636-363636363636', 'player24@qosh.demo', 4, 2, 5, 1, 3, 0, 0, 4, 2, 1, 0, 2, 2),
+    ('dddddddd-1002-4000-8000-000000001002', '37373737-3737-4737-8737-373737373737', 'player25@qosh.demo', 9, 3, 5, 3, 5, 0, 0, 5, 2, 2, 0, 1, 1),
+    ('dddddddd-1002-4000-8000-000000001002', '37373737-3737-4737-8737-373737373737', 'player26@qosh.demo', 6, 4, 6, 1, 2, 0, 0, 4, 5, 1, 1, 2, 2),
+    ('dddddddd-1002-4000-8000-000000001002', '37373737-3737-4737-8737-373737373737', 'player27@qosh.demo', 4, 2, 4, 1, 2, 0, 0, 6, 1, 0, 1, 1, 2),
+    ('dddddddd-1003-4000-8000-000000001003', '34343434-3434-4434-8434-343434343434', 'player16@qosh.demo', 6, 4, 6, 1, 3, 0, 0, 3, 2, 1, 0, 1, 1),
+    ('dddddddd-1003-4000-8000-000000001003', '34343434-3434-4434-8434-343434343434', 'player17@qosh.demo', 4, 2, 4, 1, 2, 0, 0, 2, 3, 1, 0, 1, 1),
+    ('dddddddd-1003-4000-8000-000000001003', '34343434-3434-4434-8434-343434343434', 'player18@qosh.demo', 2, 2, 3, 0, 1, 0, 0, 4, 1, 0, 1, 1, 2),
+    ('dddddddd-1003-4000-8000-000000001003', '37373737-3737-4737-8737-373737373737', 'player25@qosh.demo', 5, 3, 5, 1, 3, 0, 0, 3, 1, 1, 0, 1, 1),
+    ('dddddddd-1003-4000-8000-000000001003', '37373737-3737-4737-8737-373737373737', 'player26@qosh.demo', 3, 3, 4, 0, 1, 0, 0, 2, 2, 1, 0, 1, 2),
+    ('dddddddd-1003-4000-8000-000000001003', '37373737-3737-4737-8737-373737373737', 'player27@qosh.demo', 2, 2, 3, 0, 1, 0, 0, 4, 1, 0, 1, 2, 1),
+    ('dddddddd-2001-4000-8000-000000002001', '38383838-3838-4838-8838-383838383838', 'player28@qosh.demo', 9, 5, 7, 2, 4, 0, 0, 5, 3, 2, 0, 1, 1),
+    ('dddddddd-2001-4000-8000-000000002001', '38383838-3838-4838-8838-383838383838', 'player29@qosh.demo', 7, 3, 5, 2, 4, 0, 0, 4, 4, 1, 1, 2, 2),
+    ('dddddddd-2001-4000-8000-000000002001', '38383838-3838-4838-8838-383838383838', 'player30@qosh.demo', 4, 2, 4, 1, 2, 0, 0, 6, 1, 0, 1, 1, 2),
+    ('dddddddd-2001-4000-8000-000000002001', '39393939-3939-4939-8939-393939393939', 'player31@qosh.demo', 6, 4, 7, 1, 3, 0, 0, 4, 2, 1, 0, 2, 2),
+    ('dddddddd-2001-4000-8000-000000002001', '39393939-3939-4939-8939-393939393939', 'player32@qosh.demo', 5, 3, 5, 1, 3, 0, 0, 3, 3, 0, 1, 1, 1),
+    ('dddddddd-2001-4000-8000-000000002001', '39393939-3939-4939-8939-393939393939', 'player33@qosh.demo', 3, 3, 4, 0, 2, 0, 0, 5, 1, 1, 0, 2, 3),
+    ('dddddddd-2002-4000-8000-000000002002', '38383838-3838-4838-8838-383838383838', 'player28@qosh.demo', 4, 2, 3, 1, 2, 0, 0, 2, 2, 1, 0, 1, 1),
+    ('dddddddd-2002-4000-8000-000000002002', '38383838-3838-4838-8838-383838383838', 'player29@qosh.demo', 2, 2, 4, 0, 1, 0, 0, 2, 1, 1, 0, 1, 1),
+    ('dddddddd-2002-4000-8000-000000002002', '38383838-3838-4838-8838-383838383838', 'player30@qosh.demo', 2, 2, 3, 0, 1, 0, 0, 3, 1, 0, 1, 0, 2),
+    ('dddddddd-2002-4000-8000-000000002002', '40404040-4040-4040-8040-404040404040', 'player34@qosh.demo', 3, 3, 5, 0, 1, 0, 0, 2, 1, 1, 0, 1, 1),
+    ('dddddddd-2002-4000-8000-000000002002', '40404040-4040-4040-8040-404040404040', 'player35@qosh.demo', 2, 2, 3, 0, 1, 0, 0, 3, 2, 0, 1, 1, 1),
+    ('dddddddd-2002-4000-8000-000000002002', '40404040-4040-4040-8040-404040404040', 'player36@qosh.demo', 1, 1, 2, 0, 1, 0, 0, 4, 1, 0, 0, 1, 2)
+),
+numbered_active_match_stats as (
+  select row_number() over (order by "matchId", "teamId", "playerEmail") as "rowNumber", * from active_match_stats
+)
+insert into "match_player_stats" (
+  "id", "matchId", "teamId", "playerId", "points", "onePointMade", "onePointAttempted",
+  "twoPointMade", "twoPointAttempted", "freeThrowMade", "freeThrowAttempted",
+  "rebounds", "assists", "steals", "blocks", "turnovers", "fouls", "createdAt", "updatedAt"
+)
+select
+  format('ffffffff-%s-4000-8000-%s', lpad("rowNumber"::text, 4, '0'), lpad("rowNumber"::text, 12, '0'))::uuid,
+  "matchId"::uuid,
+  "teamId"::uuid,
+  (select "id" from "users" where "email" = numbered_active_match_stats."playerEmail"),
+  "points",
+  "onePointMade",
+  "onePointAttempted",
+  "twoPointMade",
+  "twoPointAttempted",
+  "freeThrowMade",
+  "freeThrowAttempted",
+  "rebounds",
+  "assists",
+  "steals",
+  "blocks",
+  "turnovers",
+  "fouls",
+  now(),
+  now()
+from numbered_active_match_stats
 on conflict ("matchId", "playerId") do update set
   "teamId" = excluded."teamId",
   "points" = excluded."points",
