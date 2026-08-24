@@ -126,26 +126,7 @@
       }
     </article>
 
-    <article>
-      <h3>Šut</h3>
-      <dl>
-        <div>
-          <dt>1P</dt>
-          <dd>{{ state.profile.totals.onePointMade }}/{{ state.profile.totals.onePointAttempted }}
-            ({{ percentageValue(state.profile.totals.onePointPercentage) }})</dd>
-        </div>
-        <div>
-          <dt>2P</dt>
-          <dd>{{ state.profile.totals.twoPointMade }}/{{ state.profile.totals.twoPointAttempted }}
-            ({{ percentageValue(state.profile.totals.twoPointPercentage) }})</dd>
-        </div>
-        <div>
-          <dt>FT</dt>
-          <dd>{{ state.profile.totals.freeThrowMade }}/{{ state.profile.totals.freeThrowAttempted }}
-            ({{ percentageValue(state.profile.totals.freeThrowPercentage) }})</dd>
-        </div>
-      </dl>
-    </article>
+    <app-player-profile-efficiency-chart [matches]="state.profile.previousMatches" />
   </section>
 
   <app-player-profile-previous-matches [matches]="state.profile.previousMatches" />

@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, catchError, combineLatest, filter, map, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService, ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../core/auth/auth';
+import { PlayerProfileEfficiencyChart } from './player-profile-efficiency-chart/player-profile-efficiency-chart';
 import { PlayerProfilePreviousMatches } from './player-profile-previous-matches/player-profile-previous-matches';
 import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
 import { StatisticsApiService } from '../statistics-api.service';
@@ -17,7 +18,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfilePreviousMatches, PlayerProfileSettings],
+  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })

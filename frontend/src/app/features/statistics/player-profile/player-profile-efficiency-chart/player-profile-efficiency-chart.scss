@@ -1,0 +1,99 @@
+:host {
+  display: block;
+}
+
+.efficiency-card {
+  border: 1px solid #2b303a;
+  background: #101218;
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  padding: 18px;
+}
+
+header {
+  display: grid;
+  gap: 6px;
+}
+
+header span,
+dt {
+  color: #9ca3af;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+h3 {
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.chart-wrap {
+  border: 1px solid #242832;
+  background: #090a0d;
+  min-width: 0;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  min-height: 132px;
+}
+
+.area {
+  fill: rgba(255, 90, 31, 0.16);
+}
+
+.line {
+  fill: none;
+  stroke: #ff5a1f;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+circle {
+  fill: #ffffff;
+  stroke: #ff5a1f;
+  stroke-width: 2;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+dl div {
+  display: grid;
+  gap: 4px;
+  border-top: 1px solid #242832;
+  padding-top: 10px;
+}
+
+dd {
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 950;
+  line-height: 1;
+  margin: 0;
+}
+
+p {
+  color: #b8bdc7;
+  font-weight: 800;
+  margin: 0;
+}
+
+@media (max-width: 420px) {
+  .efficiency-card {
+    padding: 16px;
+  }
+
+  dl {
+    grid-template-columns: 1fr;
+  }
+}

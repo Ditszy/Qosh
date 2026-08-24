@@ -1,0 +1,38 @@
+<article class="efficiency-card">
+  <header>
+    <span>Forma</span>
+    <h3>Efikasnost</h3>
+  </header>
+
+  @if (chart(); as chartData) {
+  <div class="chart-wrap">
+    <svg [attr.viewBox]="'0 0 ' + chartData.width + ' ' + chartData.height" role="img"
+      aria-label="Kretanje efikasnosti kroz poslednjih deset utakmica">
+      <path class="area" [attr.d]="chartData.areaPath" />
+      <polyline class="line" [attr.points]="chartData.linePoints" />
+      @for (point of chartData.points; track point.label + point.x) {
+      <circle [attr.cx]="point.x" [attr.cy]="point.y" r="4">
+        <title>{{ point.label }}: {{ point.value }}</title>
+      </circle>
+      }
+    </svg>
+  </div>
+
+  <dl>
+    <div>
+      <dt>Poslednja</dt>
+      <dd>{{ chartData.latest.value }}</dd>
+    </div>
+    <div>
+      <dt>Najbolja</dt>
+      <dd>{{ chartData.best.value }}</dd>
+    </div>
+    <div>
+      <dt>Prosek</dt>
+      <dd>{{ chartData.average }}</dd>
+    </div>
+  </dl>
+  } @else {
+  <p>Nema dovoljno podataka za prikaz efikasnosti.</p>
+  }
+</article>
