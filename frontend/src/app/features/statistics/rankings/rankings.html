@@ -1,23 +1,19 @@
-<section class="rankings-page" aria-label="Rang lista igraca">
+<section class="rankings-page" aria-label="Rang lista igrača">
   <header class="page-header">
     <p class="eyebrow">Statistika</p>
-    <h2>Rang lista igraca</h2>
+    <h2>Rang lista igrača</h2>
   </header>
 
   <div class="rankings-shell">
     <article class="ranking-panel">
       <div class="panel-header">
         <span>Globalni poredak</span>
-        <strong>Top igraci</strong>
+        <strong>Top 10 igrača</strong>
       </div>
 
       <div class="category-selector" aria-label="Kategorija rangiranja">
         @for (category of categories; track category.sortBy) {
-        <button
-          type="button"
-          [class.active]="category.sortBy === currentSortBy"
-          (click)="selectCategory(category)"
-        >
+        <button type="button" [class.active]="category.sortBy === currentSortBy" (click)="selectCategory(category)">
           {{ category.label }}
         </button>
         }
@@ -26,33 +22,24 @@
       <div class="filter-bar" aria-label="Filteri rang liste">
         <label>
           <span>Pretraga</span>
-          <input
-            type="search"
-            [value]="currentSearch"
-            (input)="searchPlayers($event)"
-            placeholder="Ime, username, email"
-          />
+          <input type="search" [value]="currentSearch" (input)="searchPlayers($event)"
+            placeholder="Ime, username, email" />
         </label>
 
         <label>
           <span>Min. utakmica</span>
-          <input
-            type="number"
-            min="0"
-            [value]="currentMinGamesPlayed ?? ''"
-            (input)="setMinimumGames($event)"
-          />
+          <input type="number" min="0" [value]="currentMinGamesPlayed ?? ''" (input)="setMinimumGames($event)" />
         </label>
       </div>
 
       @if (state$ | async; as state) {
       @if (state.loading) {
-      <p class="surface-message">Ucitavanje rang liste...</p>
+      <p class="surface-message">Učitavanje rang liste...</p>
       } @else if (state.error) {
       <p class="surface-message error">Rang lista trenutno nije dostupna.</p>
       } @else if (state.rankings.length > 0) {
       <div class="ranking-list" aria-label="Globalna rang lista">
-        @for (player of state.rankings; track player.player.id; let rank = $index) {
+        @for (player of topRankings(state.rankings); track player.player.id; let rank = $index) {
         <a class="ranking-row" [routerLink]="['/profiles', player.player.id]">
           <span class="rank">#{{ rank + 1 }}</span>
           <div class="player">
@@ -69,7 +56,7 @@
         }
       </div>
       } @else {
-      <p class="surface-message">Nema prikazanih igraca.</p>
+      <p class="surface-message">Nema prikazanih igrača.</p>
       }
       }
     </article>

@@ -31,6 +31,7 @@ type RankingCategory = {
 })
 export class Rankings implements OnInit {
   private readonly store = inject(Store);
+  private readonly rankingLimit = 10;
 
   protected currentSortBy: RankingCategorySort = 'points';
   protected currentSearch = '';
@@ -82,6 +83,10 @@ export class Rankings implements OnInit {
 
   protected leaderFor(leaders: PlayerStatisticLeader[], sortBy: RankingCategorySort): PlayerStatisticLeader | null {
     return leaders.find((leader) => leader.category === sortBy) ?? null;
+  }
+
+  protected topRankings(rankings: PlayerStatistic[]): PlayerStatistic[] {
+    return rankings.slice(0, this.rankingLimit);
   }
 
   private dispatchFilters(): void {
