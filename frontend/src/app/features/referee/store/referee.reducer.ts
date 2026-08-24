@@ -39,7 +39,7 @@ export const refereeReducer = createReducer(
   })),
   on(RefereeActions.loadAssignedMatchesSucceeded, (state, { matches }) => ({
     ...state,
-    assignedMatches: matches,
+    assignedMatches: matches.filter((match) => !match.hasReport),
     assignedMatchesLoading: false,
     error: '',
   })),
@@ -94,6 +94,7 @@ export const refereeReducer = createReducer(
   })),
   on(RefereeActions.submitReportSucceeded, (state, { matchId, report }) => ({
     ...state,
+    assignedMatches: state.assignedMatches.filter((match) => match.id !== matchId),
     selectedMatchId: matchId,
     loadedReport: report,
     reportSubmitting: false,

@@ -117,7 +117,9 @@ export class MatchesReadService {
         return matches.map(({ refereeReport, ...match }) => ({
             ...this.withCurrentClock(match),
             hasReport: Boolean(refereeReport),
-        })).sort((a, b) => this.refereeMatchPriority(a) - this.refereeMatchPriority(b));
+        }))
+            .filter((match) => !(match.status === MatchStatus.FINAL && match.hasReport))
+            .sort((a, b) => this.refereeMatchPriority(a) - this.refereeMatchPriority(b));
     }
 
     async findByScorer(actor: MatchActor): Promise<ScorerAssignedMatch[]> {

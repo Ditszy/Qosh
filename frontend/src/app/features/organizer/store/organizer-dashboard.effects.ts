@@ -17,13 +17,14 @@ export const loadOrganizerDashboard = createEffect(
             const owned = user?.role === 'ADMIN'
               ? page.items
               : page.items.filter((item) => item.organizerId === user?.id);
+            const active = owned.filter((item) => item.status !== 'COMPLETED' && item.status !== 'CANCELLED');
 
-            if (owned.length === 0) {
+            if (active.length === 0) {
               return of(OrganizerDashboardActions.loadSucceeded({ tournaments: [] }));
             }
 
             return forkJoin(
-              owned.map((tournament) =>
+              active.map((tournament) =>
                 tournamentsApi.listTournamentMatches(tournament.id).pipe(
                   map((matches) => ({ ...tournament, matches })),
                 ),

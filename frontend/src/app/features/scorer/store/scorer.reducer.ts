@@ -70,7 +70,7 @@ export const scorerReducer = createReducer(
   })),
   on(ScorerActions.loadAssignedMatchesSucceeded, (state, { matches }) => ({
     ...state,
-    assignedMatches: matches,
+    assignedMatches: matches.filter((match) => match.status !== 'FINAL'),
     assignedMatchesLoading: false,
     error: '',
   })),
@@ -88,6 +88,9 @@ export const scorerReducer = createReducer(
   })),
   on(ScorerActions.loadMatchSucceeded, (state, { matchId, bundle }) => ({
     ...state,
+    assignedMatches: bundle.match.status === 'FINAL'
+      ? state.assignedMatches.filter((match) => match.id !== matchId)
+      : state.assignedMatches,
     selectedMatchId: matchId,
     selectedBundle: bundle,
     selectedMatchLoading: false,
@@ -106,6 +109,9 @@ export const scorerReducer = createReducer(
 
     return {
       ...state,
+      assignedMatches: match.status === 'FINAL'
+        ? state.assignedMatches.filter((assignedMatch) => assignedMatch.id !== match.id)
+        : state.assignedMatches,
       selectedBundle: { ...state.selectedBundle, match },
     };
   }),
