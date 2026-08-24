@@ -36,7 +36,7 @@ export class TournamentList {
   private readonly store = inject(Store);
   private readonly router = inject(Router);
   protected readonly page = signal(1);
-  protected readonly pageSize = 9;
+  protected readonly pageSize = 8;
   protected statusFilter: TournamentStatus | '' = '';
   protected sortSelection: TournamentSort = 'startsAt:asc';
   protected readonly selectedStatus = signal<TournamentStatus | ''>('');

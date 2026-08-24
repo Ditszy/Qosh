@@ -39,7 +39,7 @@ export type TournamentsState = {
 };
 
 export const initialTournamentsState: TournamentsState = {
-  listQuery: { page: 1, pageSize: 9, sortBy: 'startsAt', sortDirection: 'asc' },
+  listQuery: { page: 1, pageSize: 8, sortBy: 'startsAt', sortDirection: 'asc' },
   listView: { status: 'loading' },
   selectedTournamentId: null,
   detailView: { status: 'loading' },
