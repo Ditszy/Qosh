@@ -9,7 +9,9 @@
   }
   @case ('loaded') {
   <header class="page-header">
-    <div>
+    <div class="profile-identity">
+      <app-player-profile-avatar [imageUrl]="state.profile.user.profileImageUrl"
+        [alt]="'Profilna slika ' + state.profile.user.firstName + ' ' + state.profile.user.lastName" />
       <p class="eyebrow">Profil igrača</p>
       <h2>{{ state.profile.user.firstName }} {{ state.profile.user.lastName }}</h2>
       <p>{{ state.profile.user.username }}</p>
@@ -133,8 +135,9 @@
 
   @if (settingsOpen()) {
   <app-player-profile-settings [profile]="state.profile" [savingName]="savingName()" [savingPassword]="savingPassword()"
-    [nameMessage]="nameMessage()" [passwordMessage]="passwordMessage()" (closeRequested)="closeSettings()"
-    (profileSubmitted)="saveProfile($event)" (passwordSubmitted)="changePassword($event)" />
+    [savingImage]="savingImage()" [nameMessage]="nameMessage()" [imageMessage]="imageMessage()"
+    [passwordMessage]="passwordMessage()" (closeRequested)="closeSettings()" (profileSubmitted)="saveProfile($event)"
+    (imageSubmitted)="saveProfileImage($event)" (passwordSubmitted)="changePassword($event)" />
   }
   }
   }

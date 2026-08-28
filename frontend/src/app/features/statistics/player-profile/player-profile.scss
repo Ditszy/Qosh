@@ -6,7 +6,7 @@
   justify-content: space-between;
 }
 
-.page-header > div { display: grid; gap: 8px; }
+.profile-identity { display: grid; gap: 8px; justify-items: start; }
 
 .page-header h2,
 .profile-details h3 {

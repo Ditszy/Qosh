@@ -5,6 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, catchError, combineLatest, filter, map, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService, ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../core/auth/auth';
+import { PlayerProfileAvatar } from './player-profile-avatar/player-profile-avatar';
 import { PlayerProfileEfficiencyChart } from './player-profile-efficiency-chart/player-profile-efficiency-chart';
 import { PlayerProfilePreviousMatches } from './player-profile-previous-matches/player-profile-previous-matches';
 import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
@@ -18,7 +19,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings],
+  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })
@@ -31,8 +32,10 @@ export class PlayerProfile {
   protected readonly currentUser = this.authService.currentUser;
   protected readonly settingsOpen = signal(false);
   protected readonly nameMessage = signal('');
+  protected readonly imageMessage = signal('');
   protected readonly passwordMessage = signal('');
   protected readonly savingName = signal(false);
+  protected readonly savingImage = signal(false);
   protected readonly savingPassword = signal(false);
 
   protected readonly state$ = this.route.paramMap.pipe(
@@ -69,6 +72,7 @@ export class PlayerProfile {
 
   protected openSettings(): void {
     this.nameMessage.set('');
+    this.imageMessage.set('');
     this.passwordMessage.set('');
     this.settingsOpen.set(true);
   }
@@ -89,6 +93,22 @@ export class PlayerProfile {
       error: () => {
         this.savingName.set(false);
         this.nameMessage.set('Nije moguće ažurirati profil.');
+      },
+    });
+  }
+
+  protected saveProfileImage(file: File): void {
+    this.savingImage.set(true);
+    this.imageMessage.set('');
+    this.authService.uploadMyProfileImage(file).subscribe({
+      next: () => {
+        this.savingImage.set(false);
+        this.imageMessage.set('Slika je ažurirana.');
+        this.refreshProfile$.next();
+      },
+      error: () => {
+        this.savingImage.set(false);
+        this.imageMessage.set('Nije moguće ažurirati sliku.');
       },
     });
   }
