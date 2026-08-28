@@ -27,6 +27,27 @@
       }
     </form>
 
+    <section class="image-upload-section" aria-label="Profilna slika">
+      <h4>Profilna slika</h4>
+      <p>{{ imageHelpText }}</p>
+      <label class="file-picker">
+        Izaberi sliku
+        <input type="file" accept="image/jpeg,image/png,image/webp" (change)="selectImage($event)" />
+      </label>
+      @if (selectedImage(); as image) {
+      <p class="selected-file">{{ image.name }}</p>
+      }
+      <button type="button" [disabled]="!selectedImage() || savingImage()" (click)="saveImage()">
+        {{ savingImage() ? 'Čuvanje...' : 'Sačuvaj sliku' }}
+      </button>
+      @if (imageError()) {
+      <p class="settings-message">{{ imageError() }}</p>
+      }
+      @if (imageMessage()) {
+      <p class="settings-message">{{ imageMessage() }}</p>
+      }
+    </section>
+
     <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
       <h4>Promena lozinke</h4>
       <label>

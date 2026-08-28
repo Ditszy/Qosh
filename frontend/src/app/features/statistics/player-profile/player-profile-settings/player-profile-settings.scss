@@ -43,7 +43,8 @@
   text-transform: uppercase;
 }
 
-.settings-modal form {
+.settings-modal form,
+.image-upload-section {
   display: grid;
   gap: 12px;
   border-top: 1px solid #242832;
@@ -65,6 +66,35 @@
   background: #090a0d;
   color: #ffffff;
   padding: 0 12px;
+}
+
+.image-upload-section > p:not(.settings-message) {
+  color: #b8bdc7;
+  font-size: 0.86rem;
+  font-weight: 750;
+  margin: 0;
+}
+
+.file-picker {
+  align-items: center;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 40px;
+  width: fit-content;
+  border: 1px solid #ff5a1f;
+  color: #ff5a1f;
+  cursor: pointer;
+  font-weight: 950;
+  padding: 0 14px;
+  text-transform: uppercase;
+}
+
+.file-picker input {
+  display: none;
+}
+
+.selected-file {
+  overflow-wrap: anywhere;
 }
 
 .settings-modal button {

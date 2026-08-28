@@ -22,6 +22,7 @@ describe('PlayerProfileSettings', () => {
         firstName: 'Demo',
         lastName: 'Player',
         role: 'PLAYER',
+        profileImageUrl: null,
       },
     } as PlayerProfile);
     await fixture.whenStable();
