@@ -1,0 +1,165 @@
+:host {
+  display: block;
+}
+
+.checklist {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid #293241;
+  background: #0d121b;
+  padding: 0.85rem;
+}
+
+.checklist-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.checklist-header span {
+  color: #ffb199;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.checklist-header strong {
+  color: #ffffff;
+  font-size: 0.92rem;
+}
+
+.checklist-steps {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  border: 1px solid #252d3a;
+  background: #111722;
+  padding: 0.7rem;
+  min-width: 0;
+}
+
+.step-main {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.step-main div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.step-main strong,
+.step-main small {
+  overflow-wrap: anywhere;
+}
+
+.step-main strong {
+  color: #f7f8fa;
+  font-size: 0.86rem;
+}
+
+.step-main small {
+  color: #9aa4b2;
+  font-size: 0.76rem;
+  font-weight: 760;
+}
+
+.status-chip {
+  display: inline-grid;
+  place-items: center;
+  min-width: 6.35rem;
+  min-height: 1.55rem;
+  border: 1px solid #384151;
+  background: #1b2330;
+  color: #d7dce5;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 950;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.status-done .status-chip {
+  border-color: #2c6f4f;
+  background: #123326;
+  color: #8ef0b5;
+}
+
+.status-ready .status-chip,
+.status-live .status-chip {
+  border-color: #ff6b1a;
+  background: #321b0e;
+  color: #ffb199;
+}
+
+.status-action .status-chip,
+.status-progress .status-chip {
+  border-color: #6e7d94;
+  background: #202b3c;
+  color: #d7e4ff;
+}
+
+.status-blocked .status-chip {
+  border-color: #a33b3b;
+  background: #341515;
+  color: #ffaaaa;
+}
+
+button {
+  box-sizing: border-box;
+  min-height: 2.2rem;
+  border: 1px solid #384151;
+  border-radius: 6px;
+  background: #ff6b1a;
+  color: #090a0d;
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+button:not(:disabled):hover {
+  border-color: #ffb199;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 760px) {
+  .checklist-header,
+  .checklist-step,
+  .step-main {
+    align-items: stretch;
+  }
+
+  .checklist-header,
+  .checklist-step {
+    grid-template-columns: 1fr;
+  }
+
+  .checklist-header,
+  .step-main {
+    flex-direction: column;
+  }
+
+  .status-chip,
+  button {
+    width: 100%;
+  }
+}

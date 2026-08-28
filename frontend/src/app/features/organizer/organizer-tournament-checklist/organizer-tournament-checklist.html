@@ -1,1 +1,28 @@
-<p>organizer-tournament-checklist works!</p>
+@if (steps().length) {
+<section class="checklist" aria-label="Kontrolna lista turnira">
+  <header class="checklist-header">
+    <span>Kontrolna lista</span>
+    <strong>Spremnost turnira</strong>
+  </header>
+
+  <ol class="checklist-steps">
+    @for (step of steps(); track step.title) {
+    <li class="checklist-step" [class]="'status-' + step.status">
+      <div class="step-main">
+        <span class="status-chip">{{ statusLabel(step.status) }}</span>
+        <div>
+          <strong>{{ step.title }}</strong>
+          <small>{{ step.detail }}</small>
+        </div>
+      </div>
+
+      @if (step.action && step.actionLabel) {
+      <button type="button" [disabled]="isPending(step)" (click)="requestAction(step)">
+        {{ isPending(step) ? 'Obrada...' : step.actionLabel }}
+      </button>
+      }
+    </li>
+    }
+  </ol>
+</section>
+}
