@@ -10,6 +10,7 @@ import {
   OrganizerTournamentForm,
   type OrganizerTournamentFormValue,
 } from '../organizer-tournament-form/organizer-tournament-form';
+import { OrganizerTournamentChecklist } from '../organizer-tournament-checklist/organizer-tournament-checklist';
 import type { OrganizerTournamentWithMatches } from '../store/organizer-dashboard.reducer';
 import type { TournamentMatch, TournamentStatus } from '../../public/tournaments/tournament.models';
 
@@ -49,7 +50,7 @@ const tournamentStatusLabels: Record<TournamentStatus, string> = {
 
 @Component({
   selector: 'li[app-organizer-tournament-card]',
-  imports: [DatePipe, RouterLink, OrganizerMatchScheduleForm, OrganizerTournamentForm],
+  imports: [DatePipe, RouterLink, OrganizerMatchScheduleForm, OrganizerTournamentForm, OrganizerTournamentChecklist],
   templateUrl: './organizer-tournament-card.html',
   styleUrl: './organizer-tournament-card.scss',
 })
@@ -113,6 +114,28 @@ export class OrganizerTournamentCard {
 
   protected submitMatchSchedule(matchId: string, value: OrganizerMatchScheduleFormValue): void {
     this.matchScheduleSubmitted.emit({ matchId, value });
+  }
+
+  protected reviewChecklistMatches(tournament: OrganizerTournamentWithMatches): void {
+    if (!this.matchesExpanded()) {
+      this.matchesToggled.emit(tournament.id);
+    }
+
+    const reviewRounds = new Set(
+      tournament.matches
+        .filter((match) => match.status !== 'FINAL' && (!match.scheduledAt || !match.scorerId || !match.refereeId))
+        .map((match) => match.round),
+    );
+
+    if (reviewRounds.size === 0) {
+      tournament.matches.forEach((match) => reviewRounds.add(match.round));
+    }
+
+    reviewRounds.forEach((round) => {
+      if (!this.isRoundExpanded(tournament.id, round)) {
+        this.roundToggled.emit({ tournamentId: tournament.id, round });
+      }
+    });
   }
 
   private roundKey(tournamentId: string, round: number): string {

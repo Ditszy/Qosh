@@ -37,6 +37,10 @@
   }
 </div>
 
+<app-organizer-tournament-checklist [tournament]="tournament" [pendingAction]="pendingAction()"
+  (signupStatusRequested)="signupStatusRequested.emit($event)" (bracketRequested)="bracketRequested.emit($event)"
+  (startRequested)="startRequested.emit($event)" (matchesReviewRequested)="reviewChecklistMatches($event)" />
+
 @if (editingTournamentId() === tournament.id) {
 <app-organizer-tournament-form title="Izmeni turnir" submitLabel="Sačuvaj turnir" pendingLabel="Čuvanje..."
   [isSubmitting]="pendingAction() === 'update:' + tournament.id" [initialValue]="tournament" [showCancel]="true"
