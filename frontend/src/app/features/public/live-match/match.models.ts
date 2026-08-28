@@ -79,6 +79,7 @@ export type MatchRecapsByMatchId = Record<string, MatchRecap>;
 export type MatchLiveSnapshot = {
   match: MatchDetail;
   events: MatchEvent[];
+  serverTime: string;
 };
 
 export type MatchClockPayload = {
@@ -89,6 +90,7 @@ export type MatchClockPayload = {
   clockRemainingSeconds: number;
   clockLastStartedAt: string | null;
   updatedAt: string;
+  serverTime: string;
 };
 
 export type MatchScorePayload = {
@@ -121,6 +123,7 @@ export type MatchFinalizedPayload = MatchScorePayload & {
   clockStatus: MatchClockStatus;
   clockRemainingSeconds: number;
   clockLastStartedAt: string | null;
+  serverTime: string;
 };
 
 export type MatchLivePayload =
@@ -146,6 +149,8 @@ export type MatchReadBundle = {
   events: MatchEvent[];
   statistics: MatchStatistics;
   refereeReport: MatchRefereeReport | null;
+  serverTime: string | null;
+  serverOffsetMs: number;
 };
 
 export type MatchLiveCenter = {

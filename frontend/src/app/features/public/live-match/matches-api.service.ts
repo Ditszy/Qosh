@@ -59,6 +59,8 @@ export class MatchesApiService {
       events: this.listMatchEvents(matchId),
       statistics: this.getMatchStatistics(matchId),
       refereeReport: this.getRefereeReport(matchId).pipe(catchError(() => of(null))),
+      serverTime: of(null),
+      serverOffsetMs: of(0),
     });
   }
 
