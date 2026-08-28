@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { RolesGuard } from "../common/roles.guard";
@@ -8,6 +9,7 @@ import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 import { ChangeMyPasswordDto } from "./dto/change-my-password.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateMyProfileDto } from "./dto/update-my-profile.dto";
+import { deleteProfileImageFile, profileImageUploadOptions, saveProfileImageFile, type ProfileImageUploadFile } from "./profile-image-upload";
 
 type AuthenticatedRequest = {
     user: {
@@ -50,6 +52,24 @@ export class UserController {
     @Roles(UserRole.PLAYER)
     updateMyProfile(@Body() updateMyProfileDto: UpdateMyProfileDto, @Request() req: AuthenticatedRequest) {
         return this.usersService.updateMyProfile(req.user.id, updateMyProfileDto);
+    }
+
+    @Patch('me/profile-image')
+    @Roles(UserRole.PLAYER)
+    @UseInterceptors(FileInterceptor('image', profileImageUploadOptions))
+    async updateMyProfileImage(@UploadedFile() file: ProfileImageUploadFile | undefined, @Request() req: AuthenticatedRequest) {
+        if (!file) {
+            throw new BadRequestException('Image file is required');
+        }
+
+        const profileImageUrl = await saveProfileImageFile(file);
+
+        try {
+            return await this.usersService.updateMyProfileImage(req.user.id, profileImageUrl);
+        } catch (error) {
+            await deleteProfileImageFile(profileImageUrl);
+            throw error;
+        }
     }
 
     @Patch('me/password')

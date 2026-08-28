@@ -5,6 +5,7 @@ import { UpdateMyProfileDto } from "./dto/update-my-profile.dto";
 import * as bcrypt from "bcryptjs";
 import { PrismaService } from "../prisma/prisma.service";
 import { UserRole } from "../common/user-role.enum";
+import { deleteProfileImageFile } from "./profile-image-upload";
 
 export type PublicUser = {
     id: string;
@@ -13,6 +14,7 @@ export type PublicUser = {
     firstName: string;
     lastName: string;
     role: UserRole;
+    profileImageUrl: string | null;
 };
 
 export type AdminUser = PublicUser & {
@@ -41,6 +43,7 @@ export const publicUserSelect = {
     firstName: true,
     lastName: true,
     role: true,
+    profileImageUrl: true,
 };
 
 const adminUserSelect = {
@@ -269,6 +272,24 @@ export class UsersService {
             },
             select: publicUserSelect,
         });
+    }
+
+    async updateMyProfileImage(id: string, profileImageUrl: string): Promise<PublicUser> {
+        const user = await this.findSessionUserById(id);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        this.assertPlayerSelfService(user);
+
+        const updatedUser = await this.prisma.user.update({
+            where: { id },
+            data: { profileImageUrl },
+            select: publicUserSelect,
+        });
+
+        await deleteProfileImageFile(user.profileImageUrl);
+
+        return updatedUser;
     }
 
     async changeMyPassword(id: string, changeMyPasswordDto: ChangeMyPasswordDto): Promise<void> {
