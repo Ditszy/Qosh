@@ -11,6 +11,7 @@ import { MatchWithRelations } from '../types/match.types';
 type MatchLiveSnapshot = {
     match: MatchWithRelations;
     events: unknown[];
+    serverTime: Date;
 };
 
 type MatchClockPayload = {
@@ -21,6 +22,10 @@ type MatchClockPayload = {
     clockRemainingSeconds: number;
     clockLastStartedAt: Date | null;
     updatedAt: Date;
+};
+
+type MatchClockMessagePayload = MatchClockPayload & {
+    serverTime: Date;
 };
 
 type MatchScorePayload = {
@@ -36,6 +41,10 @@ type MatchFinalizedPayload = MatchScorePayload & {
     clockStatus: MatchClockStatus;
     clockRemainingSeconds: number;
     clockLastStartedAt: Date | null;
+};
+
+type MatchFinalizedMessagePayload = MatchFinalizedPayload & {
+    serverTime: Date;
 };
 
 type MatchLiveUpdate = {
@@ -54,15 +63,12 @@ export class MatchLiveService {
 
     watchMatch(matchId: string): Observable<MessageEvent> {
         const initialSnapshot$ = defer(() => from(this.createSnapshotMessage(matchId)));
-        const clockTicks$ = timer(1000, 1000).pipe(
-            switchMap(() => from(this.createClockMessage(matchId))),
-        );
         const updateMessages$ = this.matchUpdates$.pipe(
             filter((update) => update.matchId === matchId),
             map((update) => update.message),
         );
 
-        return concat(initialSnapshot$, merge(clockTicks$, updateMessages$));
+        return concat(initialSnapshot$, updateMessages$);
     }
 
     watchLiveCenter(): Observable<MessageEvent> {
@@ -92,7 +98,7 @@ export class MatchLiveService {
     }
 
     publishFinalized(match: MatchFinalizedPayload): void {
-        this.publish(match.id, 'match.finalized', match);
+        this.publish(match.id, 'match.finalized', this.toFinalizedPayload(match));
     }
 
     publishReportCreated(matchId: string, report: object): void {
@@ -113,21 +119,6 @@ export class MatchLiveService {
         return {
             type: 'match.snapshot',
             data: await this.createSnapshot(matchId),
-        };
-    }
-
-    private async createClockMessage(matchId: string): Promise<MessageEvent> {
-        const match = await this.prisma.match.findUnique({
-            where: { id: matchId },
-        });
-
-        if (!match) {
-            throw new NotFoundException('Match not found');
-        }
-
-        return {
-            type: 'match.clock',
-            data: this.toClockPayload(this.matchesReadService.withCurrentClock(match)),
         };
     }
 
@@ -166,12 +157,13 @@ export class MatchLiveService {
         });
 
         return {
-            match: this.matchesReadService.withCurrentClock(match),
+            match: this.toLiveSnapshotMatch(match),
             events,
+            serverTime: new Date(),
         };
     }
 
-    private toClockPayload(match: MatchClockPayload): MatchClockPayload {
+    private toClockPayload(match: MatchClockPayload): MatchClockMessagePayload {
         return {
             id: match.id,
             status: match.status,
@@ -180,6 +172,31 @@ export class MatchLiveService {
             clockRemainingSeconds: match.clockRemainingSeconds,
             clockLastStartedAt: match.clockLastStartedAt,
             updatedAt: match.updatedAt,
+            serverTime: new Date(),
+        };
+    }
+
+    private toFinalizedPayload(match: MatchFinalizedPayload): MatchFinalizedMessagePayload {
+        return {
+            ...match,
+            serverTime: new Date(),
+        };
+    }
+
+    private toLiveSnapshotMatch(match: MatchWithRelations): MatchWithRelations {
+        if (match.clockStatus !== MatchClockStatus.RUNNING || !match.clockLastStartedAt) {
+            return match;
+        }
+
+        if (this.matchesReadService.getCurrentRemainingSeconds(match) > 0) {
+            return match;
+        }
+
+        return {
+            ...match,
+            clockStatus: MatchClockStatus.ENDED,
+            clockRemainingSeconds: 0,
+            clockLastStartedAt: null,
         };
     }
 }
