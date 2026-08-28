@@ -24,6 +24,7 @@ describe('LiveMatchScoreboard', () => {
     fixture = TestBed.createComponent(LiveMatchScoreboard);
     component = fixture.componentInstance;
     fixture.componentRef.setInput('match', match);
+    fixture.componentRef.setInput('visibleClockRemainingSeconds', 480);
     await fixture.whenStable();
   });
 

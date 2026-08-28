@@ -1,5 +1,5 @@
 import { AsyncPipe, DatePipe } from '@angular/common';
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -8,7 +8,7 @@ import { filter, map } from 'rxjs';
 import { LiveMatchBoxScore } from '../live-match-box-score/live-match-box-score';
 import { LiveMatchScoreboard } from '../live-match-scoreboard/live-match-scoreboard';
 import { LiveMatchTabs, type LiveMatchPanel } from '../live-match-tabs/live-match-tabs';
-import type { MatchEvent, MatchEventType } from '../match.models';
+import type { MatchEvent, MatchEventType, MatchReadBundle } from '../match.models';
 import { LiveMatchActions, selectLiveMatchView } from '../store';
 
 const matchEventTypeLabels: Record<MatchEventType, string> = {
@@ -39,9 +39,13 @@ export class LiveMatch {
 
   protected readonly activePanel = 'events' as LiveMatchPanel;
   protected selectedPanel: LiveMatchPanel = this.activePanel;
+  protected readonly clockTick = signal(Date.now());
   protected readonly state$ = this.store.select(selectLiveMatchView);
 
   constructor() {
+    const clockIntervalId = window.setInterval(() => this.clockTick.set(Date.now()), 1000);
+    this.destroyRef.onDestroy(() => window.clearInterval(clockIntervalId));
+
     this.route.paramMap.pipe(
       map((params) => params.get('id')),
       filter((id): id is string => Boolean(id)),
@@ -58,6 +62,24 @@ export class LiveMatch {
 
   protected eventClockTime(seconds: number | null): string {
     return seconds === null ? '--:--' : this.clockTime(seconds);
+  }
+
+  protected visibleClockSeconds(bundle: MatchReadBundle): number {
+    const match = bundle.match;
+
+    if (match.clockStatus !== 'RUNNING' || !match.clockLastStartedAt || !bundle.serverTime) {
+      return Math.max(0, match.clockRemainingSeconds);
+    }
+
+    const clockLastStartedAt = Date.parse(match.clockLastStartedAt);
+    if (Number.isNaN(clockLastStartedAt)) {
+      return Math.max(0, match.clockRemainingSeconds);
+    }
+
+    const serverNow = this.clockTick() + bundle.serverOffsetMs;
+    const elapsedSeconds = Math.floor((serverNow - clockLastStartedAt) / 1000);
+
+    return Math.max(0, match.clockRemainingSeconds - elapsedSeconds);
   }
 
   protected eventTypeLabel(type: MatchEventType): string {

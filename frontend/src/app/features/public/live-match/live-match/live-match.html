@@ -8,7 +8,8 @@
   <p class="surface-message error">Meč trenutno nije dostupan.</p>
   }
   @case ('loaded') {
-  <app-live-match-scoreboard [match]="state.bundle.match" />
+  <app-live-match-scoreboard [match]="state.bundle.match"
+    [visibleClockRemainingSeconds]="visibleClockSeconds(state.bundle)" />
 
   <section class="match-meta" aria-label="Detalji meča">
     <article>
