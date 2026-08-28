@@ -13,7 +13,7 @@ export const loadLiveMatch = createEffect(
         matchesApi.getMatchReadBundle(matchId).pipe(
           switchMap((bundle) =>
             matchesApi.watchLiveMatch(matchId).pipe(
-              map((message) => LiveMatchActions.liveMessageReceived({ matchId, message })),
+              map((message) => LiveMatchActions.liveMessageReceived({ matchId, message, receivedAt: Date.now() })),
               startWith(LiveMatchActions.loadSucceeded({ matchId, bundle })),
               catchError(() => EMPTY),
             ),

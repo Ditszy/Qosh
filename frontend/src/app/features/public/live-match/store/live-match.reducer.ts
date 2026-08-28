@@ -69,7 +69,7 @@ export const liveMatchReducer = createReducer(
     selectedMatchId: matchId,
     view: { status: 'error' },
   })),
-  on(LiveMatchActions.liveMessageReceived, (state, { matchId, message }) => {
+  on(LiveMatchActions.liveMessageReceived, (state, { matchId, message, receivedAt }) => {
     if (state.selectedMatchId !== matchId || state.view.status !== 'loaded') {
       return state;
     }
@@ -78,19 +78,21 @@ export const liveMatchReducer = createReducer(
       ...state,
       view: {
         status: 'loaded',
-        bundle: mergeLiveBundle(state.view.bundle, message),
+        bundle: mergeLiveBundle(state.view.bundle, message, receivedAt),
       },
     };
   }),
 );
 
-function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessage): MatchReadBundle {
+function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessage, receivedAt: number): MatchReadBundle {
   switch (message.type) {
     case 'match.snapshot':
       return {
         ...bundle,
         match: message.data.match,
         events: message.data.events,
+        serverTime: message.data.serverTime,
+        serverOffsetMs: toServerOffsetMs(message.data.serverTime, receivedAt),
       };
     case 'match.clock':
       return {
@@ -104,6 +106,8 @@ function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessag
           clockLastStartedAt: message.data.clockLastStartedAt,
           updatedAt: message.data.updatedAt,
         },
+        serverTime: message.data.serverTime,
+        serverOffsetMs: toServerOffsetMs(message.data.serverTime, receivedAt),
       };
     case 'match.score':
       return {
@@ -134,7 +138,7 @@ function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessag
       };
     case 'match.finalized':
       return {
-        ...mergeLiveBundle(bundle, { ...message, type: 'match.score' }),
+        ...mergeLiveBundle(bundle, { ...message, type: 'match.score' }, receivedAt),
         match: {
           ...bundle.match,
           status: message.data.status,
@@ -146,10 +150,18 @@ function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessag
           teamBScore: message.data.teamBScore,
           updatedAt: message.data.updatedAt,
         },
+        serverTime: message.data.serverTime,
+        serverOffsetMs: toServerOffsetMs(message.data.serverTime, receivedAt),
       };
     default:
       return bundle;
   }
+}
+
+function toServerOffsetMs(serverTime: string, receivedAt: number): number {
+  const parsedServerTime = Date.parse(serverTime);
+
+  return Number.isNaN(parsedServerTime) ? 0 : parsedServerTime - receivedAt;
 }
 
 function applyEventToStatistics(statistics: MatchStatistics, event: MatchEvent): MatchStatistics {

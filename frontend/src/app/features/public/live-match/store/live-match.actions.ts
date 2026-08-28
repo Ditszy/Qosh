@@ -8,6 +8,6 @@ export const LiveMatchActions = createActionGroup({
     Load: props<{ matchId: string }>(),
     'Load Succeeded': props<{ matchId: string; bundle: MatchReadBundle }>(),
     'Load Failed': props<{ matchId: string }>(),
-    'Live Message Received': props<{ matchId: string; message: MatchLiveStreamMessage }>(),
+    'Live Message Received': props<{ matchId: string; message: MatchLiveStreamMessage; receivedAt: number }>(),
   },
 });
