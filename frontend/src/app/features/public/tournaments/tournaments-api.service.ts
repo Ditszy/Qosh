@@ -4,7 +4,14 @@ import { Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../../core/api';
 import { LiveStreamService } from '../../../core/live/live-stream.service';
-import type { PaginatedTournaments, Tournament, TournamentListQuery, TournamentLiveMessage, TournamentMatch } from './tournament.models';
+import type {
+  PaginatedTournaments,
+  Tournament,
+  TournamentListQuery,
+  TournamentLiveMessage,
+  TournamentMatch,
+  TournamentTeamDetail,
+} from './tournament.models';
 
 @Injectable({
   providedIn: 'root',
@@ -30,6 +37,10 @@ export class TournamentsApiService {
 
   listTournamentMatches(tournamentId: string): Observable<TournamentMatch[]> {
     return this.http.get<TournamentMatch[]>(this.apiUrl.build(`/tournaments/${tournamentId}/matches`));
+  }
+
+  listTournamentTeams(tournamentId: string): Observable<TournamentTeamDetail[]> {
+    return this.http.get<TournamentTeamDetail[]>(this.apiUrl.build(`/teams/tournament/${tournamentId}`));
   }
 
   watchTournamentLive(tournamentId: string): Observable<TournamentLiveMessage> {

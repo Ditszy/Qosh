@@ -25,8 +25,11 @@ export const loadOrganizerDashboard = createEffect(
 
             return forkJoin(
               active.map((tournament) =>
-                tournamentsApi.listTournamentMatches(tournament.id).pipe(
-                  map((matches) => ({ ...tournament, matches })),
+                forkJoin({
+                  matches: tournamentsApi.listTournamentMatches(tournament.id),
+                  teams: tournamentsApi.listTournamentTeams(tournament.id),
+                }).pipe(
+                  map(({ matches, teams }) => ({ ...tournament, matches, teams })),
                 ),
               ),
             ).pipe(

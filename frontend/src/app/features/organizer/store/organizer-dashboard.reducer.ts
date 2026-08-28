@@ -1,12 +1,13 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { Tournament, TournamentMatch } from '../../public/tournaments/tournament.models';
+import type { Tournament, TournamentMatch, TournamentTeamDetail } from '../../public/tournaments/tournament.models';
 import { OrganizerDashboardActions } from './organizer-dashboard.actions';
 
 export const organizerDashboardFeatureKey = 'organizerDashboard';
 
 export type OrganizerTournamentWithMatches = Tournament & {
   matches: TournamentMatch[];
+  teams: TournamentTeamDetail[];
 };
 
 export type OrganizerDashboardViewState =
