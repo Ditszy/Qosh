@@ -51,6 +51,8 @@ pids
 *.pid
 *.seed
 *.pid.lock
+/uploads/profile-images/*
+!/uploads/profile-images/default.jpg
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
