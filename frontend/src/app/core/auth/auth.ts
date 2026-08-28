@@ -15,6 +15,7 @@ export type AuthUser = {
   firstName: string;
   lastName: string;
   role: UserRole;
+  profileImageUrl: string | null;
 };
 
 export type LoginRequest = {
@@ -87,6 +88,15 @@ export class AuthService {
 
   updateMyProfile(payload: UpdateMyProfileRequest) {
     return this.http.patch<AuthUser>(this.apiUrl.build('/users/me/profile'), payload).pipe(
+      tap((user) => this.store.dispatch(AuthActions.currentUserUpdated({ user }))),
+    );
+  }
+
+  uploadMyProfileImage(file: File) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    return this.http.patch<AuthUser>(this.apiUrl.build('/users/me/profile-image'), formData).pipe(
       tap((user) => this.store.dispatch(AuthActions.currentUserUpdated({ user }))),
     );
   }

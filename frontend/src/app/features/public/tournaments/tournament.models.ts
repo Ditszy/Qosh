@@ -15,6 +15,7 @@ export type PublicUser = {
   firstName: string;
   lastName: string;
   role: UserRole;
+  profileImageUrl: string | null;
 };
 
 export type Tournament = {
