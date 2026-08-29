@@ -262,7 +262,7 @@ export class UsersService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        this.assertPlayerSelfService(user);
+        this.assertActiveSelfService(user);
 
         return this.prisma.user.update({
             where: { id },
@@ -279,7 +279,7 @@ export class UsersService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        this.assertPlayerSelfService(user);
+        this.assertActiveSelfService(user);
 
         const updatedUser = await this.prisma.user.update({
             where: { id },
@@ -297,7 +297,7 @@ export class UsersService {
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        this.assertPlayerSelfService(user);
+        this.assertActiveSelfService(user);
 
         const isMatch = await bcrypt.compare(changeMyPasswordDto.oldPassword, user.password);
         if (!isMatch) {
@@ -371,9 +371,9 @@ export class UsersService {
         }
     }
 
-    private assertPlayerSelfService(user: Pick<SessionUser, 'role' | 'isActive'>): void {
-        if (!user.isActive || user.role !== UserRole.PLAYER) {
-            throw new ForbiddenException('Only active player accounts can update player profile settings');
+    private assertActiveSelfService(user: Pick<SessionUser, 'isActive'>): void {
+        if (!user.isActive) {
+            throw new ForbiddenException('Only active accounts can update profile settings');
         }
     }
 }

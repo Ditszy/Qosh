@@ -20,6 +20,41 @@ type AuthenticatedRequest = {
 
 @ApiTags('users')
 @ApiBearerAuth()
+@Controller('users')
+@UseGuards(JwtAuthGuard)
+export class UserSelfController {
+    constructor(private readonly usersService: UsersService) { }
+
+    @Patch('me/profile')
+    updateMyProfile(@Body() updateMyProfileDto: UpdateMyProfileDto, @Request() req: AuthenticatedRequest) {
+        return this.usersService.updateMyProfile(req.user.id, updateMyProfileDto);
+    }
+
+    @Patch('me/profile-image')
+    @UseInterceptors(FileInterceptor('image', profileImageUploadOptions))
+    async updateMyProfileImage(@UploadedFile() file: ProfileImageUploadFile | undefined, @Request() req: AuthenticatedRequest) {
+        if (!file) {
+            throw new BadRequestException('Image file is required');
+        }
+
+        const profileImageUrl = await saveProfileImageFile(file);
+
+        try {
+            return await this.usersService.updateMyProfileImage(req.user.id, profileImageUrl);
+        } catch (error) {
+            await deleteProfileImageFile(profileImageUrl);
+            throw error;
+        }
+    }
+
+    @Patch('me/password')
+    changeMyPassword(@Body() changeMyPasswordDto: ChangeMyPasswordDto, @Request() req: AuthenticatedRequest) {
+        return this.usersService.changeMyPassword(req.user.id, changeMyPasswordDto);
+    }
+}
+
+@ApiTags('users')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @Controller('users')
@@ -46,36 +81,6 @@ export class UserController {
     @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
     findOfficials(@Query('q') query = '', @Query('role') role?: UserRole) {
         return this.usersService.findOfficials(query, role);
-    }
-
-    @Patch('me/profile')
-    @Roles(UserRole.PLAYER)
-    updateMyProfile(@Body() updateMyProfileDto: UpdateMyProfileDto, @Request() req: AuthenticatedRequest) {
-        return this.usersService.updateMyProfile(req.user.id, updateMyProfileDto);
-    }
-
-    @Patch('me/profile-image')
-    @Roles(UserRole.PLAYER)
-    @UseInterceptors(FileInterceptor('image', profileImageUploadOptions))
-    async updateMyProfileImage(@UploadedFile() file: ProfileImageUploadFile | undefined, @Request() req: AuthenticatedRequest) {
-        if (!file) {
-            throw new BadRequestException('Image file is required');
-        }
-
-        const profileImageUrl = await saveProfileImageFile(file);
-
-        try {
-            return await this.usersService.updateMyProfileImage(req.user.id, profileImageUrl);
-        } catch (error) {
-            await deleteProfileImageFile(profileImageUrl);
-            throw error;
-        }
-    }
-
-    @Patch('me/password')
-    @Roles(UserRole.PLAYER)
-    changeMyPassword(@Body() changeMyPasswordDto: ChangeMyPasswordDto, @Request() req: AuthenticatedRequest) {
-        return this.usersService.changeMyPassword(req.user.id, changeMyPasswordDto);
     }
 
     @Get(':id')
