@@ -11,6 +11,7 @@ import { PlayerProfilePreviousMatches } from './player-profile-previous-matches/
 import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
 import { StatisticsApiService } from '../statistics-api.service';
 import type { PlayerProfile as PlayerProfileModel, PlayerRecentMatchStatistic } from '../statistics.models';
+import { PlayerProfileSummary } from "./player-profile-summary/player-profile-summary";
 
 type PlayerProfileState =
   | { status: 'loading' }
@@ -19,7 +20,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings],
+  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings, PlayerProfileSummary],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })
@@ -51,9 +52,6 @@ export class PlayerProfile {
     ),
   );
 
-  protected percentageValue(value: number | null): string {
-    return value === null ? '-' : `${value}%`;
-  }
 
   protected bestMatch(matches: PlayerRecentMatchStatistic[]): PlayerRecentMatchStatistic | null {
     return [...matches].sort(

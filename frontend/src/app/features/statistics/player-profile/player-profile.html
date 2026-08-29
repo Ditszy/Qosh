@@ -23,73 +23,7 @@
     }
   </header>
 
-  <section class="profile-summary" aria-label="Ukupna statistika">
-    <article>
-      <span>Utakmice</span>
-      <strong>{{ state.profile.totals.gamesPlayed }}</strong>
-      <small>Odigrano</small>
-    </article>
-
-    <article>
-      <span>Poeni</span>
-      <strong>{{ state.profile.totals.points }}</strong>
-      <small>{{ state.profile.totals.pointsPerGame }} PPG</small>
-    </article>
-
-    <article>
-      <span>1P%</span>
-      <strong>{{ percentageValue(state.profile.totals.onePointPercentage) }}</strong>
-      <small>{{ state.profile.totals.onePointMade }}/{{ state.profile.totals.onePointAttempted }}</small>
-    </article>
-
-    <article>
-      <span>2P%</span>
-      <strong>{{ percentageValue(state.profile.totals.twoPointPercentage) }}</strong>
-      <small>{{ state.profile.totals.twoPointMade }}/{{ state.profile.totals.twoPointAttempted }}</small>
-    </article>
-
-    <article>
-      <span>FT%</span>
-      <strong>{{ percentageValue(state.profile.totals.freeThrowPercentage) }}</strong>
-      <small>{{ state.profile.totals.freeThrowMade }}/{{ state.profile.totals.freeThrowAttempted }}</small>
-    </article>
-
-    <article>
-      <span>Skokovi</span>
-      <strong>{{ state.profile.totals.rebounds }}</strong>
-      <small>{{ state.profile.totals.reboundsPerGame }} RPG</small>
-    </article>
-
-    <article>
-      <span>Asistencije</span>
-      <strong>{{ state.profile.totals.assists }}</strong>
-      <small>{{ state.profile.totals.assistsPerGame }} APG</small>
-    </article>
-
-    <article>
-      <span>Ukradene</span>
-      <strong>{{ state.profile.totals.steals }}</strong>
-      <small>{{ state.profile.totals.stealsPerGame }} SPG</small>
-    </article>
-
-    <article>
-      <span>Blokade</span>
-      <strong>{{ state.profile.totals.blocks }}</strong>
-      <small>{{ state.profile.totals.blocksPerGame }} BPG</small>
-    </article>
-
-    <article>
-      <span>Izgubljene</span>
-      <strong>{{ state.profile.totals.turnovers }}</strong>
-      <small>{{ state.profile.totals.turnoversPerGame }} TPG</small>
-    </article>
-
-    <article>
-      <span>Faulovi</span>
-      <strong>{{ state.profile.totals.fouls }}</strong>
-      <small>{{ state.profile.totals.foulsPerGame }} FPG</small>
-    </article>
-  </section>
+  <app-player-profile-summary [stats]="state.profile.totals"></app-player-profile-summary>
 
   <section class="profile-details" aria-label="Detaljna statistika">
     <article>

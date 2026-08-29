@@ -1,1 +1,67 @@
-<p>player-profile-summary works!</p>
+<section class="profile-summary" aria-label="Ukupna statistika">
+    <article>
+        <span>Utakmice</span>
+        <strong>{{ stats().gamesPlayed }}</strong>
+        <small>Odigrano</small>
+    </article>
+
+    <article>
+        <span>Poeni</span>
+        <strong>{{ stats().points }}</strong>
+        <small>{{ stats().pointsPerGame }} PPG</small>
+    </article>
+
+    <article>
+        <span>1P%</span>
+        <strong>{{ percentageValue(stats().onePointPercentage) }}</strong>
+        <small>{{ stats().onePointMade }}/{{ stats().onePointAttempted }}</small>
+    </article>
+
+    <article>
+        <span>2P%</span>
+        <strong>{{ percentageValue(stats().twoPointPercentage) }}</strong>
+        <small>{{ stats().twoPointMade }}/{{ stats().twoPointAttempted }}</small>
+    </article>
+
+    <article>
+        <span>FT%</span>
+        <strong>{{ percentageValue(stats().freeThrowPercentage) }}</strong>
+        <small>{{ stats().freeThrowMade }}/{{ stats().freeThrowAttempted }}</small>
+    </article>
+
+    <article>
+        <span>Skokovi</span>
+        <strong>{{ stats().rebounds }}</strong>
+        <small>{{ stats().reboundsPerGame }} RPG</small>
+    </article>
+
+    <article>
+        <span>Asistencije</span>
+        <strong>{{ stats().assists }}</strong>
+        <small>{{ stats().assistsPerGame }} APG</small>
+    </article>
+
+    <article>
+        <span>Ukradene</span>
+        <strong>{{ stats().steals }}</strong>
+        <small>{{ stats().stealsPerGame }} SPG</small>
+    </article>
+
+    <article>
+        <span>Blokade</span>
+        <strong>{{ stats().blocks }}</strong>
+        <small>{{ stats().blocksPerGame }} BPG</small>
+    </article>
+
+    <article>
+        <span>Izgubljene</span>
+        <strong>{{ stats().turnovers }}</strong>
+        <small>{{ stats().turnoversPerGame }} TPG</small>
+    </article>
+
+    <article>
+        <span>Faulovi</span>
+        <strong>{{ stats().fouls }}</strong>
+        <small>{{ stats().foulsPerGame }} FPG</small>
+    </article>
+</section>
