@@ -116,9 +116,8 @@ export class PlayerProfile {
     });
   }
 
-  protected isPlayer(): boolean {
-    const user = this.currentUser();
-    return user?.role === "PLAYER" ? true : false;
+  protected isPlayer(profile: PlayerProfileModel): boolean {
+    return profile.user.role === 'PLAYER';
   }
 
   private passwordErrorMessage(error: unknown): string {

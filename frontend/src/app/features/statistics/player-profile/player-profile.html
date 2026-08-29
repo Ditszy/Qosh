@@ -18,19 +18,21 @@
     </div>
     @if (canManageProfile(state.profile)) {
     <button type="button" class="settings-button" (click)="openSettings()">
-      Podešavanja%
+      Podešavanja
     </button>
     }
   </header>
 
-  @if (isPlayer()) {
+  @if (isPlayer(state.profile)) {
   <app-player-profile-summary [stats]="state.profile.totals"></app-player-profile-summary>
   <app-player-profile-details [matches]="state.profile.previousMatches"></app-player-profile-details>
 
   <app-player-profile-previous-matches [matches]="state.profile.previousMatches" />
   }
   @else{
-
+  <p class="surface-message">
+    Ovaj korisnik je deo osoblja turnira. Takmičarska statistika se prikazuje samo za igrače.
+  </p>
   }
 
   @if (settingsOpen()) {
