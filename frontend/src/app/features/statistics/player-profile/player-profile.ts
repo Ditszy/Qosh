@@ -12,6 +12,7 @@ import { PlayerProfileSettings } from './player-profile-settings/player-profile-
 import { StatisticsApiService } from '../statistics-api.service';
 import type { PlayerProfile as PlayerProfileModel, PlayerRecentMatchStatistic } from '../statistics.models';
 import { PlayerProfileSummary } from "./player-profile-summary/player-profile-summary";
+import { PlayerProfileDetails } from "./player-profile-details/player-profile-details";
 
 type PlayerProfileState =
   | { status: 'loading' }
@@ -20,7 +21,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings, PlayerProfileSummary],
+  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings, PlayerProfileSummary, PlayerProfileDetails],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })
@@ -51,16 +52,6 @@ export class PlayerProfile {
       ),
     ),
   );
-
-
-  protected bestMatch(matches: PlayerRecentMatchStatistic[]): PlayerRecentMatchStatistic | null {
-    return [...matches].sort(
-      (first, second) =>
-        second.points - first.points ||
-        second.rebounds - first.rebounds ||
-        second.assists - first.assists,
-    )[0] ?? null;
-  }
 
   protected canManageProfile(profile: PlayerProfileModel): boolean {
     const user = this.currentUser();

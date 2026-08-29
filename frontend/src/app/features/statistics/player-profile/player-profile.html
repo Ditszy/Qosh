@@ -24,46 +24,9 @@
   </header>
 
   <app-player-profile-summary [stats]="state.profile.totals"></app-player-profile-summary>
+  <app-player-profile-details [matches]="state.profile.previousMatches"></app-player-profile-details>
 
-  <section class="profile-details" aria-label="Detaljna statistika">
-    <article>
-      <h3>Najbolja utakmica</h3>
-      @if (bestMatch(state.profile.previousMatches); as bestMatch) {
-      <div class="best-match-card">
-        <p>
-          <span>Protiv</span>
-          <strong>{{ bestMatch.opponentTeam?.name ?? 'TBD' }}</strong>
-        </p>
-        <p>
-          <span>Turnir</span>
-          <strong>{{ bestMatch.match.tournament.name }}</strong>
-        </p>
-        @if (bestMatch.match.scheduledAt) {
-        <time>{{ bestMatch.match.scheduledAt | date: 'shortDate' }}</time>
-        }
-        <dl class="best-match-stats">
-          <div>
-            <dt>PTS</dt>
-            <dd>{{ bestMatch.points }}</dd>
-          </div>
-          <div>
-            <dt>REB</dt>
-            <dd>{{ bestMatch.rebounds }}</dd>
-          </div>
-          <div>
-            <dt>AST</dt>
-            <dd>{{ bestMatch.assists }}</dd>
-          </div>
-        </dl>
-        <a class="best-match-link" [routerLink]="['/matches', bestMatch.match.id, 'live']">Otvori meč</a>
-      </div>
-      } @else {
-      <p>Nema zabeleženih utakmica.</p>
-      }
-    </article>
-
-    <app-player-profile-efficiency-chart [matches]="state.profile.previousMatches" />
-  </section>
+  <app-player-profile-efficiency-chart [matches]="state.profile.previousMatches" />
 
   <app-player-profile-previous-matches [matches]="state.profile.previousMatches" />
 
