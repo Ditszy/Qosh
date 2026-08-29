@@ -1,4 +1,4 @@
-<section class="player-profile-page" aria-label="Profil igrača">
+<section class="player-profile-page" aria-label="Profil korisnika">
   @if (state$ | async; as state) {
   @switch (state.status) {
   @case ('loading') {
@@ -12,7 +12,7 @@
     <div class="profile-identity">
       <app-player-profile-avatar [imageUrl]="state.profile.user.profileImageUrl"
         [alt]="'Profilna slika ' + state.profile.user.firstName + ' ' + state.profile.user.lastName" />
-      <p class="eyebrow">Profil igrača</p>
+      <p class="eyebrow">Profil korisnika</p>
       <h2>{{ state.profile.user.firstName }} {{ state.profile.user.lastName }}</h2>
       <p>{{ state.profile.user.username }}</p>
     </div>

@@ -67,7 +67,7 @@ export class PlayerProfile {
   protected canManageProfile(profile: PlayerProfileModel): boolean {
     const user = this.currentUser();
 
-    return user?.role === 'PLAYER' && user.id === profile.user.id;
+    return user?.id === profile.user.id;
   }
 
   protected openSettings(): void {
