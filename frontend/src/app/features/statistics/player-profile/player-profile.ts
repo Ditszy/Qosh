@@ -116,6 +116,11 @@ export class PlayerProfile {
     });
   }
 
+  protected isPlayer(): boolean {
+    const user = this.currentUser();
+    return user?.role === "PLAYER" ? true : false;
+  }
+
   private passwordErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse && error.status === 400) {
       return 'Stara lozinka nije tačna.';

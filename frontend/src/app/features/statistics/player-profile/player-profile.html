@@ -18,15 +18,20 @@
     </div>
     @if (canManageProfile(state.profile)) {
     <button type="button" class="settings-button" (click)="openSettings()">
-      Podešavanja
+      Podešavanja%
     </button>
     }
   </header>
 
+  @if (isPlayer()) {
   <app-player-profile-summary [stats]="state.profile.totals"></app-player-profile-summary>
   <app-player-profile-details [matches]="state.profile.previousMatches"></app-player-profile-details>
 
   <app-player-profile-previous-matches [matches]="state.profile.previousMatches" />
+  }
+  @else{
+
+  }
 
   @if (settingsOpen()) {
   <app-player-profile-settings [profile]="state.profile" [savingName]="savingName()" [savingPassword]="savingPassword()"
