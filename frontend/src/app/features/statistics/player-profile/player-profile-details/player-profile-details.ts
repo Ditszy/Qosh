@@ -2,10 +2,11 @@ import { DatePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlayerRecentMatchStatistic } from '../../statistics.models';
+import { PlayerProfileEfficiencyChart } from '../player-profile-efficiency-chart/player-profile-efficiency-chart';
 
 @Component({
   selector: 'app-player-profile-details',
-  imports: [RouterLink, DatePipe],
+  imports: [RouterLink, DatePipe, PlayerProfileEfficiencyChart],
   templateUrl: './player-profile-details.html',
   styleUrl: './player-profile-details.scss',
 })

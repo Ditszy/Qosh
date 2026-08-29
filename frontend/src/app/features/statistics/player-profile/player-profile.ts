@@ -6,11 +6,10 @@ import { Subject, catchError, combineLatest, filter, map, of, startWith, switchM
 
 import { AuthService, ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../core/auth/auth';
 import { PlayerProfileAvatar } from './player-profile-avatar/player-profile-avatar';
-import { PlayerProfileEfficiencyChart } from './player-profile-efficiency-chart/player-profile-efficiency-chart';
 import { PlayerProfilePreviousMatches } from './player-profile-previous-matches/player-profile-previous-matches';
 import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
 import { StatisticsApiService } from '../statistics-api.service';
-import type { PlayerProfile as PlayerProfileModel, PlayerRecentMatchStatistic } from '../statistics.models';
+import type { PlayerProfile as PlayerProfileModel } from '../statistics.models';
 import { PlayerProfileSummary } from "./player-profile-summary/player-profile-summary";
 import { PlayerProfileDetails } from "./player-profile-details/player-profile-details";
 
@@ -21,7 +20,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings, PlayerProfileSummary, PlayerProfileDetails],
+  imports: [AsyncPipe, PlayerProfileAvatar, PlayerProfilePreviousMatches, PlayerProfileSettings, PlayerProfileSummary, PlayerProfileDetails],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })
