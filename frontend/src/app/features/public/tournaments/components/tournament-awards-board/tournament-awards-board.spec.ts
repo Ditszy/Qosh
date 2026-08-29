@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TournamentAwardsBoard } from './tournament-awards-board';
-import type { TournamentAward } from '../../../statistics/statistics.models';
+import type { TournamentAward } from '../../../../statistics/statistics.models';
 
 describe('TournamentAwardsBoard', () => {
   let component: TournamentAwardsBoard;

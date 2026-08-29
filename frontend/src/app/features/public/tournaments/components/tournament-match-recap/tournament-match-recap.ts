@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { MatchRecap, MatchRecapHighlightKey } from '../../live-match/match.models';
+import type { MatchRecap, MatchRecapHighlightKey } from '../../../live-match/match.models';
 
 const highlightLabels: Record<MatchRecapHighlightKey, string> = {
   TOP_SCORER: 'Najbolji strelac',

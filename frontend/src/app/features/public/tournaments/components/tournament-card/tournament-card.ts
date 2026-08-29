@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 
-import type { Tournament, TournamentStatus } from '../tournament.models';
+import type { Tournament, TournamentStatus } from '../../tournament.models';
 
 const statusLabels: Record<TournamentStatus, string> = {
   DRAFT: 'U pripremi',

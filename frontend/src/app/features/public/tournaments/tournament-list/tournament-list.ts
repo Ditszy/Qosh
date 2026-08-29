@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 
 import type { TournamentStatus } from '../tournament.models';
 import { selectTournamentListView, TournamentListViewState, TournamentsActions } from '../store';
-import { TournamentCard } from '../tournament-card/tournament-card';
+import { TournamentCard } from '../components/tournament-card/tournament-card';
 
 type TournamentSort = 'startsAt:asc' | 'startsAt:desc' | 'name:asc';
 

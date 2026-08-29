@@ -8,9 +8,9 @@ import { distinctUntilChanged, filter, finalize, map } from 'rxjs';
 
 import { AuthService } from '../../../../core/auth/auth';
 import { TeamsApiService } from '../../../player/teams-api.service';
-import { TournamentAwardsBoard } from '../tournament-awards-board/tournament-awards-board';
-import { TournamentBracket } from '../tournament-bracket/tournament-bracket';
-import { TournamentMatchRecap } from '../tournament-match-recap/tournament-match-recap';
+import { TournamentAwardsBoard } from '../components/tournament-awards-board/tournament-awards-board';
+import { TournamentBracket } from '../components/tournament-bracket/tournament-bracket';
+import { TournamentMatchRecap } from '../components/tournament-match-recap/tournament-match-recap';
 import type {
   Tournament,
   TournamentMatch,

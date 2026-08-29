@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { TournamentMatch } from '../tournament.models';
+import type { TournamentMatch } from '../../tournament.models';
 
 type BracketRound = { round: number; matches: TournamentMatch[] };
 type BracketLayout = {

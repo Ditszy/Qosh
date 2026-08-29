@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { StatisticsTeamSummary, TournamentAward } from '../../../statistics/statistics.models';
+import type { StatisticsTeamSummary, TournamentAward } from '../../../../statistics/statistics.models';
 
 @Component({
   selector: 'app-tournament-awards-board',

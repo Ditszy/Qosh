@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import type { Tournament } from '../tournament.models';
+import type { Tournament } from '../../tournament.models';
 import { TournamentCard } from './tournament-card';
 
 describe('TournamentCard', () => {

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TournamentBracket } from './tournament-bracket';
-import type { TournamentMatch } from '../tournament.models';
+import type { TournamentMatch } from '../../tournament.models';
 
 describe('TournamentBracket', () => {
   let component: TournamentBracket;
