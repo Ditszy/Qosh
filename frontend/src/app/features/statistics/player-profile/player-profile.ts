@@ -1,6 +1,6 @@
-import { AsyncPipe, DatePipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, catchError, combineLatest, filter, map, of, startWith, switchMap } from 'rxjs';
 
@@ -21,7 +21,7 @@ type PlayerProfileState =
 
 @Component({
   selector: 'app-player-profile',
-  imports: [AsyncPipe, DatePipe, RouterLink, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings, PlayerProfileSummary, PlayerProfileDetails],
+  imports: [AsyncPipe, PlayerProfileAvatar, PlayerProfileEfficiencyChart, PlayerProfilePreviousMatches, PlayerProfileSettings, PlayerProfileSummary, PlayerProfileDetails],
   templateUrl: './player-profile.html',
   styleUrl: './player-profile.scss',
 })

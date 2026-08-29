@@ -1,13 +1,10 @@
-.profile-summary,
-.profile-details {
+.profile-summary {
   display: grid;
   gap: 12px;
 }
 
 .profile-summary { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
-.profile-details { grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); }
-.profile-summary article,
-.profile-details article {
+.profile-summary article {
   border: 1px solid #2b303a;
   background: #101218;
   padding: 18px;
@@ -16,7 +13,6 @@
 
 .profile-summary span,
 .profile-summary small,
-.profile-details h3,
 dt {
   color: #9ca3af;
   font-size: 0.72rem;
