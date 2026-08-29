@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { catchError, map, Observable, of, startWith } from 'rxjs';
 
 import type { MatchLiveCenter as MatchLiveCenterData } from '../../live-match/match.models';
-import { MatchCard } from '../../live-match/match-card/match-card';
+import { MatchCard } from '../../live-match/components/match-card/match-card';
 import { MatchesApiService } from '../../live-match/matches-api.service';
 
 type LiveCenterState =

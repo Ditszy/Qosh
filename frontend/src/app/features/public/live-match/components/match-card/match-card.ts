@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 
-import type { MatchDetail } from '../match.models';
+import type { MatchDetail } from '../../match.models';
 
 export type MatchCardVariant = 'live' | 'scheduled';
 

@@ -1,8 +1,8 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import type { ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../../core/auth/auth';
-import type { PlayerProfile as PlayerProfileModel } from '../../statistics.models';
+import type { ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../../../core/auth/auth';
+import type { PlayerProfile as PlayerProfileModel } from '../../../statistics.models';
 
 const MAX_PROFILE_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PROFILE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

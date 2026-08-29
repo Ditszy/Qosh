@@ -4,19 +4,19 @@ import { Store } from '@ngrx/store';
 import { finalize } from 'rxjs';
 
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
-import { OrganizerCommandCenter } from '../organizer-command-center/organizer-command-center';
-import type { OrganizerMatchScheduleFormValue } from '../organizer-match-schedule-form/organizer-match-schedule-form';
+import { OrganizerCommandCenter } from '../components/organizer-command-center/organizer-command-center';
+import type { OrganizerMatchScheduleFormValue } from '../components/organizer-match-schedule-form/organizer-match-schedule-form';
 import {
   OrganizerTournamentCard,
   type OrganizerMatchScheduleRequest,
   type OrganizerRoundToggleRequest,
   type OrganizerSignupStatusRequest,
   type OrganizerTournamentUpdateRequest,
-} from '../organizer-tournament-card/organizer-tournament-card';
+} from '../components/organizer-tournament-card/organizer-tournament-card';
 import {
   OrganizerTournamentForm,
   type OrganizerTournamentFormValue,
-} from '../organizer-tournament-form/organizer-tournament-form';
+} from '../components/organizer-tournament-form/organizer-tournament-form';
 import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
 import type { TournamentMatch } from '../../public/tournaments/tournament.models';
 

@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { MatchStatistics } from '../../../statistics';
+import type { MatchStatistics } from '../../../../statistics';
 
 type BoxScoreSummary = {
   points: number;

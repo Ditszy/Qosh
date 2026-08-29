@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PlayerRecentMatchStatistic } from '../../statistics.models';
+import { PlayerRecentMatchStatistic } from '../../../statistics.models';
 import { PlayerProfileEfficiencyChart } from '../player-profile-efficiency-chart/player-profile-efficiency-chart';
 
 @Component({

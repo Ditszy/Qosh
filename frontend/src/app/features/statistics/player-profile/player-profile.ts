@@ -5,13 +5,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, catchError, combineLatest, filter, map, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService, ChangeMyPasswordRequest, UpdateMyProfileRequest } from '../../../core/auth/auth';
-import { PlayerProfileAvatar } from './player-profile-avatar/player-profile-avatar';
-import { PlayerProfilePreviousMatches } from './player-profile-previous-matches/player-profile-previous-matches';
-import { PlayerProfileSettings } from './player-profile-settings/player-profile-settings';
+import { PlayerProfileAvatar } from './components/player-profile-avatar/player-profile-avatar';
+import { PlayerProfilePreviousMatches } from './components/player-profile-previous-matches/player-profile-previous-matches';
+import { PlayerProfileSettings } from './components/player-profile-settings/player-profile-settings';
 import { StatisticsApiService } from '../statistics-api.service';
 import type { PlayerProfile as PlayerProfileModel } from '../statistics.models';
-import { PlayerProfileSummary } from "./player-profile-summary/player-profile-summary";
-import { PlayerProfileDetails } from "./player-profile-details/player-profile-details";
+import { PlayerProfileSummary } from './components/player-profile-summary/player-profile-summary';
+import { PlayerProfileDetails } from './components/player-profile-details/player-profile-details';
 
 type PlayerProfileState =
   | { status: 'loading' }

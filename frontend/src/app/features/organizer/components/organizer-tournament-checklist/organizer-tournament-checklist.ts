@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import type { OrganizerTournamentWithMatches } from '../store/organizer-dashboard.reducer';
+import type { OrganizerTournamentWithMatches } from '../../store/organizer-dashboard.reducer';
 
 type ChecklistStatus = 'done' | 'progress' | 'ready' | 'action' | 'blocked' | 'pending' | 'live';
 

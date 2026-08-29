@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import type { MatchDetail } from '../match.models';
+import type { MatchDetail } from '../../match.models';
 import { LiveMatchScoreboard } from './live-match-scoreboard';
 
 describe('LiveMatchScoreboard', () => {

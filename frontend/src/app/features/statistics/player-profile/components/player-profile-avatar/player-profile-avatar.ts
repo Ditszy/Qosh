@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 
-import { ApiUrlService } from '../../../../core/api';
+import { ApiUrlService } from '../../../../../core/api';
 
 @Component({
   selector: 'app-player-profile-avatar',

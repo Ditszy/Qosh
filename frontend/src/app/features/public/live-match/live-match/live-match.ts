@@ -5,9 +5,9 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { filter, map } from 'rxjs';
 
-import { LiveMatchBoxScore } from '../live-match-box-score/live-match-box-score';
-import { LiveMatchScoreboard } from '../live-match-scoreboard/live-match-scoreboard';
-import { LiveMatchTabs, type LiveMatchPanel } from '../live-match-tabs/live-match-tabs';
+import { LiveMatchBoxScore } from '../components/live-match-box-score/live-match-box-score';
+import { LiveMatchScoreboard } from '../components/live-match-scoreboard/live-match-scoreboard';
+import { LiveMatchTabs, type LiveMatchPanel } from '../components/live-match-tabs/live-match-tabs';
 import type { MatchEvent, MatchEventType, MatchReadBundle } from '../match.models';
 import { LiveMatchActions, selectLiveMatchView } from '../store';
 

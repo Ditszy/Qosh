@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import type { MatchDetail } from '../match.models';
+import type { MatchDetail } from '../../match.models';
 import { MatchCard } from './match-card';
 
 describe('MatchCard', () => {

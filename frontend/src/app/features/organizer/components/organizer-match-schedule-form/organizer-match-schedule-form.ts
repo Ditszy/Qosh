@@ -1,8 +1,8 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { FormsModule, type NgForm, type NgModel } from '@angular/forms';
 
-import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../officials-api.service';
-import type { TournamentMatch } from '../../public/tournaments/tournament.models';
+import { OfficialsApiService, type OfficialRole, type OfficialUser } from '../../officials-api.service';
+import type { TournamentMatch } from '../../../public/tournaments/tournament.models';
 
 type OfficialDisplayUser = Pick<OfficialUser, 'firstName' | 'lastName' | 'username'>;
 

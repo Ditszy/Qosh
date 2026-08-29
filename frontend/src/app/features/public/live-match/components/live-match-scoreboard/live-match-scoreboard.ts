@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 
-import type { MatchDetail } from '../match.models';
-import type { MatchClockStatus, MatchStatus } from '../../tournaments/tournament.models';
+import type { MatchDetail } from '../../match.models';
+import type { MatchClockStatus, MatchStatus } from '../../../tournaments/tournament.models';
 
 const matchStatusLabels: Record<MatchStatus, string> = {
   SCHEDULED: 'Zakazan',

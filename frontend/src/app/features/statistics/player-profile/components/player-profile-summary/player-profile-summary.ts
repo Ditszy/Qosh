@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { PlayerStatistic } from '../../statistics.models';
+import { PlayerStatistic } from '../../../statistics.models';
 
 @Component({
   selector: 'app-player-profile-summary',

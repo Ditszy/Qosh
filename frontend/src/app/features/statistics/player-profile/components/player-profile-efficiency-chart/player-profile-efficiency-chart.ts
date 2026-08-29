@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
-import type { PlayerRecentMatchStatistic } from '../../statistics.models';
+import type { PlayerRecentMatchStatistic } from '../../../statistics.models';
 
 type EfficiencyPoint = {
   label: string;

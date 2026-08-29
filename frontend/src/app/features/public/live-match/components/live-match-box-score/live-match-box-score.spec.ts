@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import type { MatchStatistics } from '../../../statistics';
+import type { MatchStatistics } from '../../../../statistics';
 import { LiveMatchBoxScore } from './live-match-box-score';
 
 describe('LiveMatchBoxScore', () => {

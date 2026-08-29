@@ -11,8 +11,8 @@ import {
   type OrganizerTournamentFormValue,
 } from '../organizer-tournament-form/organizer-tournament-form';
 import { OrganizerTournamentChecklist } from '../organizer-tournament-checklist/organizer-tournament-checklist';
-import type { OrganizerTournamentWithMatches } from '../store/organizer-dashboard.reducer';
-import type { TournamentMatch, TournamentStatus } from '../../public/tournaments/tournament.models';
+import type { OrganizerTournamentWithMatches } from '../../store/organizer-dashboard.reducer';
+import type { TournamentMatch, TournamentStatus } from '../../../public/tournaments/tournament.models';
 
 type MatchRoundGroup = {
   round: number;

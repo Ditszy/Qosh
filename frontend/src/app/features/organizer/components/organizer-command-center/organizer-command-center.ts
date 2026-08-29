@@ -2,8 +2,8 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { TournamentMatch } from '../../public/tournaments/tournament.models';
-import type { OrganizerTournamentWithMatches } from '../store/organizer-dashboard.reducer';
+import type { TournamentMatch } from '../../../public/tournaments/tournament.models';
+import type { OrganizerTournamentWithMatches } from '../../store/organizer-dashboard.reducer';
 
 type CommandMatch = {
   tournament: OrganizerTournamentWithMatches;

@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { PlayerRecentMatchStatistic } from '../../statistics.models';
+import type { PlayerRecentMatchStatistic } from '../../../statistics.models';
 
 @Component({
   selector: 'app-player-profile-previous-matches',
