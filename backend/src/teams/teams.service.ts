@@ -19,9 +19,11 @@ import { CreateTeamDto } from './dto/create-team.dto';
 import { SendTeamInviteDto } from './dto/send-team-invite.dto';
 import { TeamInviteStatus } from './team-invite-status.enum';
 import { TeamMemberRole } from './team-member-role.enum';
-import { teamInviteInclude, teamInviteWithTeamInclude } from './helpers/team-invite-include.helper';
-import { MAX_ROSTER_SIZE, inactiveTournamentStatuses, preStartTournamentStatuses } from './teams.constants';
-import { TeamsLiveService } from './teams-live.service';
+import { TeamAccessService } from './support/team-access.service';
+import { teamInviteInclude } from './support/team-invite-include.helper';
+import { MAX_ROSTER_SIZE } from './support/teams.constants';
+import { TeamsLiveService } from './support/teams-live.service';
+import { TeamsReadService } from './support/teams-read.service';
 import type {
     DisbandTeamResult,
     TeamActor,
@@ -30,7 +32,7 @@ import type {
     TeamInviteWithUsers,
     TeamWithMembers,
     TeamWithMembersAndTournament,
-} from './types/team.types';
+} from './support/team.types';
 
 @Injectable()
 export class TeamsService {
@@ -39,6 +41,8 @@ export class TeamsService {
         private readonly notificationsService: NotificationsService,
         private readonly tournamentLiveService: TournamentLiveService,
         private readonly teamsLiveService: TeamsLiveService,
+        private readonly teamsReadService: TeamsReadService,
+        private readonly teamAccessService: TeamAccessService,
     ) { }
 
     async create(createTeamDto: CreateTeamDto, captainId: string): Promise<TeamWithMembers> {
@@ -115,56 +119,11 @@ export class TeamsService {
     }
 
     async findByTournamentId(tournamentId: string): Promise<TeamWithMembers[]> {
-        const tournament = await this.prisma.tournament.findUnique({
-            where: { id: tournamentId },
-        });
-
-        if (!tournament) {
-            throw new NotFoundException('Tournament not found');
-        }
-
-        return this.prisma.team.findMany({
-            where: { tournamentId },
-            include: {
-                members: {
-                    include: {
-                        user: {
-                            select: publicUserSelect,
-                        },
-                    },
-                    orderBy: {
-                        joinedAt: 'asc',
-                    },
-                },
-            },
-            orderBy: {
-                createdAt: 'asc',
-            },
-        });
+        return this.teamsReadService.findByTournamentId(tournamentId);
     }
 
     async findById(id: string): Promise<TeamWithMembers> {
-        const team = await this.prisma.team.findUnique({
-            where: { id },
-            include: {
-                members: {
-                    include: {
-                        user: {
-                            select: publicUserSelect,
-                        },
-                    },
-                    orderBy: {
-                        joinedAt: 'asc',
-                    },
-                },
-            },
-        });
-
-        if (!team) {
-            throw new NotFoundException('Team not found');
-        }
-
-        return team;
+        return this.teamsReadService.findById(id);
     }
 
     async sendInvite(
@@ -184,8 +143,8 @@ export class TeamsService {
             throw new NotFoundException('Team not found');
         }
 
-        this.ensureSignupsOpen(team.tournament.status);
-        this.ensureCanManageTeam(team, actor);
+        this.teamAccessService.ensureSignupsOpen(team.tournament.status);
+        this.teamAccessService.ensureCanManageTeam(team, actor);
 
         if (team.members.length >= MAX_ROSTER_SIZE) {
             throw new BadRequestException('Team roster is already full');
@@ -280,7 +239,7 @@ export class TeamsService {
                 throw new BadRequestException('Invite is no longer pending');
             }
 
-            this.ensureSignupsOpen(freshInvite.team.tournament.status);
+            this.teamAccessService.ensureSignupsOpen(freshInvite.team.tournament.status);
 
             const rosterCount = await tx.teamMember.count({
                 where: { teamId: freshInvite.teamId },
@@ -363,7 +322,7 @@ export class TeamsService {
             throw new BadRequestException('Only pending invites can be cancelled');
         }
 
-        this.ensureCanManageTeam(invite.team, actor);
+        this.teamAccessService.ensureCanManageTeam(invite.team, actor);
 
         return this.prisma.teamInvite.update({
             where: { id: invite.id },
@@ -376,54 +335,11 @@ export class TeamsService {
     }
 
     async findMyPendingInvites(userId: string): Promise<TeamInviteWithTeam[]> {
-        return this.prisma.teamInvite.findMany({
-            where: {
-                invitedUserId: userId,
-                status: TeamInviteStatus.PENDING,
-                team: {
-                    tournament: {
-                        status: {
-                            notIn: inactiveTournamentStatuses,
-                        },
-                    },
-                },
-            },
-            include: teamInviteWithTeamInclude(),
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
+        return this.teamsReadService.findMyPendingInvites(userId);
     }
 
     async findMyTeams(userId: string): Promise<TeamWithMembersAndTournament[]> {
-        return this.prisma.team.findMany({
-            where: {
-                members: {
-                    some: { userId },
-                },
-                tournament: {
-                    status: {
-                        notIn: inactiveTournamentStatuses,
-                    },
-                },
-            },
-            include: {
-                tournament: true,
-                members: {
-                    include: {
-                        user: {
-                            select: publicUserSelect,
-                        },
-                    },
-                    orderBy: {
-                        joinedAt: 'asc',
-                    },
-                },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
+        return this.teamsReadService.findMyTeams(userId);
     }
 
     async disband(teamId: string, actor: TeamActor): Promise<DisbandTeamResult> {
@@ -439,7 +355,7 @@ export class TeamsService {
             throw new NotFoundException('Team not found');
         }
 
-        this.ensureCanDisbandTeam(team, actor);
+        this.teamAccessService.ensureCanDisbandTeam(team, actor);
 
         const generatedMatchCount = await this.prisma.match.count({
             where: { tournamentId: team.tournamentId },
@@ -476,7 +392,7 @@ export class TeamsService {
             throw new NotFoundException('Team not found');
         }
 
-        this.ensureSignupsOpen(team.tournament.status);
+        this.teamAccessService.ensureSignupsOpen(team.tournament.status);
 
         const membership = team.members.find((member) => member.userId === actor.id);
 
@@ -514,7 +430,7 @@ export class TeamsService {
             throw new NotFoundException('Team not found');
         }
 
-        this.ensureCanManageTeam(team, actor);
+        this.teamAccessService.ensureCanManageTeam(team, actor);
 
         return this.prisma.teamInvite.findMany({
             where: {
@@ -541,8 +457,8 @@ export class TeamsService {
             throw new NotFoundException('Team not found');
         }
 
-        this.ensureSignupsOpen(team.tournament.status);
-        this.ensureCanManageTeam(team, actor);
+        this.teamAccessService.ensureSignupsOpen(team.tournament.status);
+        this.teamAccessService.ensureCanManageTeam(team, actor);
 
         const member = team.members.find((teamMember) => teamMember.id === memberId);
 
@@ -581,8 +497,8 @@ export class TeamsService {
             throw new NotFoundException('Team not found');
         }
 
-        this.ensureSignupsOpen(team.tournament.status);
-        this.ensureCanManageTeam(team, actor);
+        this.teamAccessService.ensureSignupsOpen(team.tournament.status);
+        this.teamAccessService.ensureCanManageTeam(team, actor);
 
         const newCaptain = team.members.find((teamMember) => teamMember.id === memberId);
 
@@ -640,59 +556,6 @@ export class TeamsService {
         }
 
         return invite;
-    }
-
-    private ensureSignupsOpen(status: TournamentStatus): void {
-        if (status !== TournamentStatus.SIGNUPS_OPEN) {
-            throw new BadRequestException('Team roster changes are only available while signups are open');
-        }
-    }
-
-    private ensureTournamentBeforeStart(status: TournamentStatus): void {
-        if (!preStartTournamentStatuses.includes(status)) {
-            throw new BadRequestException('Teams can only be removed before tournament start');
-        }
-    }
-
-    private ensureCanDisbandTeam(
-        team: {
-            tournament: { organizerId: string; status: TournamentStatus };
-            members: Array<{ userId: string; role: TeamMemberRole }>;
-        },
-        actor: TeamActor,
-    ): void {
-        this.ensureTournamentBeforeStart(team.tournament.status);
-
-        if (actor.role === UserRole.ADMIN) {
-            return;
-        }
-
-        if (actor.role === UserRole.ORGANIZER && team.tournament.organizerId === actor.id) {
-            return;
-        }
-
-        if (team.tournament.status !== TournamentStatus.SIGNUPS_OPEN) {
-            throw new BadRequestException('Team captains can only disband teams while signups are open');
-        }
-
-        this.ensureCanManageTeam(team, actor);
-    }
-
-    private ensureCanManageTeam(
-        team: { members: Array<{ userId: string; role: TeamMemberRole }> },
-        actor: TeamActor,
-    ): void {
-        if (actor.role === UserRole.ADMIN) {
-            return;
-        }
-
-        const captainMembership = team.members.find((member) => {
-            return member.userId === actor.id && member.role === TeamMemberRole.CAPTAIN;
-        });
-
-        if (!captainMembership) {
-            throw new ForbiddenException('Only team captains can manage this team');
-        }
     }
 
 }

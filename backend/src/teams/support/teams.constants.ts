@@ -1,4 +1,4 @@
-import { TournamentStatus } from '../tournaments/tournament-status.enum';
+import { TournamentStatus } from '../../tournaments/tournament-status.enum';
 
 export const MAX_ROSTER_SIZE = 4;
 

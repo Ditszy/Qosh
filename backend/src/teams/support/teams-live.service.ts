@@ -1,7 +1,7 @@
 import { Injectable, MessageEvent } from '@nestjs/common';
 import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import type { MyTeamLiveUpdate, TeamWithMembers } from './types/team.types';
+import type { MyTeamLiveUpdate, TeamWithMembers } from './team.types';
 
 @Injectable()
 export class TeamsLiveService {
