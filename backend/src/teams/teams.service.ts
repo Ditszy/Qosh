@@ -6,8 +6,7 @@ import {
     MessageEvent,
     NotFoundException,
 } from '@nestjs/common';
-import { Observable, Subject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { UserRole } from '../common/user-role.enum';
 import { NotificationType } from '../notifications/enums/notification-type.enum';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -15,106 +14,31 @@ import { TournamentLiveEvent } from '../tournaments/types/tournament-live.types'
 import { TournamentLiveService } from '../tournaments/tournament-live.service';
 import { TournamentStatus } from '../tournaments/tournament-status.enum';
 import { PrismaService } from '../prisma/prisma.service';
-import { PublicUser, publicUserSelect } from '../users/users.service';
+import { publicUserSelect } from '../users/users.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { SendTeamInviteDto } from './dto/send-team-invite.dto';
 import { TeamInviteStatus } from './team-invite-status.enum';
 import { TeamMemberRole } from './team-member-role.enum';
-
-const MAX_ROSTER_SIZE = 4;
-const inactiveTournamentStatuses = [TournamentStatus.COMPLETED, TournamentStatus.CANCELLED];
-const preStartTournamentStatuses: TournamentStatus[] = [
-    TournamentStatus.DRAFT,
-    TournamentStatus.SIGNUPS_OPEN,
-    TournamentStatus.SIGNUPS_LOCKED,
-];
-
-type TeamActor = {
-    id: string;
-    role: UserRole;
-};
-
-type TeamRecord = {
-    id: string;
-    name: string;
-    tournamentId: string;
-    createdAt: Date;
-    updatedAt: Date;
-};
-
-type TeamMemberRecord = {
-    id: string;
-    teamId: string;
-    userId: string;
-    role: TeamMemberRole;
-    joinedAt: Date;
-};
-
-type TeamWithMembers = TeamRecord & {
-    members: Array<TeamMemberRecord & { user: PublicUser }>;
-};
-
-type TeamWithMembersAndTournament = TeamWithMembers & {
-    tournament: TournamentSummary;
-};
-
-type DisbandTeamResult = {
-    success: true;
-    teamId: string;
-    tournamentId: string;
-};
-
-type MyTeamLiveEvent =
-    | { type: 'team.updated'; data: { team: TeamWithMembers } }
-    | { type: 'team.removed'; data: { teamId: string } };
-
-type MyTeamLiveUpdate = {
-    userId: string;
-    event: MyTeamLiveEvent;
-};
-
-type TeamInviteRecord = {
-    id: string;
-    teamId: string;
-    invitedUserId: string;
-    inviterId: string;
-    status: TeamInviteStatus;
-    createdAt: Date;
-    respondedAt: Date | null;
-};
-
-type TeamInviteWithUsers = TeamInviteRecord & {
-    invitedUser: PublicUser;
-    inviter: PublicUser;
-};
-
-type TournamentSummary = {
-    id: string;
-    name: string;
-    description: string | null;
-    location: string;
-    startsAt: Date;
-    maxTeams: number;
-    status: TournamentStatus;
-    organizerId: string;
-    createdAt: Date;
-    updatedAt: Date;
-};
-
-type TeamInviteWithTeam = TeamInviteWithUsers & {
-    team: TeamRecord & {
-        tournament: TournamentSummary;
-    };
-};
+import { teamInviteInclude, teamInviteWithTeamInclude } from './helpers/team-invite-include.helper';
+import { MAX_ROSTER_SIZE, inactiveTournamentStatuses, preStartTournamentStatuses } from './teams.constants';
+import { TeamsLiveService } from './teams-live.service';
+import type {
+    DisbandTeamResult,
+    TeamActor,
+    TeamInviteRecord,
+    TeamInviteWithTeam,
+    TeamInviteWithUsers,
+    TeamWithMembers,
+    TeamWithMembersAndTournament,
+} from './types/team.types';
 
 @Injectable()
 export class TeamsService {
-    private readonly myTeamUpdates$ = new Subject<MyTeamLiveUpdate>();
-
     constructor(
         private readonly prisma: PrismaService,
         private readonly notificationsService: NotificationsService,
         private readonly tournamentLiveService: TournamentLiveService,
+        private readonly teamsLiveService: TeamsLiveService,
     ) { }
 
     async create(createTeamDto: CreateTeamDto, captainId: string): Promise<TeamWithMembers> {
@@ -181,19 +105,13 @@ export class TeamsService {
         this.tournamentLiveService.publish(createdTeam.tournamentId, TournamentLiveEvent.TEAM_CREATED, {
             team: liveTeam,
         });
-        this.publishTeamUpdated(liveTeam);
+        this.teamsLiveService.publishTeamUpdated(liveTeam);
 
         return liveTeam;
     }
 
     watchMyTeams(userId: string): Observable<MessageEvent> {
-        return this.myTeamUpdates$.pipe(
-            filter((update) => update.userId === userId),
-            map((update) => ({
-                type: update.event.type,
-                data: update.event.data,
-            })),
-        );
+        return this.teamsLiveService.watchMyTeams(userId);
     }
 
     async findByTournamentId(tournamentId: string): Promise<TeamWithMembers[]> {
@@ -318,7 +236,7 @@ export class TeamsService {
                     invitedUserId: sendTeamInviteDto.invitedUserId,
                     inviterId: actor.id,
                 },
-                include: this.teamInviteInclude(),
+                include: teamInviteInclude(),
             });
 
             const notification = await this.notificationsService.create(
@@ -399,7 +317,7 @@ export class TeamsService {
                     status: TeamInviteStatus.ACCEPTED,
                     respondedAt: new Date(),
                 },
-                include: this.teamInviteInclude(),
+                include: teamInviteInclude(),
             });
         });
 
@@ -407,7 +325,7 @@ export class TeamsService {
         this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
             team: liveTeam,
         });
-        this.publishTeamUpdated(liveTeam);
+        this.teamsLiveService.publishTeamUpdated(liveTeam);
 
         return liveTeam;
     }
@@ -421,7 +339,7 @@ export class TeamsService {
                 status: TeamInviteStatus.DECLINED,
                 respondedAt: new Date(),
             },
-            include: this.teamInviteInclude(),
+            include: teamInviteInclude(),
         });
     }
 
@@ -453,7 +371,7 @@ export class TeamsService {
                 status: TeamInviteStatus.CANCELLED,
                 respondedAt: new Date(),
             },
-            include: this.teamInviteInclude(),
+            include: teamInviteInclude(),
         });
     }
 
@@ -470,7 +388,7 @@ export class TeamsService {
                     },
                 },
             },
-            include: this.teamInviteWithTeamInclude(),
+            include: teamInviteWithTeamInclude(),
             orderBy: {
                 createdAt: 'desc',
             },
@@ -540,7 +458,7 @@ export class TeamsService {
         this.tournamentLiveService.publish(team.tournamentId, TournamentLiveEvent.TEAM_REMOVED, {
             teamId,
         });
-        this.publishTeamRemoved(team.members.map((member) => member.userId), teamId);
+        this.teamsLiveService.publishTeamRemoved(team.members.map((member) => member.userId), teamId);
 
         return { success: true, teamId, tournamentId: team.tournamentId };
     }
@@ -578,8 +496,8 @@ export class TeamsService {
         this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
             team: liveTeam,
         });
-        this.publishTeamUpdated(liveTeam);
-        this.publishTeamRemoved([actor.id], teamId);
+        this.teamsLiveService.publishTeamUpdated(liveTeam);
+        this.teamsLiveService.publishTeamRemoved([actor.id], teamId);
 
         return liveTeam;
     }
@@ -603,7 +521,7 @@ export class TeamsService {
                 teamId,
                 status: TeamInviteStatus.PENDING,
             },
-            include: this.teamInviteInclude(),
+            include: teamInviteInclude(),
             orderBy: {
                 createdAt: 'desc',
             },
@@ -644,8 +562,8 @@ export class TeamsService {
         this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
             team: liveTeam,
         });
-        this.publishTeamUpdated(liveTeam);
-        this.publishTeamRemoved([member.userId], teamId);
+        this.teamsLiveService.publishTeamUpdated(liveTeam);
+        this.teamsLiveService.publishTeamRemoved([member.userId], teamId);
 
         return liveTeam;
     }
@@ -699,7 +617,7 @@ export class TeamsService {
         this.tournamentLiveService.publish(liveTeam.tournamentId, TournamentLiveEvent.ROSTER_UPDATED, {
             team: liveTeam,
         });
-        this.publishTeamUpdated(liveTeam);
+        this.teamsLiveService.publishTeamUpdated(liveTeam);
 
         return liveTeam;
     }
@@ -777,49 +695,4 @@ export class TeamsService {
         }
     }
 
-    private publishTeamUpdated(team: TeamWithMembers): void {
-        for (const member of team.members) {
-            this.myTeamUpdates$.next({
-                userId: member.userId,
-                event: {
-                    type: 'team.updated',
-                    data: { team },
-                },
-            });
-        }
-    }
-
-    private publishTeamRemoved(userIds: string[], teamId: string): void {
-        for (const userId of userIds) {
-            this.myTeamUpdates$.next({
-                userId,
-                event: {
-                    type: 'team.removed',
-                    data: { teamId },
-                },
-            });
-        }
-    }
-
-    private teamInviteInclude() {
-        return {
-            invitedUser: {
-                select: publicUserSelect,
-            },
-            inviter: {
-                select: publicUserSelect,
-            },
-        };
-    }
-
-    private teamInviteWithTeamInclude() {
-        return {
-            ...this.teamInviteInclude(),
-            team: {
-                include: {
-                    tournament: true,
-                },
-            },
-        };
-    }
 }
