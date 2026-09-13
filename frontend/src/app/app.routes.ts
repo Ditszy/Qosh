@@ -15,13 +15,6 @@ import { RefereeReports } from './features/referee/referee-reports/referee-repor
 import { ScorerConsole } from './features/scorer/scorer-console/scorer-console';
 import { PlayerProfile } from './features/statistics/player-profile/player-profile';
 import { Rankings } from './features/statistics/rankings/rankings';
-import { PlaceholderPage } from './pages/placeholder-page';
-
-const page = (path: string, title: string, eyebrow: string): Routes[number] => ({
-  path,
-  component: PlaceholderPage,
-  data: { title, eyebrow },
-});
 
 export const routes: Routes = [
   { path: 'tournaments', component: TournamentList },
