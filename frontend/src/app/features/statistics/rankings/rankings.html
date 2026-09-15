@@ -39,7 +39,7 @@
       <p class="surface-message error">Rang lista trenutno nije dostupna.</p>
       } @else if (state.rankings.length > 0) {
       <div class="ranking-list" aria-label="Globalna rang lista">
-        @for (player of topRankings(state.rankings); track player.player.id; let rank = $index) {
+        @for (player of state.rankings; track player.player.id; let rank = $index) {
         <a class="ranking-row" [routerLink]="['/profiles', player.player.id]">
           <span class="rank">#{{ rank + 1 }}</span>
           <div class="player">

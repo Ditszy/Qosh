@@ -152,6 +152,7 @@ export type PlayerStatisticsFilters = {
   teamId?: string;
   search?: string;
   minGamesPlayed?: number;
+  limit?: number;
   sortBy?: PlayerStatisticSort;
   sortDirection?: SortDirection;
 };
@@ -161,6 +162,7 @@ export type NormalizedPlayerStatisticsFilters = {
   teamId?: string;
   search?: string;
   minGamesPlayed?: number;
+  limit?: number;
   sortBy: PlayerStatisticSort;
   sortDirection: SortDirection;
 };

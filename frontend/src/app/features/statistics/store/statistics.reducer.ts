@@ -29,12 +29,14 @@ export const normalizePlayerStatisticsFilters = (
 ): NormalizedPlayerStatisticsFilters => {
   const search = filters.search?.trim();
   const minGamesPlayed = filters.minGamesPlayed === undefined ? undefined : Math.max(0, filters.minGamesPlayed);
+  const limit = filters.limit === undefined ? undefined : Math.max(1, filters.limit);
 
   return {
     ...defaultPlayerStatisticsFilters,
     ...filters,
     search: search || undefined,
     minGamesPlayed,
+    limit,
     sortBy: filters.sortBy ?? defaultPlayerStatisticsFilters.sortBy,
     sortDirection: filters.sortDirection ?? defaultPlayerStatisticsFilters.sortDirection,
   };
@@ -48,6 +50,7 @@ export const filtersEqual = (
   previous.teamId === current.teamId &&
   previous.search === current.search &&
   previous.minGamesPlayed === current.minGamesPlayed &&
+  previous.limit === current.limit &&
   previous.sortBy === current.sortBy &&
   previous.sortDirection === current.sortDirection;
 
