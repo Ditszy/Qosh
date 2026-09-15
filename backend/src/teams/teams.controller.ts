@@ -66,17 +66,6 @@ export class TeamsController {
         });
     }
 
-    @Post('invites/:inviteId/cancel')
-    @ApiBearerAuth()
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @Roles(UserRole.PLAYER, UserRole.ADMIN)
-    cancelInvite(@Param('inviteId') inviteId: string, @Request() req: AuthenticatedRequest) {
-        return this.teamsService.cancelInvite(inviteId, {
-            id: req.user.id,
-            role: req.user.role,
-        });
-    }
-
     @Get('invites/me')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)

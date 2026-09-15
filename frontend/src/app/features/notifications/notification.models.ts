@@ -2,6 +2,7 @@ export type NotificationType =
   | 'TEAM_INVITE'
   | 'MATCH_ASSIGNMENT'
   | 'TOURNAMENT_STARTED'
+  | 'TOURNAMENT_CANCELLED'
   | 'MATCH_SCHEDULE_CHANGED';
 
 export type NotificationItem = {

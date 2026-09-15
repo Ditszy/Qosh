@@ -302,38 +302,6 @@ export class TeamsService {
         });
     }
 
-    async cancelInvite(inviteId: string, actor: TeamActor): Promise<TeamInviteWithUsers> {
-        const invite = await this.prisma.teamInvite.findUnique({
-            where: { id: inviteId },
-            include: {
-                team: {
-                    include: {
-                        members: true,
-                    },
-                },
-            },
-        });
-
-        if (!invite) {
-            throw new NotFoundException('Invite not found');
-        }
-
-        if (invite.status !== TeamInviteStatus.PENDING) {
-            throw new BadRequestException('Only pending invites can be cancelled');
-        }
-
-        this.teamAccessService.ensureCanManageTeam(invite.team, actor);
-
-        return this.prisma.teamInvite.update({
-            where: { id: invite.id },
-            data: {
-                status: TeamInviteStatus.CANCELLED,
-                respondedAt: new Date(),
-            },
-            include: teamInviteInclude(),
-        });
-    }
-
     async findMyPendingInvites(userId: string): Promise<TeamInviteWithTeam[]> {
         return this.teamsReadService.findMyPendingInvites(userId);
     }

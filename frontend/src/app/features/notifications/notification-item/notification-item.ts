@@ -7,6 +7,7 @@ const notificationTypeLabels: Record<NotificationType, string> = {
   TEAM_INVITE: 'Poziv u tim',
   MATCH_ASSIGNMENT: 'Zaduženje za utakmicu',
   TOURNAMENT_STARTED: 'Turnir je počeo',
+  TOURNAMENT_CANCELLED: 'Turnir je otkazan',
   MATCH_SCHEDULE_CHANGED: 'Promena rasporeda',
 };
 
