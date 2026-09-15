@@ -68,6 +68,7 @@ export class OrganizerTournamentCard {
   readonly signupStatusRequested = output<OrganizerSignupStatusRequest>();
   readonly bracketRequested = output<string>();
   readonly startRequested = output<string>();
+  readonly cancelRequested = output<string>();
   readonly matchesToggled = output<string>();
   readonly roundToggled = output<OrganizerRoundToggleRequest>();
   readonly matchEditRequested = output<string>();
