@@ -34,9 +34,10 @@
       (editTournamentRequested)="editTournament($event)" (tournamentUpdateSubmitted)="updateTournamentFromCard($event)"
       (cancelTournamentEditRequested)="cancelTournamentEdit()"
       (signupStatusRequested)="updateSignupStatusFromCard($event)" (bracketRequested)="generateBracket($event)"
-      (startRequested)="startTournament($event)" (matchesToggled)="toggleTournamentMatches($event)"
-      (roundToggled)="toggleRoundFromCard($event)" (matchEditRequested)="editMatch($event)"
-      (matchScheduleSubmitted)="scheduleMatchFromCard($event)" (cancelMatchEditRequested)="cancelMatchEdit()"></li>
+      (startRequested)="startTournament($event)" (cancelRequested)="cancelTournament($event)"
+      (matchesToggled)="toggleTournamentMatches($event)" (roundToggled)="toggleRoundFromCard($event)"
+      (matchEditRequested)="editMatch($event)" (matchScheduleSubmitted)="scheduleMatchFromCard($event)"
+      (cancelMatchEditRequested)="cancelMatchEdit()"></li>
     }
   </ul>
   } @else {

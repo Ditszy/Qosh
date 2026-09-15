@@ -13,6 +13,12 @@
     Izmeni turnir
   </button>
   }
+  @if (canCancelTournament(tournament)) {
+  <button type="button" [disabled]="pendingAction() === 'cancel:' + tournament.id"
+    (click)="cancelRequested.emit(tournament.id)">
+    Otkaži turnir
+  </button>
+  }
   @if (tournament.status === 'DRAFT') {
   <button type="button" [disabled]="pendingAction() === 'open:' + tournament.id"
     (click)="requestSignupStatus(tournament.id, 'open')">

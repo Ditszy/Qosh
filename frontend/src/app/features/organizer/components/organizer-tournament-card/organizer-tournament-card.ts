@@ -79,6 +79,12 @@ export class OrganizerTournamentCard {
     return tournament.status === 'DRAFT' || tournament.status === 'SIGNUPS_OPEN';
   }
 
+  protected canCancelTournament(tournament: OrganizerTournamentWithMatches): boolean {
+    return tournament.status === 'DRAFT'
+      || tournament.status === 'SIGNUPS_OPEN'
+      || tournament.status === 'SIGNUPS_LOCKED';
+  }
+
   protected statusLabel(status: TournamentStatus): string {
     return tournamentStatusLabels[status];
   }

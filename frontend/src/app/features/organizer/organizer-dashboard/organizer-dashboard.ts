@@ -123,6 +123,25 @@ export class OrganizerDashboard {
     });
   }
 
+  protected cancelTournament(id: string): void {
+    if (this.pendingAction()) {
+      return;
+    }
+
+    const confirmed = confirm('Da li si siguran da želiš da otkažeš turnir?');
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.errorMessage.set('');
+    this.pendingAction.set(`cancel:${id}`);
+    this.organizerApi.cancelTournament(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
+      next: () => this.reloadDashboard(),
+      error: () => this.errorMessage.set('Turnir nije otkazan.'),
+    });
+  }
+
   protected scheduleMatch(id: string, value: OrganizerMatchScheduleFormValue): void {
     if (this.pendingAction()) {
       return;
