@@ -386,32 +386,6 @@ export class TeamsService {
         return liveTeam;
     }
 
-    async findPendingInvitesByTeam(teamId: string, actor: TeamActor): Promise<TeamInviteWithUsers[]> {
-        const team = await this.prisma.team.findUnique({
-            where: { id: teamId },
-            include: {
-                members: true,
-            },
-        });
-
-        if (!team) {
-            throw new NotFoundException('Team not found');
-        }
-
-        this.teamAccessService.ensureCanManageTeam(team, actor);
-
-        return this.prisma.teamInvite.findMany({
-            where: {
-                teamId,
-                status: TeamInviteStatus.PENDING,
-            },
-            include: teamInviteInclude(),
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
-    }
-
     async removeMember(teamId: string, memberId: string, actor: TeamActor): Promise<TeamWithMembers> {
         const team = await this.prisma.team.findUnique({
             where: { id: teamId },
