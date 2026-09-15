@@ -1,4 +1,3 @@
-export { PlayerRankingsService } from './player-rankings.service';
 export { PlayerProfileSearchService } from './player-profile-search.service';
 export { PlayerProfile as PlayerProfileComponent } from './player-profile/player-profile';
 export { Rankings } from './rankings/rankings';
