@@ -50,6 +50,10 @@ export class OrganizerTournamentsApiService {
     return this.http.post<Tournament>(this.apiUrl.build(`/tournaments/${id}/start`), {});
   }
 
+  cancelTournament(id: string): Observable<Tournament> {
+    return this.http.post<Tournament>(this.apiUrl.build(`/tournaments/${id}/cancel`), {});
+  }
+
   generateBracket(id: string): Observable<TournamentMatch[]> {
     return this.http.post<TournamentMatch[]>(this.apiUrl.build(`/tournaments/${id}/bracket/generate`), {});
   }
