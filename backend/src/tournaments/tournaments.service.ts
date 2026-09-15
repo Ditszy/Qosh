@@ -4,6 +4,7 @@ import { NotificationType } from '../notifications/enums/notification-type.enum'
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationRecord } from '../notifications/types/notification.types';
 import { PrismaService } from '../prisma/prisma.service';
+import { TeamInviteStatus } from '../teams/team-invite-status.enum';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { FindTournamentsDto } from './dto/find-tournaments.dto';
 import { TournamentLiveEvent } from './types/tournament-live.types';
@@ -237,6 +238,100 @@ export class TournamentsService {
                         type: NotificationType.TOURNAMENT_STARTED,
                         title: 'Turnir je počeo',
                         body: `Turnir ${updatedTournament.name} je počeo.`,
+                        tournamentId: updatedTournament.id,
+                    },
+                    tx,
+                    false,
+                ));
+            }
+
+            return { updatedTournament, notifications };
+        });
+
+        result.notifications.forEach((notification) => {
+            this.notificationsService.publishCreated(notification);
+        });
+
+        this.publishStatusChanged(result.updatedTournament);
+
+        return result.updatedTournament;
+    }
+
+    async cancel(id: string, actor: TournamentActor): Promise<TournamentRecord> {
+        const tournament = await this.findById(id);
+
+        this.ensureCanManageTournament(tournament, actor);
+
+        if (tournament.status === TournamentStatus.CANCELLED) {
+            throw new BadRequestException('Tournament is already cancelled');
+        }
+
+        if (tournament.status === TournamentStatus.COMPLETED) {
+            throw new BadRequestException('Completed tournaments cannot be cancelled');
+        }
+
+        if (tournament.status === TournamentStatus.IN_PROGRESS) {
+            throw new BadRequestException('Tournament cannot be cancelled after it has started');
+        }
+
+        const result = await this.prisma.$transaction(async (tx) => {
+            const [members, pendingInvites] = await Promise.all([
+                tx.teamMember.findMany({
+                    where: {
+                        team: {
+                            tournamentId: id,
+                        },
+                    },
+                    select: {
+                        userId: true,
+                    },
+                }),
+                tx.teamInvite.findMany({
+                    where: {
+                        status: TeamInviteStatus.PENDING,
+                        team: {
+                            tournamentId: id,
+                        },
+                    },
+                    select: {
+                        invitedUserId: true,
+                    },
+                }),
+            ]);
+
+            await tx.teamInvite.updateMany({
+                where: {
+                    status: TeamInviteStatus.PENDING,
+                    team: {
+                        tournamentId: id,
+                    },
+                },
+                data: {
+                    status: TeamInviteStatus.CANCELLED,
+                    respondedAt: new Date(),
+                },
+            });
+
+            const updatedTournament = await tx.tournament.update({
+                where: { id },
+                data: { status: TournamentStatus.CANCELLED },
+            });
+
+            const recipientIds = [
+                ...new Set([
+                    ...members.map((member) => member.userId),
+                    ...pendingInvites.map((invite) => invite.invitedUserId),
+                ]),
+            ];
+            const notifications: NotificationRecord[] = [];
+
+            for (const recipientId of recipientIds) {
+                notifications.push(await this.notificationsService.create(
+                    {
+                        recipientId,
+                        type: NotificationType.TOURNAMENT_CANCELLED,
+                        title: 'Turnir je otkazan',
+                        body: `Turnir ${updatedTournament.name} je otkazan.`,
                         tournamentId: updatedTournament.id,
                     },
                     tx,

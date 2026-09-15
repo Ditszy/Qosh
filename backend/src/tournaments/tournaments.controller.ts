@@ -96,4 +96,15 @@ export class TournamentsController {
             role: req.user.role,
         });
     }
+
+    @Post(':id/cancel')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+    cancel(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
+        return this.tournamentsService.cancel(id, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
 }
