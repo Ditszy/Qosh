@@ -1,7 +1,8 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, concatMap, EMPTY, exhaustMap, map, of, switchMap } from 'rxjs';
+import { catchError, concatMap, EMPTY, exhaustMap, map, of, switchMap, takeUntil } from 'rxjs';
 
+import { AuthActions } from '../../../core/auth/store';
 import { NotificationsApiService } from '../notifications-api.service';
 import { NotificationsActions } from './notification.actions';
 
@@ -30,6 +31,7 @@ export const watchMineNotifications = createEffect(
           map((message) =>
             NotificationsActions.notificationReceived({ notification: message.data.notification }),
           ),
+          takeUntil(actions$.pipe(ofType(AuthActions.logout))),
           catchError(() => EMPTY),
         ),
       ),

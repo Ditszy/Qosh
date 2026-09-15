@@ -1,9 +1,9 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, EMPTY, exhaustMap, forkJoin, map, of, switchMap, take, zip } from 'rxjs';
+import { catchError, EMPTY, exhaustMap, forkJoin, map, of, switchMap, take, takeUntil, zip } from 'rxjs';
 
-import { selectCurrentUser } from '../../../core/auth/store';
+import { AuthActions, selectCurrentUser } from '../../../core/auth/store';
 import { NotificationsActions } from '../../notifications';
 import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
 import { TeamsApiService, type TeamDetail } from '../teams-api.service';
@@ -67,6 +67,7 @@ export const watchMyTeams = createEffect(
               map((message) =>
                 PlayerTeamsActions.liveMessageReceived({ message, currentUserId: currentUser?.id ?? null }),
               ),
+              takeUntil(actions$.pipe(ofType(AuthActions.logout))),
               catchError(() => EMPTY),
             ),
           ),
