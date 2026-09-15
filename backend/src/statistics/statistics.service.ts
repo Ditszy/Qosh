@@ -94,15 +94,18 @@ export class StatisticsService {
 
         const minGamesPlayed = filters.minGamesPlayed ?? 0;
 
-        return Array.from(statisticsByPlayerId.values())
+        const statistics = Array.from(statisticsByPlayerId.values())
             .map((statistic) => toPlayerStatistic(statistic))
             .filter((statistic) => statistic.gamesPlayed >= minGamesPlayed)
             .sort((first, second) => compareStatistics(first, second, filters));
+
+        return filters.limit ? statistics.slice(0, filters.limit) : statistics;
     }
 
     async findPlayerStatisticLeaders(filters: FindPlayerStatisticsDto): Promise<PlayerStatisticLeader[]> {
         const statistics = await this.findPlayerStatistics({
             ...filters,
+            limit: undefined,
             sortBy: undefined,
             sortDirection: undefined,
         });
@@ -117,6 +120,7 @@ export class StatisticsService {
         const statistics = await this.findPlayerStatistics({
             tournamentId,
             minGamesPlayed: 1,
+            limit: undefined,
             sortBy: undefined,
             sortDirection: undefined,
         });
