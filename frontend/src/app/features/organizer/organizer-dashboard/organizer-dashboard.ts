@@ -1,9 +1,9 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, inject, signal, viewChild } from '@angular/core';
+import { Component, computed, inject, signal, viewChild } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { finalize } from 'rxjs';
+import { Actions, ofType } from '@ngrx/effects';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OrganizerCommandCenter } from '../components/organizer-command-center/organizer-command-center';
 import type { OrganizerMatchScheduleFormValue } from '../components/organizer-match-schedule-form/organizer-match-schedule-form';
 import {
@@ -17,7 +17,12 @@ import {
   OrganizerTournamentForm,
   type OrganizerTournamentFormValue,
 } from '../components/organizer-tournament-form/organizer-tournament-form';
-import { OrganizerDashboardActions, selectOrganizerDashboardView } from '../store';
+import {
+  OrganizerDashboardActions,
+  selectOrganizerDashboardErrorMessage,
+  selectOrganizerDashboardPendingAction,
+  selectOrganizerDashboardView,
+} from '../store';
 import type { TournamentMatch } from '../../public/tournaments/tournament.models';
 
 @Component({
@@ -28,21 +33,35 @@ import type { TournamentMatch } from '../../public/tournaments/tournament.models
 })
 export class OrganizerDashboard {
   private readonly store = inject(Store);
-  private readonly organizerApi = inject(OrganizerTournamentsApiService);
+  private readonly actions$ = inject(Actions);
 
-  protected readonly isSubmitting = signal(false);
-  protected readonly pendingAction = signal('');
-  protected readonly errorMessage = signal('');
   protected readonly editingTournamentId = signal('');
   protected readonly editingMatchId = signal('');
   protected readonly expandedTournamentMatches = signal<Record<string, boolean>>({});
   protected readonly expandedRounds = signal<Record<string, boolean>>({});
 
   protected readonly state$ = this.store.select(selectOrganizerDashboardView);
+  protected readonly pendingAction = this.store.selectSignal(selectOrganizerDashboardPendingAction);
+  protected readonly errorMessage = this.store.selectSignal(selectOrganizerDashboardErrorMessage);
+  protected readonly isSubmitting = computed(() => this.pendingAction() === 'create');
   protected readonly createTournamentForm = viewChild<OrganizerTournamentForm>('createTournamentForm');
 
   constructor() {
     this.reloadDashboard();
+    this.actions$.pipe(
+      ofType(OrganizerDashboardActions.createTournamentSucceeded),
+      takeUntilDestroyed(),
+    ).subscribe(() => this.createTournamentForm()?.reset());
+
+    this.actions$.pipe(
+      ofType(OrganizerDashboardActions.updateTournamentSucceeded),
+      takeUntilDestroyed(),
+    ).subscribe(() => this.editingTournamentId.set(''));
+
+    this.actions$.pipe(
+      ofType(OrganizerDashboardActions.scheduleMatchSucceeded),
+      takeUntilDestroyed(),
+    ).subscribe(() => this.editingMatchId.set(''));
   }
 
   protected submitTournament(value: OrganizerTournamentFormValue): void {
@@ -50,18 +69,7 @@ export class OrganizerDashboard {
       return;
     }
 
-    this.errorMessage.set('');
-    this.isSubmitting.set(true);
-    this.organizerApi
-      .createTournament(value)
-      .pipe(finalize(() => this.isSubmitting.set(false)))
-      .subscribe({
-        next: () => {
-          this.createTournamentForm()?.reset();
-          this.reloadDashboard();
-        },
-        error: () => this.errorMessage.set('Turnir nije kreiran. Proveri podatke.'),
-      });
+    this.store.dispatch(OrganizerDashboardActions.createTournament({ value }));
   }
 
   protected updateTournamentDetails(id: string, value: OrganizerTournamentFormValue): void {
@@ -69,18 +77,7 @@ export class OrganizerDashboard {
       return;
     }
 
-    this.errorMessage.set('');
-    this.pendingAction.set(`update:${id}`);
-    this.organizerApi
-      .updateTournament(id, value)
-      .pipe(finalize(() => this.pendingAction.set('')))
-      .subscribe({
-        next: () => {
-          this.editingTournamentId.set('');
-          this.reloadDashboard();
-        },
-        error: () => this.errorMessage.set('Izmena turnira nije sačuvana.'),
-      });
+    this.store.dispatch(OrganizerDashboardActions.updateTournament({ id, value }));
   }
 
   protected updateSignupStatus(id: string, action: 'open' | 'lock'): void {
@@ -88,13 +85,7 @@ export class OrganizerDashboard {
       return;
     }
 
-    const request$ = action === 'open' ? this.organizerApi.openSignups(id) : this.organizerApi.lockSignups(id);
-    this.errorMessage.set('');
-    this.pendingAction.set(`${action}:${id}`);
-    request$.pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: () => this.reloadDashboard(),
-      error: () => this.errorMessage.set('Promena statusa nije uspela.'),
-    });
+    this.store.dispatch(OrganizerDashboardActions.setSignupStatus({ id, action }));
   }
 
   protected generateBracket(id: string): void {
@@ -102,12 +93,7 @@ export class OrganizerDashboard {
       return;
     }
 
-    this.errorMessage.set('');
-    this.pendingAction.set(`bracket:${id}`);
-    this.organizerApi.generateBracket(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: () => this.reloadDashboard(),
-      error: () => this.errorMessage.set('Žreb nije generisan. Proveri broj timova.'),
-    });
+    this.store.dispatch(OrganizerDashboardActions.generateBracket({ id }));
   }
 
   protected startTournament(id: string): void {
@@ -115,12 +101,7 @@ export class OrganizerDashboard {
       return;
     }
 
-    this.errorMessage.set('');
-    this.pendingAction.set(`start:${id}`);
-    this.organizerApi.startTournament(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: () => this.reloadDashboard(),
-      error: () => this.errorMessage.set('Turnir nije pokrenut. Prvo generiši žreb.'),
-    });
+    this.store.dispatch(OrganizerDashboardActions.startTournament({ id }));
   }
 
   protected cancelTournament(id: string): void {
@@ -134,12 +115,7 @@ export class OrganizerDashboard {
       return;
     }
 
-    this.errorMessage.set('');
-    this.pendingAction.set(`cancel:${id}`);
-    this.organizerApi.cancelTournament(id).pipe(finalize(() => this.pendingAction.set(''))).subscribe({
-      next: () => this.reloadDashboard(),
-      error: () => this.errorMessage.set('Turnir nije otkazan.'),
-    });
+    this.store.dispatch(OrganizerDashboardActions.cancelTournament({ id }));
   }
 
   protected scheduleMatch(id: string, value: OrganizerMatchScheduleFormValue): void {
@@ -147,18 +123,7 @@ export class OrganizerDashboard {
       return;
     }
 
-    this.errorMessage.set('');
-    this.pendingAction.set(`schedule:${id}`);
-    this.organizerApi
-      .scheduleMatch(id, value)
-      .pipe(finalize(() => this.pendingAction.set('')))
-      .subscribe({
-        next: () => {
-          this.editingMatchId.set('');
-          this.reloadDashboard();
-        },
-        error: () => this.errorMessage.set('Termin nije sačuvan.'),
-      });
+    this.store.dispatch(OrganizerDashboardActions.scheduleMatch({ id, value }));
   }
 
   protected editCommandCenterMatch(match: TournamentMatch): void {
