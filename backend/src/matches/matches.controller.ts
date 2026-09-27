@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
-import { RolesGuard } from '../common/roles.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
 import { CreateMatchEventDto } from './dto/create-match-event.dto';

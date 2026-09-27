@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
-import { RolesGuard } from '../common/roles.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { FindTournamentsDto } from './dto/find-tournaments.dto';

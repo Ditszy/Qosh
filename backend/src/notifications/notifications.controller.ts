@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Param, Patch, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRole } from '../common/user-role.enum';
 import { NotificationsService } from './notifications.service';
 

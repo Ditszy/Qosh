@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
-import { RolesGuard } from '../common/roles.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { CreateRefereeReportDto } from './dto/create-referee-report.dto';
 import { ReportsService } from './reports.service';

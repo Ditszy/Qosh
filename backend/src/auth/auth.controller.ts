@@ -2,7 +2,7 @@ import { Body, Controller, Post, Request, Res, UnauthorizedException, UseGuards 
 import type { Request as ExpressRequest, Response } from "express";
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
-import { LocalAuthGuard } from "./local-auth.guard";
+import { LocalAuthGuard } from "./guards/local-auth.guard";
 import { LoginDto } from "./dto/login.dto";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
