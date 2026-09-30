@@ -15,7 +15,7 @@ export const loadGlobalRankings = createEffect(
       distinctUntilChanged(filtersEqual),
       switchMap((filters) =>
         statisticsApi.listPlayerStatistics(filters).pipe(
-          map((rankings) => StatisticsActions.loadGlobalRankingsSucceeded({ filters, rankings })),
+          map((page) => StatisticsActions.loadGlobalRankingsSucceeded({ filters, page })),
           catchError((error: unknown) =>
             of(
               StatisticsActions.loadGlobalRankingsFailed({

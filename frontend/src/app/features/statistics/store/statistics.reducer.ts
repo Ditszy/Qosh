@@ -17,7 +17,7 @@ export type StatisticsState = {
 export const initialStatisticsState: StatisticsState = {
   globalRankings: {
     filters: defaultPlayerStatisticsFilters,
-    rankings: [],
+    page: null,
     leaders: [],
     loading: false,
     error: null,
@@ -29,14 +29,18 @@ export const normalizePlayerStatisticsFilters = (
 ): NormalizedPlayerStatisticsFilters => {
   const search = filters.search?.trim();
   const minGamesPlayed = filters.minGamesPlayed === undefined ? undefined : Math.max(0, filters.minGamesPlayed);
-  const limit = filters.limit === undefined ? undefined : Math.max(1, filters.limit);
+  const page = filters.page === undefined ? defaultPlayerStatisticsFilters.page : Math.max(1, filters.page);
+  const pageSize = filters.pageSize === undefined
+    ? defaultPlayerStatisticsFilters.pageSize
+    : Math.min(100, Math.max(1, filters.pageSize));
 
   return {
     ...defaultPlayerStatisticsFilters,
     ...filters,
     search: search || undefined,
     minGamesPlayed,
-    limit,
+    page,
+    pageSize,
     sortBy: filters.sortBy ?? defaultPlayerStatisticsFilters.sortBy,
     sortDirection: filters.sortDirection ?? defaultPlayerStatisticsFilters.sortDirection,
   };
@@ -50,7 +54,8 @@ export const filtersEqual = (
   previous.teamId === current.teamId &&
   previous.search === current.search &&
   previous.minGamesPlayed === current.minGamesPlayed &&
-  previous.limit === current.limit &&
+  previous.page === current.page &&
+  previous.pageSize === current.pageSize &&
   previous.sortBy === current.sortBy &&
   previous.sortDirection === current.sortDirection;
 
@@ -61,17 +66,17 @@ export const statisticsReducer = createReducer(
     globalRankings: {
       ...state.globalRankings,
       filters: normalizePlayerStatisticsFilters(filters),
-      rankings: [],
+      page: null,
       loading: true,
       error: null,
     },
   })),
-  on(StatisticsActions.loadGlobalRankingsSucceeded, (state, { filters, rankings }) => ({
+  on(StatisticsActions.loadGlobalRankingsSucceeded, (state, { filters, page }) => ({
     ...state,
     globalRankings: {
       ...state.globalRankings,
       filters,
-      rankings,
+      page,
       loading: false,
       error: null,
     },
@@ -81,7 +86,7 @@ export const statisticsReducer = createReducer(
     globalRankings: {
       ...state.globalRankings,
       filters,
-      rankings: [],
+      page: null,
       loading: false,
       error,
     },

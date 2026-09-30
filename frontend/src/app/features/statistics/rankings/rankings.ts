@@ -35,6 +35,7 @@ export class Rankings implements OnInit {
   protected currentSortBy: RankingCategorySort = 'points';
   protected currentSearch = '';
   protected currentMinGamesPlayed: number | undefined;
+  protected currentPage = 1;
   protected readonly categories: RankingCategory[] = [
     { label: 'PTS', sortBy: 'points' },
     { label: 'REB', sortBy: 'rebounds' },
@@ -54,12 +55,14 @@ export class Rankings implements OnInit {
 
   protected selectCategory(category: RankingCategory): void {
     this.currentSortBy = category.sortBy;
+    this.currentPage = 1;
     this.dispatchFilters();
   }
 
   protected searchPlayers(event: Event): void {
     const search = (event.target as HTMLInputElement).value;
     this.currentSearch = search;
+    this.currentPage = 1;
     this.dispatchFilters();
   }
 
@@ -67,6 +70,7 @@ export class Rankings implements OnInit {
     const value = (event.target as HTMLInputElement).value;
     const minGamesPlayed = value === '' ? undefined : Number(value);
     this.currentMinGamesPlayed = minGamesPlayed;
+    this.currentPage = 1;
     this.dispatchFilters();
   }
 
@@ -84,11 +88,21 @@ export class Rankings implements OnInit {
     return leaders.find((leader) => leader.category === sortBy) ?? null;
   }
 
+  protected goToPage(page: number, totalPages: number): void {
+    if (page < 1 || page > totalPages) {
+      return;
+    }
+
+    this.currentPage = page;
+    this.dispatchFilters();
+  }
+
   private dispatchFilters(): void {
     const filters: PlayerStatisticsFilters = {
       search: this.currentSearch,
       minGamesPlayed: this.currentMinGamesPlayed,
-      limit: 10,
+      page: this.currentPage,
+      pageSize: 25,
       sortBy: this.currentSortBy,
     };
 

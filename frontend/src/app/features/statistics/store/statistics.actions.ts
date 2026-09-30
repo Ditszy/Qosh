@@ -2,7 +2,7 @@ import { createActionGroup, props } from '@ngrx/store';
 
 import type {
   NormalizedPlayerStatisticsFilters,
-  PlayerStatistic,
+  PlayerStatisticsPage,
   PlayerStatisticLeader,
   PlayerStatisticsFilters,
 } from '../statistics.models';
@@ -13,7 +13,7 @@ export const StatisticsActions = createActionGroup({
     'Global Ranking Filters Changed': props<{ filters: PlayerStatisticsFilters }>(),
     'Load Global Rankings Succeeded': props<{
       filters: NormalizedPlayerStatisticsFilters;
-      rankings: PlayerStatistic[];
+      page: PlayerStatisticsPage;
     }>(),
     'Load Global Rankings Failed': props<{ filters: NormalizedPlayerStatisticsFilters; error: string }>(),
     'Load Global Leaders': props<{ filters?: PlayerStatisticsFilters }>(),
