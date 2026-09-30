@@ -17,13 +17,13 @@ import {
   OrganizerTournamentForm,
   type OrganizerTournamentFormValue,
 } from '../components/organizer-tournament-form/organizer-tournament-form';
+import type { OrganizerCommandMatch } from '../organizer-tournaments-api.service';
 import {
   OrganizerDashboardActions,
   selectOrganizerDashboardErrorMessage,
   selectOrganizerDashboardPendingAction,
   selectOrganizerDashboardView,
 } from '../store';
-import type { TournamentMatch } from '../../public/tournaments/tournament.models';
 
 @Component({
   selector: 'app-organizer-dashboard',
@@ -126,15 +126,20 @@ export class OrganizerDashboard {
     this.store.dispatch(OrganizerDashboardActions.scheduleMatch({ id, value }));
   }
 
-  protected editCommandCenterMatch(match: TournamentMatch): void {
+  protected editCommandCenterMatch(item: OrganizerCommandMatch): void {
+    const match = item.match;
+
     this.editingMatchId.set(match.id);
     this.expandedTournamentMatches.update((expanded) => ({
-      ...expanded,
       [match.tournamentId]: true,
     }));
     this.expandedRounds.update((expanded) => ({
       ...expanded,
       [this.roundKey(match.tournamentId, match.round)]: true,
+    }));
+    this.store.dispatch(OrganizerDashboardActions.loadTournamentDetails({
+      tournamentId: match.tournamentId,
+      tournament: item.tournament,
     }));
   }
 
@@ -170,11 +175,27 @@ export class OrganizerDashboard {
     this.editingMatchId.set('');
   }
 
+  protected changePage(page: number, totalPages: number): void {
+    if (page < 1 || page > totalPages || this.pendingAction()) {
+      return;
+    }
+
+    this.expandedTournamentMatches.set({});
+    this.expandedRounds.set({});
+    this.editingMatchId.set('');
+    this.store.dispatch(OrganizerDashboardActions.loadPage({ page }));
+  }
+
   protected toggleTournamentMatches(tournamentId: string): void {
+    const isExpanded = Boolean(this.expandedTournamentMatches()[tournamentId]);
+
     this.expandedTournamentMatches.update((expanded) => ({
-      ...expanded,
-      [tournamentId]: !expanded[tournamentId],
+      ...(isExpanded ? {} : { [tournamentId]: true }),
     }));
+
+    if (!isExpanded) {
+      this.store.dispatch(OrganizerDashboardActions.loadTournamentDetails({ tournamentId }));
+    }
   }
 
   protected isTournamentMatchesExpanded(tournamentId: string): boolean {

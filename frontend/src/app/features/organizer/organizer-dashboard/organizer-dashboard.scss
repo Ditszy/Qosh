@@ -36,6 +36,14 @@ h1 {
   list-style: none;
 }
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.25rem 0 2rem;
+}
+
 .surface-message {
   border: 1px solid #293241;
   border-radius: 8px;

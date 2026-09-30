@@ -6,7 +6,7 @@
 
   @if (state$ | async; as commandState) {
   @if (commandState.status === 'loaded') {
-  <app-organizer-command-center [tournaments]="commandState.tournaments" [pendingAction]="pendingAction()"
+  <app-organizer-command-center [data]="commandState.commandCenter" [pendingAction]="pendingAction()"
     (matchEditRequested)="editCommandCenterMatch($event)" (bracketRequested)="generateBracket($event)"
     (startRequested)="startTournament($event)" />
   }
@@ -42,6 +42,17 @@
   </ul>
   } @else {
   <p class="surface-message">Nemaš aktivne turnire za upravljanje.</p>
+  }
+  @if (state.page; as page) {
+  @if (page.totalPages > 1) {
+  <nav class="pagination" aria-label="Paginacija turnira">
+    <button type="button" [disabled]="page.page === 1 || !!pendingAction()"
+      (click)="changePage(page.page - 1, page.totalPages)">Prethodna</button>
+    <span>Strana {{ page.page }} / {{ page.totalPages }}</span>
+    <button type="button" [disabled]="page.page === page.totalPages || !!pendingAction()"
+      (click)="changePage(page.page + 1, page.totalPages)">Sledeća</button>
+  </nav>
+  }
   }
   }
   }
