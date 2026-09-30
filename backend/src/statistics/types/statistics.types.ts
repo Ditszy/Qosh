@@ -70,6 +70,14 @@ export type PlayerStatistic = StatisticLine & {
     foulsPerGame: number;
 };
 
+export type PlayerStatisticPage = {
+    items: PlayerStatistic[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+};
+
 export type LeaderCategory = Exclude<PlayerStatisticSort, 'playerName'>;
 
 export type PlayerStatisticLeader = {

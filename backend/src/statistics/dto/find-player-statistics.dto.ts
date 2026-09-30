@@ -26,8 +26,14 @@ export class FindPlayerStatisticsDto {
     @Transform(({ value }) => value === undefined || value === '' ? undefined : Number(value))
     @IsInt()
     @Min(1)
+    page?: number;
+
+    @IsOptional()
+    @Transform(({ value }) => value === undefined || value === '' ? undefined : Number(value))
+    @IsInt()
+    @Min(1)
     @Max(100)
-    limit?: number;
+    pageSize?: number;
 
     @IsOptional()
     @IsIn(Object.values(PlayerStatisticSort))
