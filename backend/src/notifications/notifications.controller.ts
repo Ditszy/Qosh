@@ -1,7 +1,8 @@
-import { Controller, Delete, Get, Param, Patch, Request, Sse, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, Param, Patch, Query, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserRole } from '../common/user-role.enum';
+import { FindNotificationsDto } from './dto/find-notifications.dto';
 import { NotificationsService } from './notifications.service';
 
 type AuthenticatedRequest = {
@@ -20,8 +21,8 @@ export class NotificationsController {
     constructor(private readonly notificationsService: NotificationsService) { }
 
     @Get()
-    findMine(@Request() req: AuthenticatedRequest) {
-        return this.notificationsService.findForUser(req.user.id);
+    findMine(@Request() req: AuthenticatedRequest, @Query() query: FindNotificationsDto) {
+        return this.notificationsService.findForUser(req.user.id, query);
     }
 
     @Patch(':id/read')

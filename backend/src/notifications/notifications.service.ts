@@ -1,4 +1,4 @@
-import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
 import { Observable, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,8 +6,10 @@ import {
     CreateNotificationInput,
     NotificationClient,
     NotificationLiveMessage,
+    NotificationPage,
     NotificationRecord,
 } from './types/notification.types';
+import { FindNotificationsDto } from './dto/find-notifications.dto';
 
 @Injectable()
 export class NotificationsService {
@@ -54,15 +56,53 @@ export class NotificationsService {
         this.notificationUpdates$.next(notification);
     }
 
-    findForUser(userId: string): Promise<NotificationRecord[]> {
-        return this.prisma.notification.findMany({
-            where: {
-                recipientId: userId,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
-        });
+    async findForUser(userId: string, query: FindNotificationsDto = {}): Promise<NotificationPage> {
+        const limit = Math.min(50, Math.max(1, query.limit ?? 30));
+        const cursorNotification = query.cursor
+            ? await this.prisma.notification.findFirst({
+                where: { id: query.cursor, recipientId: userId },
+                select: { id: true, createdAt: true },
+            })
+            : null;
+
+        if (query.cursor && !cursorNotification) {
+            throw new BadRequestException('Invalid notification cursor');
+        }
+
+        const cursorFilter = cursorNotification
+            ? {
+                OR: [
+                    { createdAt: { lt: cursorNotification.createdAt } },
+                    { createdAt: cursorNotification.createdAt, id: { lt: cursorNotification.id } },
+                ],
+            }
+            : {};
+
+        const [notifications, unreadCount] = await Promise.all([
+            this.prisma.notification.findMany({
+                where: {
+                    recipientId: userId,
+                    ...cursorFilter,
+                },
+                orderBy: [
+                    { createdAt: 'desc' },
+                    { id: 'desc' },
+                ],
+                take: limit + 1,
+            }),
+            this.prisma.notification.count({
+                where: { recipientId: userId, readAt: null },
+            }),
+        ]);
+
+        const hasMore = notifications.length > limit;
+        const items = hasMore ? notifications.slice(0, limit) : notifications;
+
+        return {
+            items,
+            nextCursor: hasMore ? items.at(-1)?.id ?? null : null,
+            unreadCount,
+        };
     }
 
     async markAsRead(id: string, userId: string): Promise<NotificationRecord> {

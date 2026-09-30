@@ -14,6 +14,12 @@ export type NotificationRecord = {
     createdAt: Date;
 };
 
+export type NotificationPage = {
+    items: NotificationRecord[];
+    nextCursor: string | null;
+    unreadCount: number;
+};
+
 export type CreateNotificationInput = {
     recipientId: string;
     type: NotificationType;
