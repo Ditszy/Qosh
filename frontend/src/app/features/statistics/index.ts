@@ -22,6 +22,7 @@ export type {
   PlayerRecentMatchStatistic,
   PlayerStatistic,
   PlayerStatisticLeader,
+  PlayerStatisticsPage,
   PlayerStatisticsFilters,
   PlayerStatisticSort,
   PublicUser,

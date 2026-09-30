@@ -93,6 +93,14 @@ export type PlayerStatistic = StatisticLine & {
   foulsPerGame: number;
 };
 
+export type PlayerStatisticsPage = {
+  items: PlayerStatistic[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
 export type LeaderCategory = Exclude<PlayerStatisticSort, 'playerName'>;
 
 export type PlayerStatisticLeader = {
@@ -152,7 +160,8 @@ export type PlayerStatisticsFilters = {
   teamId?: string;
   search?: string;
   minGamesPlayed?: number;
-  limit?: number;
+  page?: number;
+  pageSize?: number;
   sortBy?: PlayerStatisticSort;
   sortDirection?: SortDirection;
 };
@@ -162,14 +171,15 @@ export type NormalizedPlayerStatisticsFilters = {
   teamId?: string;
   search?: string;
   minGamesPlayed?: number;
-  limit?: number;
+  page: number;
+  pageSize: number;
   sortBy: PlayerStatisticSort;
   sortDirection: SortDirection;
 };
 
 export type PlayerRankingsState = {
   filters: NormalizedPlayerStatisticsFilters;
-  rankings: PlayerStatistic[];
+  page: PlayerStatisticsPage | null;
   leaders: PlayerStatisticLeader[];
   loading: boolean;
   error: string | null;
@@ -183,6 +193,8 @@ export type PlayerProfileSearchState = {
 };
 
 export const defaultPlayerStatisticsFilters: NormalizedPlayerStatisticsFilters = {
+  page: 1,
+  pageSize: 25,
   sortBy: 'points',
   sortDirection: 'desc',
 };

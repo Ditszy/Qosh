@@ -7,8 +7,8 @@ import type {
   MatchStatistics,
   PublicUser,
   PlayerProfile,
-  PlayerStatistic,
   PlayerStatisticLeader,
+  PlayerStatisticsPage,
   PlayerStatisticsFilters,
   TournamentAward,
 } from './statistics.models';
@@ -20,8 +20,8 @@ export class StatisticsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
 
-  listPlayerStatistics(filters: PlayerStatisticsFilters = {}): Observable<PlayerStatistic[]> {
-    return this.http.get<PlayerStatistic[]>(this.apiUrl.build('/statistics/players'), {
+  listPlayerStatistics(filters: PlayerStatisticsFilters = {}): Observable<PlayerStatisticsPage> {
+    return this.http.get<PlayerStatisticsPage>(this.apiUrl.build('/statistics/players'), {
       params: this.toParams(filters),
     });
   }
@@ -35,8 +35,8 @@ export class StatisticsApiService {
   listTournamentPlayerStatistics(
     tournamentId: string,
     filters: PlayerStatisticsFilters = {},
-  ): Observable<PlayerStatistic[]> {
-    return this.http.get<PlayerStatistic[]>(this.apiUrl.build(`/tournaments/${tournamentId}/statistics/players`), {
+  ): Observable<PlayerStatisticsPage> {
+    return this.http.get<PlayerStatisticsPage>(this.apiUrl.build(`/tournaments/${tournamentId}/statistics/players`), {
       params: this.toParams({ ...filters, tournamentId: undefined }),
     });
   }
