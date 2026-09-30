@@ -5,6 +5,8 @@ import { Roles } from '../common/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
+import { FindManagedCommandCenterDto } from './dto/find-managed-command-center.dto';
+import { FindManagedTournamentsDto } from './dto/find-managed-tournaments.dto';
 import { FindTournamentsDto } from './dto/find-tournaments.dto';
 import { TournamentLiveService } from './tournament-live.service';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
@@ -29,6 +31,34 @@ export class TournamentsController {
     @Get()
     findAll(@Query() query: FindTournamentsDto) {
         return this.tournamentsService.findAll(query);
+    }
+
+    @Get('managed/command-center')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+    findManagedCommandCenter(
+        @Query() query: FindManagedCommandCenterDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.tournamentsService.findManagedCommandCenter(query, {
+            id: req.user.id,
+            role: req.user.role,
+        });
+    }
+
+    @Get('managed')
+    @ApiBearerAuth()
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles(UserRole.ORGANIZER, UserRole.ADMIN)
+    findManaged(
+        @Query() query: FindManagedTournamentsDto,
+        @Request() req: AuthenticatedRequest,
+    ) {
+        return this.tournamentsService.findManaged(query, {
+            id: req.user.id,
+            role: req.user.role,
+        });
     }
 
     @Get(':id')
