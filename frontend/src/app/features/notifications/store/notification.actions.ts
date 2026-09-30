@@ -1,13 +1,16 @@
 import { createActionGroup, emptyProps, props } from '@ngrx/store';
 
-import type { NotificationItem } from '../notification.models';
+import type { NotificationItem, NotificationPage } from '../notification.models';
 
 export const NotificationsActions = createActionGroup({
   source: 'Notifications',
   events: {
     'Load Mine': emptyProps(),
-    'Load Mine Succeeded': props<{ notifications: NotificationItem[] }>(),
+    'Load Mine Succeeded': props<{ page: NotificationPage }>(),
     'Load Mine Failed': props<{ error: string }>(),
+    'Load Older': props<{ cursor: string }>(),
+    'Load Older Succeeded': props<{ page: NotificationPage }>(),
+    'Load Older Failed': props<{ error: string }>(),
     'Watch Mine': emptyProps(),
     'Notification Received': props<{ notification: NotificationItem }>(),
     'Mark Read': props<{ notificationId: string }>(),

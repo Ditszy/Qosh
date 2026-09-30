@@ -1,6 +1,7 @@
 export { NotificationsActions } from './notification.actions';
 export {
   deleteNotification,
+  loadOlderNotifications,
   loadMineNotifications,
   markNotificationRead,
   watchMineNotifications,
@@ -12,5 +13,7 @@ export {
   selectLatestNotifications,
   selectNotificationsError,
   selectNotificationsLoading,
+  selectNotificationsLoadingMore,
+  selectNotificationsNextCursor,
   selectUnreadNotificationCount,
 } from './notification.selectors';

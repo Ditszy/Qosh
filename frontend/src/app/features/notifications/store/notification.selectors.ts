@@ -8,10 +8,12 @@ const notificationSelectors = notificationsAdapter.getSelectors(selectNotificati
 
 export const selectAllNotifications = notificationSelectors.selectAll;
 export const selectNotificationsLoading = createSelector(selectNotificationsState, (state) => state.loading);
+export const selectNotificationsLoadingMore = createSelector(selectNotificationsState, (state) => state.loadingMore);
+export const selectNotificationsNextCursor = createSelector(selectNotificationsState, (state) => state.nextCursor);
 export const selectNotificationsError = createSelector(selectNotificationsState, (state) => state.error);
 export const selectUnreadNotificationCount = createSelector(
-  selectAllNotifications,
-  (notifications) => notifications.filter((notification) => !notification.readAt).length,
+  selectNotificationsState,
+  (state) => state.unreadCount,
 );
 export const selectLatestNotifications = createSelector(
   selectAllNotifications,

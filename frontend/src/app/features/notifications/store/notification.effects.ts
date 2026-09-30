@@ -12,10 +12,24 @@ export const loadMineNotifications = createEffect(
       ofType(NotificationsActions.loadMine),
       switchMap(() =>
         notificationsApi.listMine().pipe(
-          map((notifications) => NotificationsActions.loadMineSucceeded({ notifications })),
+          map((page) => NotificationsActions.loadMineSucceeded({ page })),
           catchError(() =>
             of(NotificationsActions.loadMineFailed({ error: 'Notifications are not available.' })),
           ),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadOlderNotifications = createEffect(
+  (actions$ = inject(Actions), notificationsApi = inject(NotificationsApiService)) =>
+    actions$.pipe(
+      ofType(NotificationsActions.loadOlder),
+      switchMap(({ cursor }) =>
+        notificationsApi.listMine({ limit: 30, cursor }).pipe(
+          map((page) => NotificationsActions.loadOlderSucceeded({ page })),
+          catchError(() => of(NotificationsActions.loadOlderFailed({ error: 'Starija obaveštenja nisu dostupna.' }))),
         ),
       ),
     ),
