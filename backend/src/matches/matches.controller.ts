@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, Sse, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, Sse, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../common/roles.decorator';
@@ -6,6 +6,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { UserRole } from '../common/user-role.enum';
 import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
 import { CreateMatchEventDto } from './dto/create-match-event.dto';
+import { FindAssignedMatchesDto } from './dto/find-assigned-matches.dto';
 import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchesService } from './matches.service';
 
@@ -51,22 +52,22 @@ export class MatchesController {
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.REFEREE, UserRole.ADMIN)
-    findMyRefereeMatches(@Request() req: AuthenticatedRequest) {
+    findMyRefereeMatches(@Request() req: AuthenticatedRequest, @Query() query: FindAssignedMatchesDto) {
         return this.matchesService.findByReferee({
             id: req.user.id,
             role: req.user.role,
-        });
+        }, query);
     }
 
     @Get('matches/scorer/me')
     @ApiBearerAuth()
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.SCORER, UserRole.ADMIN)
-    findMyScorerMatches(@Request() req: AuthenticatedRequest) {
+    findMyScorerMatches(@Request() req: AuthenticatedRequest, @Query() query: FindAssignedMatchesDto) {
         return this.matchesService.findByScorer({
             id: req.user.id,
             role: req.user.role,
-        });
+        }, query);
     }
 
     @Get('matches/:id/events')

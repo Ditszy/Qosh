@@ -71,6 +71,14 @@ export type RefereeAssignedMatch = MatchWithRelations & {
 
 export type ScorerAssignedMatch = MatchWithRelations;
 
+export type AssignedMatchPage<TMatch extends MatchWithRelations> = {
+    items: TMatch[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+};
+
 export type PublicLiveCenterMatches = {
     live: MatchWithRelations[];
     recent: MatchWithRelations[];

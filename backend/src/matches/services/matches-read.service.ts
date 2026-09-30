@@ -4,7 +4,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchStatus } from '../enums/match-status.enum';
+import { FindAssignedMatchesDto } from '../dto/find-assigned-matches.dto';
 import {
+    AssignedMatchPage,
     MatchActor,
     MatchRecord,
     MatchWithRelations,
@@ -100,65 +102,87 @@ export class MatchesReadService {
         };
     }
 
-    async findByReferee(actor: MatchActor): Promise<RefereeAssignedMatch[]> {
-        const matches = await this.prisma.match.findMany({
-            where: actor.role === UserRole.ADMIN ? { refereeId: { not: null } } : { refereeId: actor.id },
-            include: {
-                ...this.matchInclude(),
-                refereeReport: { select: { id: true } },
-            },
-            orderBy: [
-                { scheduledAt: 'asc' },
-                { round: 'asc' },
-                { bracketPosition: 'asc' },
+    async findByReferee(
+        actor: MatchActor,
+        query: FindAssignedMatchesDto = {},
+    ): Promise<AssignedMatchPage<RefereeAssignedMatch>> {
+        const page = Math.max(1, query.page ?? 1);
+        const pageSize = Math.min(50, Math.max(1, query.pageSize ?? 25));
+        const where = {
+            ...(actor.role === UserRole.ADMIN ? { refereeId: { not: null } } : { refereeId: actor.id }),
+            OR: [
+                { status: { in: [MatchStatus.SCHEDULED, MatchStatus.LIVE] } },
+                { status: MatchStatus.FINAL, refereeReport: { is: null } },
             ],
-        });
+        };
+        const [matches, total] = await Promise.all([
+            this.prisma.match.findMany({
+                where,
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+                include: {
+                    ...this.matchInclude(),
+                    refereeReport: { select: { id: true } },
+                },
+                orderBy: [
+                    { status: 'desc' },
+                    { scheduledAt: 'asc' },
+                    { round: 'asc' },
+                    { bracketPosition: 'asc' },
+                    { id: 'asc' },
+                ],
+            }),
+            this.prisma.match.count({ where }),
+        ]);
 
-        return matches.map(({ refereeReport, ...match }) => ({
+        const items = matches.map(({ refereeReport, ...match }) => ({
             ...this.withCurrentClock(match),
             hasReport: Boolean(refereeReport),
-        }))
-            .filter((match) => !(match.status === MatchStatus.FINAL && match.hasReport))
-            .sort((a, b) => this.refereeMatchPriority(a) - this.refereeMatchPriority(b));
+        }));
+
+        return {
+            items,
+            total,
+            page,
+            pageSize,
+            totalPages: total === 0 ? 0 : Math.ceil(total / pageSize),
+        };
     }
 
-    async findByScorer(actor: MatchActor): Promise<ScorerAssignedMatch[]> {
-        const matches = await this.prisma.match.findMany({
-            where: {
-                ...(actor.role === UserRole.ADMIN ? { scorerId: { not: null } } : { scorerId: actor.id }),
-                status: { not: MatchStatus.FINAL },
-            },
-            include: this.matchInclude(),
-            orderBy: [
-                { scheduledAt: 'asc' },
-                { round: 'asc' },
-                { bracketPosition: 'asc' },
-            ],
-        });
+    async findByScorer(
+        actor: MatchActor,
+        query: FindAssignedMatchesDto = {},
+    ): Promise<AssignedMatchPage<ScorerAssignedMatch>> {
+        const page = Math.max(1, query.page ?? 1);
+        const pageSize = Math.min(50, Math.max(1, query.pageSize ?? 25));
+        const where = {
+            ...(actor.role === UserRole.ADMIN ? { scorerId: { not: null } } : { scorerId: actor.id }),
+            status: { not: MatchStatus.FINAL },
+        };
+        const [matches, total] = await Promise.all([
+            this.prisma.match.findMany({
+                where,
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+                include: this.matchInclude(),
+                orderBy: [
+                    { status: 'desc' },
+                    { scheduledAt: 'asc' },
+                    { round: 'asc' },
+                    { bracketPosition: 'asc' },
+                    { id: 'asc' },
+                ],
+            }),
+            this.prisma.match.count({ where }),
+        ]);
 
-        return matches
-            .map((match) => this.withCurrentClock(match))
-            .sort((a, b) => this.scorerMatchPriority(a) - this.scorerMatchPriority(b));
-    }
-
-    private refereeMatchPriority(match: RefereeAssignedMatch): number {
-        if (match.status === MatchStatus.FINAL && !match.hasReport) {
-            return 0;
-        }
-
-        if (match.status === MatchStatus.LIVE) {
-            return 1;
-        }
-
-        if (match.status === MatchStatus.SCHEDULED) {
-            return 2;
-        }
-
-        return 3;
-    }
-
-    private scorerMatchPriority(match: ScorerAssignedMatch): number {
-        return match.status === MatchStatus.LIVE ? 0 : 1;
+        return {
+            items: matches.map((match) => this.withCurrentClock(match)),
+            total,
+            page,
+            pageSize,
+            totalPages: total === 0 ? 0 : Math.ceil(total / pageSize),
+        };
     }
 
     withCurrentClock<T extends MatchRecord>(match: T): T {

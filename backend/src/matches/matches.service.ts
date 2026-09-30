@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { AdjustMatchClockDto } from './dto/adjust-match-clock.dto';
 import { CreateMatchEventDto } from './dto/create-match-event.dto';
+import { FindAssignedMatchesDto } from './dto/find-assigned-matches.dto';
 import { ScheduleMatchDto } from './dto/schedule-match.dto';
 import { MatchBracketService } from './services/match-bracket.service';
 import { MatchClockService } from './services/match-clock.service';
@@ -12,6 +13,7 @@ import { MatchSchedulingService } from './services/match-scheduling.service';
 import { MatchesReadService } from './services/matches-read.service';
 import { MatchRecap } from './types/match-recap.types';
 import {
+    AssignedMatchPage,
     MatchActor,
     MatchWithRelations,
     PublicLiveCenterMatches,
@@ -52,12 +54,12 @@ export class MatchesService {
         return this.matchesReadService.findPublicLiveCenter();
     }
 
-    async findByReferee(actor: MatchActor): Promise<RefereeAssignedMatch[]> {
-        return this.matchesReadService.findByReferee(actor);
+    async findByReferee(actor: MatchActor, query: FindAssignedMatchesDto): Promise<AssignedMatchPage<RefereeAssignedMatch>> {
+        return this.matchesReadService.findByReferee(actor, query);
     }
 
-    async findByScorer(actor: MatchActor): Promise<ScorerAssignedMatch[]> {
-        return this.matchesReadService.findByScorer(actor);
+    async findByScorer(actor: MatchActor, query: FindAssignedMatchesDto): Promise<AssignedMatchPage<ScorerAssignedMatch>> {
+        return this.matchesReadService.findByScorer(actor, query);
     }
 
     async schedule(id: string, scheduleMatchDto: ScheduleMatchDto, actor: MatchActor): Promise<MatchWithRelations> {
