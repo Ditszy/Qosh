@@ -54,14 +54,17 @@
   (cancelRequested)="cancelTournamentEditRequested.emit()" />
 }
 
-@if (tournament.matches.length > 0) {
+@if (tournament.matchCount > 0) {
 <button class="matches-toggle" type="button" [attr.aria-expanded]="matchesExpanded()"
   (click)="matchesToggled.emit(tournament.id)">
   {{ matchesExpanded() ? 'Sakrij mečeve' : 'Prikaži mečeve' }}
-  <span>{{ tournament.matches.length }}</span>
+  <span>{{ tournament.matchCount }}</span>
 </button>
 
 @if (matchesExpanded()) {
+@if (!tournament.detailsLoaded) {
+<p class="surface-message">Učitavanje mečeva...</p>
+} @else {
 <div class="rounds-panel">
   @for (roundGroup of matchRoundGroups(tournament.matches); track roundGroup.round) {
   <section class="round-group">
@@ -103,6 +106,7 @@
   </section>
   }
 </div>
+}
 }
 }
 }

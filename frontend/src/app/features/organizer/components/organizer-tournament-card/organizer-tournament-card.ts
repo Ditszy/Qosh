@@ -124,6 +124,11 @@ export class OrganizerTournamentCard {
   }
 
   protected reviewChecklistMatches(tournament: OrganizerTournamentWithMatches): void {
+    if (!tournament.detailsLoaded) {
+      this.matchesToggled.emit(tournament.id);
+      return;
+    }
+
     if (!this.matchesExpanded()) {
       this.matchesToggled.emit(tournament.id);
     }
