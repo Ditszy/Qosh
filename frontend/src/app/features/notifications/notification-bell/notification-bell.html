@@ -25,6 +25,11 @@
     } @else {
     <p class="empty-state">Nema novih obaveštenja.</p>
     }
+    @if (state.nextCursor) {
+    <button type="button" [disabled]="state.loadingMore" (click)="loadOlder(state.nextCursor)">
+      {{ state.loadingMore ? 'Ucitavanje...' : 'Ucitaj starija obavestenja' }}
+    </button>
+    }
   </section>
 </details>
 }

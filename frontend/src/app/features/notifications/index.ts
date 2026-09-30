@@ -1,6 +1,7 @@
 export { NotificationBell } from './notification-bell/notification-bell';
 export {
   deleteNotification,
+  loadOlderNotifications,
   loadMineNotifications,
   markNotificationRead,
   watchMineNotifications,
@@ -13,6 +14,8 @@ export {
   selectLatestNotifications,
   selectNotificationsError,
   selectNotificationsLoading,
+  selectNotificationsLoadingMore,
+  selectNotificationsNextCursor,
   selectUnreadNotificationCount,
 } from './store';
 export { NotificationsApiService } from './notifications-api.service';
@@ -21,5 +24,6 @@ export type {
   NotificationItem,
   NotificationLivePayload,
   NotificationLiveStreamMessage,
+  NotificationPage,
   NotificationType,
 } from './notification.models';

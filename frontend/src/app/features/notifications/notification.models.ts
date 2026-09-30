@@ -23,6 +23,12 @@ export type NotificationLivePayload = {
   notification: NotificationItem;
 };
 
+export type NotificationPage = {
+  items: NotificationItem[];
+  nextCursor: string | null;
+  unreadCount: number;
+};
+
 export type NotificationLiveStreamMessage = {
   type: 'notification.created';
   data: NotificationLivePayload;
