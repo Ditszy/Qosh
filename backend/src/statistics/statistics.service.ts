@@ -5,11 +5,9 @@ import { publicUserSelect } from '../users/users.service';
 import { UserRole } from '../common/user-role.enum';
 import { FindPlayerStatisticsDto } from './dto/find-player-statistics.dto';
 import {
-    addPersistedStatLine,
     assignPersistedStatLine,
     buildTournamentAwards,
     createMutableStatistic,
-    getMatchSortTime,
     getMatchTeams,
     leaderCategories,
     matchSummarySelect,
@@ -30,7 +28,6 @@ import {
     PlayerStatistic,
     PlayerStatisticLeader,
     PlayerStatisticPage,
-    RecentMatchStatisticState,
     TeamSummary,
     TournamentAward,
 } from './types/statistics.types';
@@ -298,63 +295,130 @@ export class StatisticsService {
             throw new NotFoundException('User not found');
         }
 
-        const playerStats = await this.prisma.matchPlayerStat.findMany({
-            where: { playerId: userId },
-            select: {
-                matchId: true,
-                updatedAt: true,
-                ...statCounterSelect(),
-                team: {
-                    select: teamSummarySelect(),
-                },
-                match: {
-                    select: {
-                        ...matchSummarySelect(),
-                        teamA: {
-                            select: teamSummarySelect(),
-                        },
-                        teamB: {
-                            select: teamSummarySelect(),
+        const [totalsRows, recentMatchIds] = await Promise.all([
+            this.prisma.$queryRaw<RawPlayerProfileTotalsRow[]>(Prisma.sql`
+                SELECT
+                    COUNT(DISTINCT s."matchId")::int AS "gamesPlayed",
+                    COALESCE(SUM(s."points"), 0)::int AS "points",
+                    COALESCE(SUM(s."onePointMade"), 0)::int AS "onePointMade",
+                    COALESCE(SUM(s."onePointAttempted"), 0)::int AS "onePointAttempted",
+                    COALESCE(SUM(s."twoPointMade"), 0)::int AS "twoPointMade",
+                    COALESCE(SUM(s."twoPointAttempted"), 0)::int AS "twoPointAttempted",
+                    COALESCE(SUM(s."freeThrowMade"), 0)::int AS "freeThrowMade",
+                    COALESCE(SUM(s."freeThrowAttempted"), 0)::int AS "freeThrowAttempted",
+                    COALESCE(SUM(s."rebounds"), 0)::int AS "rebounds",
+                    COALESCE(SUM(s."assists"), 0)::int AS "assists",
+                    COALESCE(SUM(s."steals"), 0)::int AS "steals",
+                    COALESCE(SUM(s."blocks"), 0)::int AS "blocks",
+                    COALESCE(SUM(s."turnovers"), 0)::int AS "turnovers",
+                    COALESCE(SUM(s."fouls"), 0)::int AS "fouls",
+                    CASE WHEN COUNT(*) = 0 THEN NULL ELSE ROUND((COALESCE(SUM(s."onePointMade"), 0)::numeric / NULLIF(COALESCE(SUM(s."onePointAttempted"), 0), 0)) * 100, 1)::double precision END AS "onePointPercentage",
+                    CASE WHEN COUNT(*) = 0 THEN NULL ELSE ROUND((COALESCE(SUM(s."twoPointMade"), 0)::numeric / NULLIF(COALESCE(SUM(s."twoPointAttempted"), 0), 0)) * 100, 1)::double precision END AS "twoPointPercentage",
+                    CASE WHEN COUNT(*) = 0 THEN NULL ELSE ROUND((COALESCE(SUM(s."freeThrowMade"), 0)::numeric / NULLIF(COALESCE(SUM(s."freeThrowAttempted"), 0), 0)) * 100, 1)::double precision END AS "freeThrowPercentage",
+                    ROUND(COALESCE(SUM(s."points"), 0)::numeric / NULLIF(COUNT(DISTINCT s."matchId"), 0), 2)::double precision AS "pointsPerGame",
+                    ROUND(COALESCE(SUM(s."rebounds"), 0)::numeric / NULLIF(COUNT(DISTINCT s."matchId"), 0), 2)::double precision AS "reboundsPerGame",
+                    ROUND(COALESCE(SUM(s."assists"), 0)::numeric / NULLIF(COUNT(DISTINCT s."matchId"), 0), 2)::double precision AS "assistsPerGame",
+                    ROUND(COALESCE(SUM(s."steals"), 0)::numeric / NULLIF(COUNT(DISTINCT s."matchId"), 0), 2)::double precision AS "stealsPerGame",
+                    ROUND(COALESCE(SUM(s."blocks"), 0)::numeric / NULLIF(COUNT(DISTINCT s."matchId"), 0), 2)::double precision AS "blocksPerGame",
+                    ROUND(COALESCE(SUM(s."turnovers"), 0)::numeric / NULLIF(COUNT(DISTINCT s."matchId"), 0), 2)::double precision AS "turnoversPerGame",
+                    ROUND(COALESCE(SUM(s."fouls"), 0)::numeric / NULLIF(COUNT(DISTINCT s."matchId"), 0), 2)::double precision AS "foulsPerGame",
+                    COALESCE(
+                        jsonb_agg(DISTINCT jsonb_build_object(
+                            'id', t."id",
+                            'name', t."name",
+                            'tournamentId', t."tournamentId"
+                        )),
+                        '[]'::jsonb
+                    ) AS "teams"
+                FROM "match_player_stats" s
+                INNER JOIN "teams" t ON t."id" = s."teamId"
+                WHERE s."playerId" = ${userId}::uuid
+            `),
+            this.prisma.$queryRaw<RawPlayerRecentMatchId[]>(Prisma.sql`
+                SELECT s."id"
+                FROM "match_player_stats" s
+                INNER JOIN "matches" m ON m."id" = s."matchId"
+                WHERE s."playerId" = ${userId}::uuid
+                ORDER BY
+                    COALESCE(m."scheduledAt", s."updatedAt") DESC,
+                    s."updatedAt" DESC,
+                    s."id" DESC
+                LIMIT 10
+            `),
+        ]);
+
+        const totalsRow = totalsRows[0];
+        const totals = totalsRow
+            ? this.toPlayerStatistic({
+                playerId: user.id,
+                email: user.email,
+                username: user.username,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+                profileImageUrl: user.profileImageUrl,
+                ...totalsRow,
+            }, this.profileTeams(totalsRow.teams))
+            : toPlayerStatistic(createMutableStatistic(user));
+
+        const recentIds = recentMatchIds.map(({ id }) => id);
+        const recentStats = recentIds.length === 0
+            ? []
+            : await this.prisma.matchPlayerStat.findMany({
+                where: { id: { in: recentIds } },
+                select: {
+                    id: true,
+                    updatedAt: true,
+                    ...statCounterSelect(),
+                    team: {
+                        select: teamSummarySelect(),
+                    },
+                    match: {
+                        select: {
+                            ...matchSummarySelect(),
+                            teamA: {
+                                select: teamSummarySelect(),
+                            },
+                            teamB: {
+                                select: teamSummarySelect(),
+                            },
                         },
                     },
                 },
-            },
-            orderBy: {
-                updatedAt: 'desc',
-            },
-        });
+            });
 
-        const totals = createMutableStatistic(user);
-        const recentMatchStatistics: RecentMatchStatisticState[] = [];
-
-        for (const playerStat of playerStats) {
-            totals.teamsById.set(playerStat.team.id, playerStat.team);
-            totals.matchIds.add(playerStat.matchId);
-            addPersistedStatLine(totals, playerStat);
-            recentMatchStatistics.push({
+        const recentStatsById = new Map(recentStats.map((stat) => [stat.id, stat]));
+        const previousMatches = recentIds
+            .map((id) => recentStatsById.get(id))
+            .filter((stat): stat is (typeof recentStats)[number] => Boolean(stat))
+            .map((playerStat) => ({
                 match: toMatchSummary(playerStat.match),
                 team: playerStat.team,
                 opponentTeam: this.getOpponentTeam(playerStat.match, playerStat.team.id),
-                statistic: toStatisticLine(playerStat),
-                updatedAt: playerStat.updatedAt,
-            });
-        }
-
-        const previousMatches = recentMatchStatistics
-            .sort((first, second) => getMatchSortTime(second) - getMatchSortTime(first))
-            .slice(0, 10)
-            .map((matchStatistic) => ({
-                match: matchStatistic.match,
-                team: matchStatistic.team,
-                opponentTeam: matchStatistic.opponentTeam,
-                ...matchStatistic.statistic,
+                ...toStatisticLine(playerStat),
             }));
 
         return {
             user,
-            totals: toPlayerStatistic(totals),
+            totals,
             previousMatches,
         };
+    }
+
+    private profileTeams(value: unknown): TeamSummary[] {
+        if (!Array.isArray(value)) {
+            return [];
+        }
+
+        return value
+            .filter((team): team is TeamSummary => (
+                typeof team === 'object'
+                && team !== null
+                && typeof (team as TeamSummary).id === 'string'
+                && typeof (team as TeamSummary).name === 'string'
+                && typeof (team as TeamSummary).tournamentId === 'string'
+            ))
+            .sort((first, second) => first.name.localeCompare(second.name));
     }
 
     private buildAggregateCte(filters: FindPlayerStatisticsDto): Prisma.Sql {
@@ -628,4 +692,12 @@ type RawPlayerTeamRow = {
     id: string;
     name: string;
     tournamentId: string;
+};
+
+type RawPlayerProfileTotalsRow = Omit<RawPlayerStatisticRow, 'playerId' | 'email' | 'username' | 'firstName' | 'lastName' | 'role' | 'profileImageUrl'> & {
+    teams: unknown;
+};
+
+type RawPlayerRecentMatchId = {
+    id: string;
 };
