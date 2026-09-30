@@ -11,6 +11,7 @@ import { ScorerCorrectionPanel } from '../scorer-correction-panel/scorer-correct
 import {
   ScorerActions,
   selectAssignedMatches,
+  selectAssignedMatchesPage,
   selectAssignedMatchesLoading,
   selectScorerError,
   selectSelectedMatchBundle,
@@ -53,6 +54,7 @@ export class ScorerConsole implements OnInit, OnDestroy {
 
   protected readonly playerEventButtons = PLAYER_EVENT_BUTTONS;
   protected readonly assignedMatches = this.store.selectSignal(selectAssignedMatches);
+  protected readonly assignedMatchesPage = this.store.selectSignal(selectAssignedMatchesPage);
   protected readonly assignedMatchesLoading = this.store.selectSignal(selectAssignedMatchesLoading);
   protected readonly isConsoleRoute = signal(false);
   protected readonly matchId = signal('');
@@ -154,13 +156,21 @@ export class ScorerConsole implements OnInit, OnDestroy {
     }
   }
 
-  protected loadAssignedMatches(): void {
+  protected loadAssignedMatches(page = 1): void {
     if (this.assignedMatchesLoading()) {
       return;
     }
 
     this.commandError.set('');
-    this.store.dispatch(ScorerActions.loadAssignedMatches());
+    this.store.dispatch(ScorerActions.loadAssignedMatches({ page }));
+  }
+
+  protected goToPage(page: number): void {
+    const metadata = this.assignedMatchesPage();
+
+    if (metadata && page >= 1 && page <= metadata.totalPages) {
+      this.loadAssignedMatches(page);
+    }
   }
 
   protected updateClockAdjustmentSeconds(value: string | number): void {

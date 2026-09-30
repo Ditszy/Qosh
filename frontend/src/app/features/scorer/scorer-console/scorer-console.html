@@ -32,6 +32,15 @@
     } @else {
     <p>Nema dodeljenih nezavršenih mečeva.</p>
     }
+    @if (assignedMatchesPage(); as page) {
+    <nav aria-label="Stranice dodeljenih meceva">
+      <button type="button" [disabled]="page.page <= 1 || assignedMatchesLoading()"
+        (click)="goToPage(page.page - 1)">Prethodna</button>
+      <span>Strana {{ page.page }} od {{ page.totalPages }}</span>
+      <button type="button" [disabled]="page.page >= page.totalPages || assignedMatchesLoading()"
+        (click)="goToPage(page.page + 1)">Sledeca</button>
+    </nav>
+    }
   </section>
   }
 
