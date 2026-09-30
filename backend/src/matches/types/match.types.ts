@@ -1,4 +1,6 @@
 import { UserRole } from '../../common/user-role.enum';
+import type { RefereeReportWithRelations } from '../../reports/types/report.types';
+import type { MatchStatistics } from '../../statistics/types/statistics.types';
 import { PublicUser } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchSlot } from '../enums/match-slot.enum';
@@ -77,6 +79,14 @@ export type AssignedMatchPage<TMatch extends MatchWithRelations> = {
     page: number;
     pageSize: number;
     totalPages: number;
+};
+
+export type MatchReadBundle = {
+    match: MatchWithRelations;
+    events: unknown[];
+    statistics: MatchStatistics;
+    refereeReport: RefereeReportWithRelations | null;
+    serverTime: Date;
 };
 
 export type PublicLiveCenterMatches = {

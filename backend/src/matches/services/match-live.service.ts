@@ -1,18 +1,9 @@
-import { Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
+import { Injectable, MessageEvent } from '@nestjs/common';
 import { Observable, Subject, concat, defer, from, merge, timer } from 'rxjs';
 import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
-import { PrismaService } from '../../prisma/prisma.service';
-import { publicUserSelect } from '../../users/users.service';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchStatus } from '../enums/match-status.enum';
 import { MatchesReadService } from './matches-read.service';
-import { MatchWithRelations } from '../types/match.types';
-
-type MatchLiveSnapshot = {
-    match: MatchWithRelations;
-    events: unknown[];
-    serverTime: Date;
-};
 
 type MatchClockPayload = {
     id: string;
@@ -56,19 +47,15 @@ type MatchLiveUpdate = {
 export class MatchLiveService {
     private readonly matchUpdates$ = new Subject<MatchLiveUpdate>();
 
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly matchesReadService: MatchesReadService,
-    ) { }
+    constructor(private readonly matchesReadService: MatchesReadService) { }
 
     watchMatch(matchId: string): Observable<MessageEvent> {
-        const initialSnapshot$ = defer(() => from(this.createSnapshotMessage(matchId)));
-        const updateMessages$ = this.matchUpdates$.pipe(
-            filter((update) => update.matchId === matchId),
-            map((update) => update.message),
+        return defer(() => from(this.matchesReadService.findById(matchId))).pipe(
+            switchMap(() => this.matchUpdates$.pipe(
+                filter((update) => update.matchId === matchId),
+                map((update) => update.message),
+            )),
         );
-
-        return concat(initialSnapshot$, updateMessages$);
     }
 
     watchLiveCenter(): Observable<MessageEvent> {
@@ -115,51 +102,10 @@ export class MatchLiveService {
         });
     }
 
-    private async createSnapshotMessage(matchId: string): Promise<MessageEvent> {
-        return {
-            type: 'match.snapshot',
-            data: await this.createSnapshot(matchId),
-        };
-    }
-
     private async createLiveCenterMessage(): Promise<MessageEvent> {
         return {
             type: 'matches.live.snapshot',
             data: await this.matchesReadService.findPublicLiveCenter(),
-        };
-    }
-
-    private async createSnapshot(matchId: string): Promise<MatchLiveSnapshot> {
-        const match = await this.prisma.match.findUnique({
-            where: { id: matchId },
-            include: this.matchesReadService.matchInclude(),
-        });
-
-        if (!match) {
-            throw new NotFoundException('Match not found');
-        }
-
-        const events = await this.prisma.matchEvent.findMany({
-            where: { matchId },
-            include: {
-                team: true,
-                player: {
-                    select: publicUserSelect,
-                },
-                scorer: {
-                    select: publicUserSelect,
-                },
-            },
-            orderBy: [
-                { occurredAt: 'asc' },
-                { createdAt: 'asc' },
-            ],
-        });
-
-        return {
-            match: this.toLiveSnapshotMatch(match),
-            events,
-            serverTime: new Date(),
         };
     }
 
@@ -183,20 +129,4 @@ export class MatchLiveService {
         };
     }
 
-    private toLiveSnapshotMatch(match: MatchWithRelations): MatchWithRelations {
-        if (match.clockStatus !== MatchClockStatus.RUNNING || !match.clockLastStartedAt) {
-            return match;
-        }
-
-        if (this.matchesReadService.getCurrentRemainingSeconds(match) > 0) {
-            return match;
-        }
-
-        return {
-            ...match,
-            clockStatus: MatchClockStatus.ENDED,
-            clockRemainingSeconds: 0,
-            clockLastStartedAt: null,
-        };
-    }
 }

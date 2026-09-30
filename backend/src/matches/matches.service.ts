@@ -9,12 +9,14 @@ import { MatchEventsService } from './services/match-events.service';
 import { MatchFinalizationService } from './services/match-finalization.service';
 import { MatchLiveService } from './services/match-live.service';
 import { MatchRecapService } from './services/match-recap.service';
+import { MatchReadBundleService } from './services/match-read-bundle.service';
 import { MatchSchedulingService } from './services/match-scheduling.service';
 import { MatchesReadService } from './services/matches-read.service';
 import { MatchRecap } from './types/match-recap.types';
 import {
     AssignedMatchPage,
     MatchActor,
+    MatchReadBundle,
     MatchWithRelations,
     PublicLiveCenterMatches,
     RefereeAssignedMatch,
@@ -29,6 +31,7 @@ export class MatchesService {
         private readonly matchEventsService: MatchEventsService,
         private readonly matchFinalizationService: MatchFinalizationService,
         private readonly matchLiveService: MatchLiveService,
+        private readonly matchReadBundleService: MatchReadBundleService,
         private readonly matchRecapService: MatchRecapService,
         private readonly matchSchedulingService: MatchSchedulingService,
         private readonly matchesReadService: MatchesReadService,
@@ -44,6 +47,10 @@ export class MatchesService {
 
     async findById(id: string): Promise<MatchWithRelations> {
         return this.matchesReadService.findById(id);
+    }
+
+    async findReadBundle(id: string): Promise<MatchReadBundle> {
+        return this.matchReadBundleService.findById(id);
     }
 
     async findRecapById(id: string): Promise<MatchRecap> {

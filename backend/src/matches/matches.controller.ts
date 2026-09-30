@@ -38,6 +38,11 @@ export class MatchesController {
         return this.matchesService.findRecapById(id);
     }
 
+    @Get('matches/:id/read-bundle')
+    findReadBundle(@Param('id') id: string) {
+        return this.matchesService.findReadBundle(id);
+    }
+
     @Get('matches/:id')
     findById(@Param('id') id: string) {
         return this.matchesService.findById(id);
