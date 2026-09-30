@@ -14,7 +14,7 @@
       @for (item of liveMatches(); track item.match.id) {
       <article class="queue-item">
         <div>
-          <strong>{{ teamLabel(item.match) }}</strong>
+          <strong>{{ teamLabel(item) }}</strong>
           <small>{{ item.tournament.name }}</small>
         </div>
         <a [routerLink]="['/matches', item.match.id, 'live']">Otvori</a>
@@ -34,11 +34,11 @@
       @for (item of nextMatches(); track item.match.id) {
       <article class="queue-item">
         <div>
-          <strong>{{ teamLabel(item.match) }}</strong>
+          <strong>{{ teamLabel(item) }}</strong>
           <small>{{ item.match.scheduledAt | date: 'short' }} · {{ item.match.location || item.tournament.location
             }}</small>
         </div>
-        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item.match)">Izmeni</button>
+        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item)">Izmeni</button>
       </article>
       }
       } @else {
@@ -55,10 +55,10 @@
       @for (item of unscheduledMatches(); track item.match.id) {
       <article class="queue-item">
         <div>
-          <strong>{{ teamLabel(item.match) }}</strong>
+          <strong>{{ teamLabel(item) }}</strong>
           <small>{{ item.tournament.name }} · R{{ item.match.round }}.{{ item.match.bracketPosition }}</small>
         </div>
-        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item.match)">Zakaži</button>
+        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item)">Zakaži</button>
       </article>
       }
       } @else {
@@ -75,10 +75,10 @@
       @for (item of missingOfficialMatches(); track item.match.id) {
       <article class="queue-item">
         <div>
-          <strong>{{ teamLabel(item.match) }}</strong>
-          <small>Nedostaje: {{ missingOfficialsLabel(item.match) }}</small>
+          <strong>{{ teamLabel(item) }}</strong>
+          <small>Nedostaje: {{ missingOfficialsLabel(item) }}</small>
         </div>
-        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item.match)">Dodeli</button>
+        <button type="button" [disabled]="!!pendingAction()" (click)="requestMatchEdit(item)">Dodeli</button>
       </article>
       }
       } @else {
@@ -108,7 +108,7 @@
       <article class="queue-item">
         <div>
           <strong>{{ tournament.name }}</strong>
-          <small>{{ tournament.matches.length }} mečeva</small>
+          <small>{{ tournament.matchCount }} mečeva</small>
         </div>
         <button type="button" [disabled]="pendingAction() === 'start:' + tournament.id"
           (click)="requestStart(tournament.id)">
@@ -130,7 +130,7 @@
       @for (item of recentFinals(); track item.match.id) {
       <article class="queue-item">
         <div>
-          <strong>{{ item.match.teamAScore }} - {{ item.match.teamBScore }} · {{ winnerLabel(item.match) }}</strong>
+          <strong>{{ item.match.teamAScore }} - {{ item.match.teamBScore }} · {{ winnerLabel(item) }}</strong>
           <small>{{ item.tournament.name }}</small>
         </div>
         <a [routerLink]="['/matches', item.match.id, 'live']">Rezime</a>

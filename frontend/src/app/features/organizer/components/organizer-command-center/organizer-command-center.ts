@@ -2,13 +2,10 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import type { TournamentMatch } from '../../../public/tournaments/tournament.models';
-import type { OrganizerTournamentWithMatches } from '../../store/organizer-dashboard.reducer';
-
-type CommandMatch = {
-  tournament: OrganizerTournamentWithMatches;
-  match: TournamentMatch;
-};
+import type {
+  OrganizerCommandCenterData,
+  OrganizerCommandMatch,
+} from '../../organizer-tournaments-api.service';
 
 @Component({
   selector: 'app-organizer-command-center',
@@ -17,78 +14,39 @@ type CommandMatch = {
   styleUrl: './organizer-command-center.scss',
 })
 export class OrganizerCommandCenter {
-  readonly tournaments = input<OrganizerTournamentWithMatches[]>([]);
+  readonly data = input<OrganizerCommandCenterData | null>(null);
   readonly pendingAction = input('');
-  readonly matchEditRequested = output<TournamentMatch>();
+  readonly matchEditRequested = output<OrganizerCommandMatch>();
   readonly bracketRequested = output<string>();
   readonly startRequested = output<string>();
 
-  protected readonly queueLimit = 4;
-  protected readonly matchItems = computed<CommandMatch[]>(() =>
-    this.tournaments().flatMap((tournament) => tournament.matches.map((match) => ({ tournament, match }))),
-  );
-  protected readonly liveMatches = computed(() =>
-    this.matchItems()
-      .filter(({ match }) => match.status === 'LIVE')
-      .sort(compareScheduledThenTournament)
-      .slice(0, this.queueLimit),
-  );
-  protected readonly nextMatches = computed(() =>
-    this.matchItems()
-      .filter(({ match }) => match.status === 'SCHEDULED' && !!match.scheduledAt && !!match.teamA && !!match.teamB)
-      .sort((first, second) => getTime(first.match.scheduledAt) - getTime(second.match.scheduledAt))
-      .slice(0, this.queueLimit),
-  );
-  protected readonly unscheduledMatches = computed(() =>
-    this.matchItems()
-      .filter(({ match }) => match.status === 'SCHEDULED' && !match.scheduledAt)
-      .sort(compareOperationalOrder)
-      .slice(0, this.queueLimit),
-  );
-  protected readonly missingOfficialMatches = computed(() =>
-    this.matchItems()
-      .filter(({ match }) => match.status !== 'FINAL' && (!match.scorerId || !match.refereeId))
-      .sort(compareOperationalOrder)
-      .slice(0, this.queueLimit),
-  );
-  protected readonly readyForBracket = computed(() =>
-    this.tournaments()
-      .filter((tournament) => tournament.status === 'SIGNUPS_LOCKED' && tournament.matches.length === 0)
-      .sort((first, second) => getTime(first.startsAt) - getTime(second.startsAt))
-      .slice(0, this.queueLimit),
-  );
-  protected readonly readyToStart = computed(() =>
-    this.tournaments()
-      .filter((tournament) => tournament.status === 'SIGNUPS_LOCKED' && tournament.matches.length > 0)
-      .sort((first, second) => getTime(first.startsAt) - getTime(second.startsAt))
-      .slice(0, this.queueLimit),
-  );
-  protected readonly recentFinals = computed(() =>
-    this.matchItems()
-      .filter(({ match }) => match.status === 'FINAL')
-      .sort((first, second) => getRecentTime(second.match) - getRecentTime(first.match))
-      .slice(0, this.queueLimit),
-  );
+  protected readonly liveMatches = computed(() => this.data()?.liveMatches ?? []);
+  protected readonly nextMatches = computed(() => this.data()?.nextMatches ?? []);
+  protected readonly unscheduledMatches = computed(() => this.data()?.unscheduledMatches ?? []);
+  protected readonly missingOfficialMatches = computed(() => this.data()?.missingOfficialMatches ?? []);
+  protected readonly readyForBracket = computed(() => this.data()?.readyForBracket ?? []);
+  protected readonly readyToStart = computed(() => this.data()?.readyToStart ?? []);
+  protected readonly recentFinals = computed(() => this.data()?.recentFinals ?? []);
 
-  protected teamLabel(match: TournamentMatch): string {
-    return `${match.teamA?.name ?? 'TBD'} - ${match.teamB?.name ?? 'TBD'}`;
+  protected teamLabel(item: OrganizerCommandMatch): string {
+    return `${item.match.teamA?.name ?? 'TBD'} - ${item.match.teamB?.name ?? 'TBD'}`;
   }
 
-  protected missingOfficialsLabel(match: TournamentMatch): string {
+  protected missingOfficialsLabel(item: OrganizerCommandMatch): string {
     const missing = [
-      !match.scorerId ? 'zapisničar' : '',
-      !match.refereeId ? 'sudija' : '',
+      !item.match.scorerId ? 'zapisničar' : '',
+      !item.match.refereeId ? 'sudija' : '',
     ].filter(Boolean);
 
     return missing.join(' i ');
   }
 
-  protected winnerLabel(match: TournamentMatch): string {
-    return match.winnerTeam?.name ?? 'Pobednik nije upisan';
+  protected winnerLabel(item: OrganizerCommandMatch): string {
+    return item.match.winnerTeam?.name ?? 'Pobednik nije upisan';
   }
 
-  protected requestMatchEdit(match: TournamentMatch): void {
-    this.matchEditRequested.emit(match);
+  protected requestMatchEdit(item: OrganizerCommandMatch): void {
+    this.matchEditRequested.emit(item);
   }
 
   protected requestBracket(tournamentId: string): void {
@@ -98,26 +56,4 @@ export class OrganizerCommandCenter {
   protected requestStart(tournamentId: string): void {
     this.startRequested.emit(tournamentId);
   }
-}
-
-function compareScheduledThenTournament(first: CommandMatch, second: CommandMatch): number {
-  return getTime(first.match.scheduledAt) - getTime(second.match.scheduledAt)
-    || first.tournament.name.localeCompare(second.tournament.name)
-    || first.match.round - second.match.round
-    || first.match.bracketPosition - second.match.bracketPosition;
-}
-
-function compareOperationalOrder(first: CommandMatch, second: CommandMatch): number {
-  return getTime(first.tournament.startsAt) - getTime(second.tournament.startsAt)
-    || first.tournament.name.localeCompare(second.tournament.name)
-    || first.match.round - second.match.round
-    || first.match.bracketPosition - second.match.bracketPosition;
-}
-
-function getRecentTime(match: TournamentMatch): number {
-  return getTime(match.updatedAt || match.scheduledAt);
-}
-
-function getTime(value: string | null | undefined): number {
-  return value ? new Date(value).getTime() : Number.MAX_SAFE_INTEGER;
 }
