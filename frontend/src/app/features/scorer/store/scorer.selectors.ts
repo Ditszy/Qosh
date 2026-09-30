@@ -5,6 +5,7 @@ import { scorerFeatureKey, type ScorerState } from './scorer.reducer';
 export const selectScorerState = createFeatureSelector<ScorerState>(scorerFeatureKey);
 
 export const selectAssignedMatches = createSelector(selectScorerState, (state) => state.assignedMatches);
+export const selectAssignedMatchesPage = createSelector(selectScorerState, (state) => state.assignedMatchesPage);
 export const selectAssignedMatchesLoading = createSelector(
   selectScorerState,
   (state) => state.assignedMatchesLoading,

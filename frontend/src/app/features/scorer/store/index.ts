@@ -4,6 +4,7 @@ export { scorerFeatureKey, scorerReducer } from './scorer.reducer';
 export type { ScorerState } from './scorer.reducer';
 export {
   selectAssignedMatches,
+  selectAssignedMatchesPage,
   selectAssignedMatchesLoading,
   selectScorerError,
   selectScorerState,

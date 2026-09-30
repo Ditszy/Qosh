@@ -10,9 +10,9 @@ export const loadAssignedMatches = createEffect(
   (actions$ = inject(Actions), scorerApi = inject(ScorerMatchApiService)) =>
     actions$.pipe(
       ofType(ScorerActions.loadAssignedMatches),
-      switchMap(() =>
-        scorerApi.listAssignedMatches().pipe(
-          map((matches) => ScorerActions.loadAssignedMatchesSucceeded({ matches })),
+      switchMap(({ page }) =>
+        scorerApi.listAssignedMatches({ page: page ?? 1, pageSize: 25 }).pipe(
+          map((result) => ScorerActions.loadAssignedMatchesSucceeded({ page: result })),
           catchError(() =>
             of(ScorerActions.loadAssignedMatchesFailed({ error: 'Dodeljeni mečevi trenutno nisu dostupni.' })),
           ),

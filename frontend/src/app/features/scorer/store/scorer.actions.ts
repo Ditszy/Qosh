@@ -1,12 +1,13 @@
-import { createActionGroup, emptyProps, props } from '@ngrx/store';
+import { createActionGroup, props } from '@ngrx/store';
 
 import type { MatchDetail, MatchEvent, MatchEventUndoResult, MatchReadBundle } from '../../public/live-match/match.models';
+import type { ScorerAssignedMatchPage } from '../scorer-match-api.service';
 
 export const ScorerActions = createActionGroup({
   source: 'Scorer',
   events: {
-    'Load Assigned Matches': emptyProps(),
-    'Load Assigned Matches Succeeded': props<{ matches: MatchDetail[] }>(),
+    'Load Assigned Matches': props<{ page?: number }>(),
+    'Load Assigned Matches Succeeded': props<{ page: ScorerAssignedMatchPage }>(),
     'Load Assigned Matches Failed': props<{ error: string }>(),
     'Load Match': props<{ matchId: string }>(),
     'Load Match Succeeded': props<{ matchId: string; bundle: MatchReadBundle }>(),

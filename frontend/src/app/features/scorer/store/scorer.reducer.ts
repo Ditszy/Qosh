@@ -9,11 +9,13 @@ import type {
 } from '../../public/live-match/match.models';
 import type { MatchStatistics, StatisticLine, StatisticTotals } from '../../statistics';
 import { ScorerActions } from './scorer.actions';
+import type { ScorerAssignedMatchPage } from '../scorer-match-api.service';
 
 export const scorerFeatureKey = 'scorer';
 
 export type ScorerState = {
   assignedMatches: MatchDetail[];
+  assignedMatchesPage: Omit<ScorerAssignedMatchPage, 'items'> | null;
   assignedMatchesLoading: boolean;
   selectedMatchId: string | null;
   selectedBundle: MatchReadBundle | null;
@@ -54,6 +56,7 @@ const eventDeltas: Record<MatchEventType, Partial<StatisticTotals>> = {
 
 export const initialScorerState: ScorerState = {
   assignedMatches: [],
+  assignedMatchesPage: null,
   assignedMatchesLoading: false,
   selectedMatchId: null,
   selectedBundle: null,
@@ -68,9 +71,15 @@ export const scorerReducer = createReducer(
     assignedMatchesLoading: true,
     error: '',
   })),
-  on(ScorerActions.loadAssignedMatchesSucceeded, (state, { matches }) => ({
+  on(ScorerActions.loadAssignedMatchesSucceeded, (state, { page }) => ({
     ...state,
-    assignedMatches: matches.filter((match) => match.status !== 'FINAL'),
+    assignedMatches: page.items,
+    assignedMatchesPage: {
+      total: page.total,
+      page: page.page,
+      pageSize: page.pageSize,
+      totalPages: page.totalPages,
+    },
     assignedMatchesLoading: false,
     error: '',
   })),
@@ -91,6 +100,9 @@ export const scorerReducer = createReducer(
     assignedMatches: bundle.match.status === 'FINAL'
       ? state.assignedMatches.filter((match) => match.id !== matchId)
       : state.assignedMatches,
+    assignedMatchesPage: bundle.match.status === 'FINAL'
+      ? decrementPage(state.assignedMatchesPage)
+      : state.assignedMatchesPage,
     selectedMatchId: matchId,
     selectedBundle: bundle,
     selectedMatchLoading: false,
@@ -112,6 +124,9 @@ export const scorerReducer = createReducer(
       assignedMatches: match.status === 'FINAL'
         ? state.assignedMatches.filter((assignedMatch) => assignedMatch.id !== match.id)
         : state.assignedMatches,
+      assignedMatchesPage: match.status === 'FINAL'
+        ? decrementPage(state.assignedMatchesPage)
+        : state.assignedMatchesPage,
       selectedBundle: { ...state.selectedBundle, match },
     };
   }),
@@ -146,6 +161,20 @@ export const scorerReducer = createReducer(
     };
   }),
 );
+
+function decrementPage(page: ScorerState['assignedMatchesPage']): ScorerState['assignedMatchesPage'] {
+  if (!page) {
+    return null;
+  }
+
+  const total = Math.max(0, page.total - 1);
+
+  return {
+    ...page,
+    total,
+    totalPages: total === 0 ? 0 : Math.ceil(total / page.pageSize),
+  };
+}
 
 function applyScore(match: MatchDetail, event: MatchEvent): MatchDetail {
   const points = eventDeltas[event.type].points ?? 0;

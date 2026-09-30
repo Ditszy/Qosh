@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -16,6 +16,14 @@ export type CreateMatchEventRequest = {
   occurredAt?: string;
 };
 
+export type ScorerAssignedMatchPage = {
+  items: MatchDetail[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -23,8 +31,14 @@ export class ScorerMatchApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
 
-  listAssignedMatches(): Observable<MatchDetail[]> {
-    return this.http.get<MatchDetail[]>(this.apiUrl.build('/matches/scorer/me'));
+  listAssignedMatches(query: { page?: number; pageSize?: number } = {}): Observable<ScorerAssignedMatchPage> {
+    const params = new HttpParams()
+      .set('page', query.page ?? 1)
+      .set('pageSize', query.pageSize ?? 25);
+
+    return this.http.get<ScorerAssignedMatchPage>(this.apiUrl.build('/matches/scorer/me'), {
+      params,
+    });
   }
 
   startClock(matchId: string): Observable<MatchDetail> {
