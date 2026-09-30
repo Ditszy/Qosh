@@ -52,15 +52,14 @@ export class OrganizerTournamentChecklist {
       return [];
     }
 
-    const teamsCount = tournament.teams.length;
+    const teamsCount = tournament.teamCount;
     const hasEnoughTeams = teamsCount >= 2;
-    const hasBracket = tournament.matches.length > 0;
-    const activeMatches = tournament.matches.filter((match) => match.status !== 'FINAL');
-    const unscheduledCount = activeMatches.filter((match) => !match.scheduledAt).length;
-    const missingOfficialsCount = activeMatches.filter((match) => !match.scorerId || !match.refereeId).length;
-    const liveCount = tournament.matches.filter((match) => match.status === 'LIVE').length;
-    const finalCount = tournament.matches.filter((match) => match.status === 'FINAL').length;
-    const scheduledCount = tournament.matches.filter((match) => match.status === 'SCHEDULED').length;
+    const hasBracket = tournament.matchCount > 0;
+    const unscheduledCount = tournament.unscheduledActiveMatchCount;
+    const missingOfficialsCount = tournament.missingOfficialsActiveMatchCount;
+    const liveCount = tournament.liveMatchCount;
+    const finalCount = tournament.finalMatchCount;
+    const scheduledCount = tournament.scheduledMatchCount;
 
     return [
       {
@@ -151,7 +150,7 @@ export class OrganizerTournamentChecklist {
     if (hasBracket) {
       return {
         title: 'Žreb',
-        detail: `${tournament.matches.length} mečeva generisano`,
+        detail: `${tournament.matchCount} mečeva generisano`,
         status: 'done',
       };
     }
