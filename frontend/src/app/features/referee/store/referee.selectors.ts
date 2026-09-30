@@ -5,6 +5,7 @@ import { refereeFeatureKey, type RefereeState } from './referee.reducer';
 export const selectRefereeState = createFeatureSelector<RefereeState>(refereeFeatureKey);
 
 export const selectRefereeAssignedMatches = createSelector(selectRefereeState, (state) => state.assignedMatches);
+export const selectRefereeAssignedMatchesPage = createSelector(selectRefereeState, (state) => state.assignedMatchesPage);
 export const selectRefereeAssignedMatchesLoading = createSelector(
   selectRefereeState,
   (state) => state.assignedMatchesLoading,

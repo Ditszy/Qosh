@@ -1,13 +1,14 @@
 import { createReducer, on } from '@ngrx/store';
 
 import type { MatchDetail } from '../../public/live-match/match.models';
-import type { RefereeAssignedMatch, RefereeReportDetail } from '../referee-reports-api.service';
+import type { RefereeAssignedMatch, RefereeAssignedMatchPage, RefereeReportDetail } from '../referee-reports-api.service';
 import { RefereeActions } from './referee.actions';
 
 export const refereeFeatureKey = 'referee';
 
 export type RefereeState = {
   assignedMatches: RefereeAssignedMatch[];
+  assignedMatchesPage: Omit<RefereeAssignedMatchPage, 'items'> | null;
   assignedMatchesLoading: boolean;
   selectedMatchId: string | null;
   selectedMatch: MatchDetail | null;
@@ -20,6 +21,7 @@ export type RefereeState = {
 
 export const initialRefereeState: RefereeState = {
   assignedMatches: [],
+  assignedMatchesPage: null,
   assignedMatchesLoading: false,
   selectedMatchId: null,
   selectedMatch: null,
@@ -37,9 +39,15 @@ export const refereeReducer = createReducer(
     assignedMatchesLoading: true,
     error: '',
   })),
-  on(RefereeActions.loadAssignedMatchesSucceeded, (state, { matches }) => ({
+  on(RefereeActions.loadAssignedMatchesSucceeded, (state, { page }) => ({
     ...state,
-    assignedMatches: matches.filter((match) => !match.hasReport),
+    assignedMatches: page.items,
+    assignedMatchesPage: {
+      total: page.total,
+      page: page.page,
+      pageSize: page.pageSize,
+      totalPages: page.totalPages,
+    },
     assignedMatchesLoading: false,
     error: '',
   })),
@@ -95,6 +103,7 @@ export const refereeReducer = createReducer(
   on(RefereeActions.submitReportSucceeded, (state, { matchId, report }) => ({
     ...state,
     assignedMatches: state.assignedMatches.filter((match) => match.id !== matchId),
+    assignedMatchesPage: decrementPage(state.assignedMatchesPage),
     selectedMatchId: matchId,
     loadedReport: report,
     reportSubmitting: false,
@@ -106,3 +115,17 @@ export const refereeReducer = createReducer(
     error,
   })),
 );
+
+function decrementPage(page: RefereeState['assignedMatchesPage']): RefereeState['assignedMatchesPage'] {
+  if (!page) {
+    return null;
+  }
+
+  const total = Math.max(0, page.total - 1);
+
+  return {
+    ...page,
+    total,
+    totalPages: total === 0 ? 0 : Math.ceil(total / page.pageSize),
+  };
+}

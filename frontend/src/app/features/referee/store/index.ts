@@ -4,6 +4,7 @@ export { refereeFeatureKey, refereeReducer } from './referee.reducer';
 export type { RefereeState } from './referee.reducer';
 export {
   selectRefereeAssignedMatches,
+  selectRefereeAssignedMatchesPage,
   selectRefereeAssignedMatchesLoading,
   selectRefereeError,
   selectRefereeLoadedReport,
