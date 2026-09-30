@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { catchError, combineLatest, Observable, of } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { ApiUrlService } from '../../../core/api';
 import { LiveStreamService } from '../../../core/live';
@@ -54,17 +54,27 @@ export class MatchesApiService {
   }
 
   getMatchReadBundle(matchId: string): Observable<MatchReadBundle> {
-    return combineLatest({
-      match: this.getMatch(matchId),
-      events: this.listMatchEvents(matchId),
-      statistics: this.getMatchStatistics(matchId),
-      refereeReport: this.getRefereeReport(matchId).pipe(catchError(() => of(null))),
-      serverTime: of(null),
-      serverOffsetMs: of(0),
-    });
+    return this.http.get<MatchReadBundleResponse>(this.apiUrl.build(`/matches/${matchId}/read-bundle`)).pipe(
+      map((bundle) => ({
+        ...bundle,
+        serverOffsetMs: this.serverOffsetMs(bundle.serverTime, Date.now()),
+      })),
+    );
   }
 
   watchLiveMatch(matchId: string): Observable<MatchLiveStreamMessage> {
     return this.liveStream.connect<MatchLivePayload>(`/matches/${matchId}/live`) as Observable<MatchLiveStreamMessage>;
   }
+
+  private serverOffsetMs(serverTime: string | null, receivedAt: number): number {
+    if (!serverTime) {
+      return 0;
+    }
+
+    const parsedServerTime = Date.parse(serverTime);
+
+    return Number.isNaN(parsedServerTime) ? 0 : parsedServerTime - receivedAt;
+  }
 }
+
+type MatchReadBundleResponse = Omit<MatchReadBundle, 'serverOffsetMs'>;

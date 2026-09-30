@@ -86,14 +86,6 @@ export const liveMatchReducer = createReducer(
 
 function mergeLiveBundle(bundle: MatchReadBundle, message: MatchLiveStreamMessage, receivedAt: number): MatchReadBundle {
   switch (message.type) {
-    case 'match.snapshot':
-      return {
-        ...bundle,
-        match: message.data.match,
-        events: message.data.events,
-        serverTime: message.data.serverTime,
-        serverOffsetMs: toServerOffsetMs(message.data.serverTime, receivedAt),
-      };
     case 'match.clock':
       return {
         ...bundle,

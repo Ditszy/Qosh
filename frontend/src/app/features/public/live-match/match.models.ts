@@ -76,12 +76,6 @@ export type MatchRecap = {
 
 export type MatchRecapsByMatchId = Record<string, MatchRecap>;
 
-export type MatchLiveSnapshot = {
-  match: MatchDetail;
-  events: MatchEvent[];
-  serverTime: string;
-};
-
 export type MatchClockPayload = {
   id: string;
   status: MatchStatus;
@@ -127,7 +121,6 @@ export type MatchFinalizedPayload = MatchScorePayload & {
 };
 
 export type MatchLivePayload =
-  | MatchLiveSnapshot
   | MatchClockPayload
   | MatchEventCreatedPayload
   | MatchEventDeletedPayload
@@ -136,7 +129,6 @@ export type MatchLivePayload =
   | MatchFinalizedPayload;
 
 export type MatchLiveStreamMessage =
-  | (LiveStreamMessage<MatchLiveSnapshot> & { type: 'match.snapshot' })
   | (LiveStreamMessage<MatchClockPayload> & { type: 'match.clock' })
   | (LiveStreamMessage<MatchEventCreatedPayload> & { type: 'match.event.created' })
   | (LiveStreamMessage<MatchEventDeletedPayload> & { type: 'match.event.deleted' })

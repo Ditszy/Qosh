@@ -7,7 +7,6 @@ export type {
   MatchEventType,
   MatchFinalizedPayload,
   MatchLivePayload,
-  MatchLiveSnapshot,
   MatchLiveStreamMessage,
   MatchReadBundle,
   MatchScorePayload,
