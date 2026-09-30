@@ -1,45 +1,98 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, forkJoin, map, of, switchMap } from 'rxjs';
+import { catchError, exhaustMap, forkJoin, map, of, switchMap, EMPTY } from 'rxjs';
 
-import { AuthService } from '../../../core/auth/auth';
+import { TeamsApiService } from '../../player/teams-api.service';
 import { TournamentsApiService } from '../../public/tournaments/tournaments-api.service';
 import { OrganizerTournamentsApiService } from '../organizer-tournaments-api.service';
 import { OrganizerDashboardActions } from './organizer-dashboard.actions';
 
 export const loadOrganizerDashboard = createEffect(
-  (actions$ = inject(Actions), tournamentsApi = inject(TournamentsApiService), auth = inject(AuthService)) =>
+  (actions$ = inject(Actions), organizerApi = inject(OrganizerTournamentsApiService)) =>
     actions$.pipe(
       ofType(OrganizerDashboardActions.load),
       switchMap(() =>
-        tournamentsApi.listTournaments({ pageSize: 50 }).pipe(
-          switchMap((page) => {
-            const user = auth.currentUser();
-            const owned = user?.role === 'ADMIN'
-              ? page.items
-              : page.items.filter((item) => item.organizerId === user?.id);
-            const active = owned.filter((item) => item.status !== 'COMPLETED' && item.status !== 'CANCELLED');
-
-            if (active.length === 0) {
-              return of(OrganizerDashboardActions.loadSucceeded({ tournaments: [] }));
-            }
-
-            return forkJoin(
-              active.map((tournament) =>
-                forkJoin({
-                  matches: tournamentsApi.listTournamentMatches(tournament.id),
-                  teams: tournamentsApi.listTournamentTeams(tournament.id),
-                }).pipe(
-                  map(({ matches, teams }) => ({ ...tournament, matches, teams })),
-                ),
-              ),
-            ).pipe(
-              map((tournaments) => OrganizerDashboardActions.loadSucceeded({ tournaments })),
-            );
-          }),
+        forkJoin({
+          page: organizerApi.listManagedTournaments({ page: 1, pageSize: 12, view: 'active' }),
+          commandCenter: organizerApi.getCommandCenter(4),
+        }).pipe(
+          map(({ page, commandCenter }) => OrganizerDashboardActions.loadSucceeded({ page, commandCenter })),
           catchError(() => of(OrganizerDashboardActions.loadFailed())),
         ),
       ),
+    ),
+  { functional: true },
+);
+
+export const loadOrganizerCommandCenter = createEffect(
+  (actions$ = inject(Actions), organizerApi = inject(OrganizerTournamentsApiService)) =>
+    actions$.pipe(
+      ofType(OrganizerDashboardActions.loadCommandCenter),
+      switchMap(() => organizerApi.getCommandCenter(4).pipe(
+        map((commandCenter) => OrganizerDashboardActions.loadCommandCenterSucceeded({ commandCenter })),
+        catchError(() => of(OrganizerDashboardActions.loadCommandCenterFailed())),
+      )),
+    ),
+  { functional: true },
+);
+
+export const loadOrganizerPage = createEffect(
+  (actions$ = inject(Actions), organizerApi = inject(OrganizerTournamentsApiService)) =>
+    actions$.pipe(
+      ofType(OrganizerDashboardActions.loadPage),
+      switchMap(({ page, view = 'active' }) => organizerApi.listManagedTournaments({
+        page,
+        pageSize: 12,
+        view,
+      }).pipe(
+        map((result) => OrganizerDashboardActions.loadPageSucceeded({ page: result })),
+        catchError(() => of(OrganizerDashboardActions.loadPageFailed())),
+      )),
+    ),
+  { functional: true },
+);
+
+export const loadOrganizerTournamentDetails = createEffect(
+  (
+    actions$ = inject(Actions),
+    tournamentsApi = inject(TournamentsApiService),
+    teamsApi = inject(TeamsApiService),
+  ) =>
+    actions$.pipe(
+      ofType(OrganizerDashboardActions.loadTournamentDetails),
+      switchMap(({ tournamentId }) =>
+        forkJoin({
+          matches: tournamentsApi.listTournamentMatches(tournamentId),
+          teams: teamsApi.listTournamentTeams(tournamentId),
+        }).pipe(
+          map(({ matches, teams }) => OrganizerDashboardActions.loadTournamentDetailsSucceeded({
+            tournamentId,
+            matches,
+            teams,
+          })),
+          catchError(() => of(OrganizerDashboardActions.loadTournamentDetailsFailed({ tournamentId }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const refreshOrganizerCommandCenter = createEffect(
+  (actions$ = inject(Actions), organizerApi = inject(OrganizerTournamentsApiService)) =>
+    actions$.pipe(
+      ofType(
+        OrganizerDashboardActions.createTournamentSucceeded,
+        OrganizerDashboardActions.updateTournamentSucceeded,
+        OrganizerDashboardActions.setSignupStatusSucceeded,
+        OrganizerDashboardActions.generateBracketSucceeded,
+        OrganizerDashboardActions.startTournamentSucceeded,
+        OrganizerDashboardActions.cancelTournamentSucceeded,
+        OrganizerDashboardActions.scheduleMatchSucceeded,
+      ),
+      switchMap(() => organizerApi.getCommandCenter(4).pipe(
+        map((commandCenter) => OrganizerDashboardActions.loadCommandCenterSucceeded({ commandCenter })),
+        catchError(() => EMPTY),
+      )),
     ),
   { functional: true },
 );
@@ -100,7 +153,7 @@ export const generateOrganizerBracket = createEffect(
       ofType(OrganizerDashboardActions.generateBracket),
       exhaustMap(({ id }) =>
         organizerApi.generateBracket(id).pipe(
-          map((matches) => OrganizerDashboardActions.generateBracketSucceeded({ matches })),
+          map((matches) => OrganizerDashboardActions.generateBracketSucceeded({ tournamentId: id, matches })),
           catchError(() => of(OrganizerDashboardActions.commandFailed({
             errorMessage: 'Žreb nije generisan. Proveri broj timova.',
           }))),
