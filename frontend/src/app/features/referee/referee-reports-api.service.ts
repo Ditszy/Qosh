@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -37,6 +37,14 @@ export type RefereeAssignedMatch = TournamentMatch & {
   hasReport: boolean;
 };
 
+export type RefereeAssignedMatchPage = {
+  items: RefereeAssignedMatch[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
 @Injectable({
   providedIn: 'root',
 })
@@ -44,8 +52,14 @@ export class RefereeReportsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(ApiUrlService);
 
-  listAssignedMatches(): Observable<RefereeAssignedMatch[]> {
-    return this.http.get<RefereeAssignedMatch[]>(this.apiUrl.build('/matches/referee/me'));
+  listAssignedMatches(query: { page?: number; pageSize?: number } = {}): Observable<RefereeAssignedMatchPage> {
+    const params = new HttpParams()
+      .set('page', query.page ?? 1)
+      .set('pageSize', query.pageSize ?? 25);
+
+    return this.http.get<RefereeAssignedMatchPage>(this.apiUrl.build('/matches/referee/me'), {
+      params,
+    });
   }
 
   getReport(matchId: string): Observable<RefereeReportDetail> {

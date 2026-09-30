@@ -8,6 +8,7 @@ import type { RefereeAssignedMatch } from '../referee-reports-api.service';
 import {
   RefereeActions,
   selectRefereeAssignedMatches,
+  selectRefereeAssignedMatchesPage,
   selectRefereeAssignedMatchesLoading,
   selectRefereeError,
   selectRefereeLoadedReport,
@@ -34,6 +35,7 @@ export class RefereeReports implements OnInit {
   protected readonly isLoadingAssignedMatches = this.store.selectSignal(selectRefereeAssignedMatchesLoading);
   protected readonly isLoadingSelectedMatch = this.store.selectSignal(selectRefereeSelectedMatchLoading);
   protected readonly assignedMatches = this.store.selectSignal(selectRefereeAssignedMatches);
+  protected readonly assignedMatchesPage = this.store.selectSignal(selectRefereeAssignedMatchesPage);
   protected readonly selectedMatch = this.store.selectSignal(selectRefereeSelectedMatch);
 
   protected readonly reportForm = this.formBuilder.nonNullable.group({
@@ -64,8 +66,16 @@ export class RefereeReports implements OnInit {
     }
   }
 
-  private loadAssignedMatches(): void {
-    this.store.dispatch(RefereeActions.loadAssignedMatches());
+  protected loadAssignedMatches(page = 1): void {
+    this.store.dispatch(RefereeActions.loadAssignedMatches({ page }));
+  }
+
+  protected goToPage(page: number): void {
+    const metadata = this.assignedMatchesPage();
+
+    if (metadata && page >= 1 && page <= metadata.totalPages) {
+      this.loadAssignedMatches(page);
+    }
   }
 
   protected submitReport(): void {
