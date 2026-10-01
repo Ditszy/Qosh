@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, MessageEvent, NotFoundException } from '@nestjs/common';
-import { Observable, Subject } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { LiveEventBus, LiveEventTopic } from '../live-events/live-event-bus';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateNotificationInput,
@@ -13,9 +13,10 @@ import { FindNotificationsDto } from './dto/find-notifications.dto';
 
 @Injectable()
 export class NotificationsService {
-    private readonly notificationUpdates$ = new Subject<NotificationRecord>();
-
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly liveEventBus: LiveEventBus,
+    ) { }
 
     async create(
         createNotificationInput: CreateNotificationInput,
@@ -43,17 +44,14 @@ export class NotificationsService {
     }
 
     watchForUser(userId: string): Observable<MessageEvent> {
-        return this.notificationUpdates$.pipe(
-            filter((notification) => notification.recipientId === userId),
-            map((notification) => ({
-                type: 'notification.created',
-                data: this.toLiveMessage(notification),
-            })),
-        );
+        return this.liveEventBus.watch(LiveEventTopic.notificationUser(userId));
     }
 
     publishCreated(notification: NotificationRecord): void {
-        this.notificationUpdates$.next(notification);
+        this.liveEventBus.publish(LiveEventTopic.notificationUser(notification.recipientId), {
+            type: 'notification.created',
+            data: this.toLiveMessage(notification),
+        });
     }
 
     async findForUser(userId: string, query: FindNotificationsDto = {}): Promise<NotificationPage> {
