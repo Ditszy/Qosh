@@ -121,6 +121,8 @@ model Tournament {
   createdAt   DateTime         @default(now()) @db.Timestamptz
   updatedAt   DateTime         @updatedAt @db.Timestamptz
 
+  @@index([organizerId, status, startsAt])
+  @@index([status, startsAt])
   @@map("tournaments")
 }
 
@@ -153,6 +155,7 @@ model TeamMember {
   joinedAt DateTime       @default(now()) @db.Timestamptz
 
   @@unique([teamId, userId])
+  @@index([userId])
   @@map("team_members")
 }
 
@@ -169,6 +172,7 @@ model TeamInvite {
   respondedAt   DateTime?        @db.Timestamptz
 
   @@index([teamId, invitedUserId], map: "IDX_team_invite_pending_user")
+  @@index([invitedUserId, status, createdAt])
   @@map("team_invites")
 }
 
@@ -212,6 +216,9 @@ model Match {
   @@index([teamBId])
   @@index([scorerId])
   @@index([refereeId])
+  @@index([status, scheduledAt])
+  @@index([scorerId, status, scheduledAt])
+  @@index([refereeId, status, scheduledAt])
   @@map("matches")
 }
 
