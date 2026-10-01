@@ -1,6 +1,7 @@
-import { Injectable, MessageEvent } from '@nestjs/common';
-import { Observable, Subject, concat, defer, from, merge, timer } from 'rxjs';
-import { debounceTime, filter, map, switchMap } from 'rxjs/operators';
+import { Injectable, Logger, MessageEvent } from '@nestjs/common';
+import { Observable, concat, defer, from, merge, timer } from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs/operators';
+import { LiveEventBus, LiveEventTopic } from '../../live-events/live-event-bus';
 import { MatchClockStatus } from '../enums/match-clock-status.enum';
 import { MatchStatus } from '../enums/match-status.enum';
 import { MatchesReadService } from './matches-read.service';
@@ -38,29 +39,30 @@ type MatchFinalizedMessagePayload = MatchFinalizedPayload & {
     serverTime: Date;
 };
 
-type MatchLiveUpdate = {
-    matchId: string;
-    message: MessageEvent;
-};
+const LIVE_CENTER_CACHE_KEY = 'matches:public-live-center';
+const LIVE_CENTER_CACHE_TTL_MS = 15_000;
 
 @Injectable()
 export class MatchLiveService {
-    private readonly matchUpdates$ = new Subject<MatchLiveUpdate>();
+    private readonly logger = new Logger(MatchLiveService.name);
 
-    constructor(private readonly matchesReadService: MatchesReadService) { }
+    constructor(
+        private readonly matchesReadService: MatchesReadService,
+        private readonly liveEventBus: LiveEventBus,
+    ) { }
 
     watchMatch(matchId: string): Observable<MessageEvent> {
         return defer(() => from(this.matchesReadService.findById(matchId))).pipe(
-            switchMap(() => this.matchUpdates$.pipe(
-                filter((update) => update.matchId === matchId),
-                map((update) => update.message),
-            )),
+            switchMap(() => this.liveEventBus.watch(LiveEventTopic.match(matchId))),
         );
     }
 
     watchLiveCenter(): Observable<MessageEvent> {
         const initialSnapshot$ = defer(() => from(this.createLiveCenterMessage()));
-        const updateMessages$ = merge(timer(15000, 15000), this.matchUpdates$).pipe(
+        const updateMessages$ = merge(
+            timer(LIVE_CENTER_CACHE_TTL_MS, LIVE_CENTER_CACHE_TTL_MS),
+            this.liveEventBus.watch(LiveEventTopic.liveCenter),
+        ).pipe(
             debounceTime(150),
             switchMap(() => from(this.createLiveCenterMessage())),
         );
@@ -93,19 +95,25 @@ export class MatchLiveService {
     }
 
     private publish(matchId: string, type: string, data: string | object): void {
-        this.matchUpdates$.next({
-            matchId,
-            message: {
-                type,
-                data,
-            },
+        this.liveEventBus.publish(LiveEventTopic.match(matchId), { type, data });
+        void this.liveEventBus.invalidateCache(LIVE_CENTER_CACHE_KEY).catch((error: Error) => {
+            this.logger.error(`Could not invalidate the live-center snapshot: ${error.message}`);
+        }).then(() => {
+            this.liveEventBus.publish(LiveEventTopic.liveCenter, {
+                type: 'matches.live.invalidated',
+                data: {},
+            });
         });
     }
 
     private async createLiveCenterMessage(): Promise<MessageEvent> {
         return {
             type: 'matches.live.snapshot',
-            data: await this.matchesReadService.findPublicLiveCenter(),
+            data: await this.liveEventBus.getOrCompute(
+                LIVE_CENTER_CACHE_KEY,
+                LIVE_CENTER_CACHE_TTL_MS,
+                () => this.matchesReadService.findPublicLiveCenter(),
+            ),
         };
     }
 
