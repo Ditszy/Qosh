@@ -52,15 +52,6 @@ export type DisbandTeamResult = {
     tournamentId: string;
 };
 
-export type MyTeamLiveEvent =
-    | { type: 'team.updated'; data: { team: TeamWithMembers } }
-    | { type: 'team.removed'; data: { teamId: string } };
-
-export type MyTeamLiveUpdate = {
-    userId: string;
-    event: MyTeamLiveEvent;
-};
-
 export type TeamInviteRecord = {
     id: string;
     teamId: string;
