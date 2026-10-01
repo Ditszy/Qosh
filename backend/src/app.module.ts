@@ -9,10 +9,12 @@ import { MatchesModule } from './matches/matches.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReportsModule } from './reports/reports.module';
+import { LiveEventsModule } from './live-events/live-events.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    LiveEventsModule,
     PrismaModule,
     UsersModule,
     AuthModule,
